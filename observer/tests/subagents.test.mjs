@@ -64,3 +64,67 @@ test('stop/resume markers advance even when the wall clock repeats or moves back
     assert.equal(b.kind,'stop');assert.equal(c.kind,'start');assert.ok(Date.parse(b.at)>Date.parse(a.at));assert.ok(Date.parse(c.at)>Date.parse(b.at));observer.close();
   }finally{Date.now=original;}
 });
+
+const statusFailures = [
+  ['null', (request,bus)=>reply(bus,request,null)],
+  ['rejection', (request,bus)=>bus.emit(`subagents:rpc:v1:reply:${request.requestId}`,{version:1,requestId:request.requestId,success:false,error:{message:'Private diagnostic'}})],
+  ['thrown transport', ()=>{throw new Error('Private plugin failure');}],
+  ['missing fleet', (request,bus)=>reply(bus,request,{})],
+  ['wrong fleet version', (request,bus)=>reply(bus,request,{fleet:{version:2,entries:[],omitted:0}})],
+  ['malformed entries', (request,bus)=>reply(bus,request,{fleet:{version:1,entries:null,omitted:0}})],
+  ['missing omission count', (request,bus)=>reply(bus,request,{fleet:{version:1,entries:[]}})],
+  ['invalid omission count', (request,bus)=>reply(bus,request,{fleet:{version:1,entries:[],omitted:-1}})],
+  ['timeout', ()=>{}],
+];
+for (const [name,fail] of statusFailures) test(`status ${name} clears cached children and valid idle reconnect restores fresh observations`,async t=>{
+  if(name==='timeout')t.mock.timers.enable({apis:['setTimeout']});
+  let failed=false,state='running';
+  const h=busWith((request,bus)=>{
+    if(request.method==='ping')reply(bus,request,ping);
+    else if(failed)fail(request,bus);
+    else reply(bus,request,status([{key:'recoverable-child',agent:'Private name',state}]));
+  });
+  const changes=[];const observer=new SubagentObserver(h.bus,(...args)=>changes.push(args));t.after(()=>observer.close());
+  await observer.refresh();const original=changes.at(-1)[0][0];assert.equal(original.state,'working');
+  failed=true;const failedRefresh=observer.refresh();const oldRequest=h.requests.at(-1);
+  if(name==='timeout')t.mock.timers.tick(800);
+  await failedRefresh;assert.deepEqual(changes.at(-1),[[],0,false]);
+  assert.ok(![...h.listeners.keys()].some(key=>key.startsWith('subagents:rpc:v1:reply:')));
+  failed=false;state='idle';await observer.refresh();const restored=changes.at(-1)[0][0];
+  assert.equal(restored.id,original.id);assert.equal(restored.state,'idle');assert.equal(restored.lifecycle.kind,'start');assert.notEqual(restored.lifecycle.eventId,original.lifecycle.eventId);assert.ok(Date.parse(restored.lifecycle.at)>Date.parse(original.lifecycle.at));
+  const count=changes.length;reply(h.bus,oldRequest,status([{key:'stale-child',agent:'Must stay hidden',state:'running'}]));assert.equal(changes.length,count);
+  assert.equal(h.requests.filter(request=>request.method==='ping').length,2);
+});
+
+for (const name of ['null','rejection','malformed','timeout']) test(`ready restart clears children immediately even when fresh ping is ${name}`,async t=>{
+  if(name==='timeout')t.mock.timers.enable({apis:['setTimeout']});
+  let failPing=false;
+  const h=busWith((request,bus)=>{
+    if(request.method==='status'){reply(bus,request,status([{key:'child',agent:'Worker',state:'running'}]));return;}
+    if(!failPing){reply(bus,request,ping);return;}
+    if(name==='null')reply(bus,request,null);
+    if(name==='malformed')reply(bus,request,{capabilities:null});
+    if(name==='rejection')bus.emit(`subagents:rpc:v1:reply:${request.requestId}`,{version:1,requestId:request.requestId,success:false});
+  });
+  const changes=[];const observer=new SubagentObserver(h.bus,(...args)=>changes.push(args));t.after(()=>observer.close());await observer.refresh();assert.equal(changes.at(-1)[0].length,1);
+  failPing=true;h.bus.emit('subagents:rpc:v1:ready',{});assert.deepEqual(changes.at(-1),[[],0,false]);
+  if(name==='timeout')t.mock.timers.tick(800);
+  await tick();assert.deepEqual(changes.at(-1),[[],0,false]);
+  failPing=false;await observer.refresh();assert.equal(changes.at(-1)[0].length,1);assert.equal(changes.at(-1)[2],true);
+});
+
+test('ready epoch cancels pending old status and old replies cannot revive children',async()=>{
+  let hold=false;const held=[];
+  const h=busWith((request,bus)=>{
+    if(hold){held.push(request);return;}
+    reply(bus,request,request.method==='ping'?ping:status([{key:'child',agent:'Worker',state:'running'}]));
+  });
+  const changes=[];const observer=new SubagentObserver(h.bus,(...args)=>changes.push(args));await observer.refresh();const previous=changes.at(-1)[0][0];
+  hold=true;const oldRefresh=observer.refresh();const old=held.at(-1);assert.equal(old.method,'status');
+  h.bus.emit('subagents:rpc:v1:ready',{});assert.deepEqual(changes.at(-1),[[],0,false]);await oldRefresh;await tick();
+  const newPing=held.at(-1);assert.equal(newPing.method,'ping');
+  const count=changes.length;reply(h.bus,old,status([{key:'old',agent:'Old plugin',state:'running'}]));assert.equal(changes.length,count);
+  reply(h.bus,newPing,ping);await tick();const newStatus=held.at(-1);assert.equal(newStatus.method,'status');
+  reply(h.bus,newStatus,status([{key:'child',agent:'Worker',state:'idle'}]));await tick();const restored=changes.at(-1)[0][0];
+  assert.equal(restored.state,'idle');assert.notEqual(restored.lifecycle.eventId,previous.lifecycle.eventId);assert.ok(Date.parse(restored.lifecycle.at)>Date.parse(previous.lifecycle.at));observer.close();
+});

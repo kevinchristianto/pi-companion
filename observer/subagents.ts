@@ -28,13 +28,26 @@ export class SubagentObserver {
         const off = bus.on(name, (value) => {
           if (!this.active) return;
           if (name === "subagent:child-status" && (!record(value) || value.version !== 1 || value.type !== "subagent.child-status")) return;
-          if (name === "subagents:rpc:v1:ready") { this.epoch++; this.negotiated = false; this.fleet = false; }
+          if (name === "subagents:rpc:v1:ready") {
+            // The plugin may have restarted. Invalidate before waiting for its
+            // new status; root heartbeats must not renew cached child liveness.
+            this.epoch++;
+            this.unavailable();
+            for (const cancel of this.cancellations) cancel();
+          }
           // A hint is not identity or completion proof: opaque fleet keys cannot be mapped to run IDs.
           void this.refresh();
         });
         if (typeof off === "function") this.cleanups.push(off);
       } catch { /* An optional plugin cannot disable the root observer. */ }
     }
+  }
+  private unavailable(renegotiate = true): void {
+    if (!this.active) return;
+    this.rows.clear();
+    this.fleet = false;
+    if (renegotiate) this.negotiated = false;
+    this.changed([], 0, false);
   }
   private rpc(method: "ping" | "status"): Promise<Record<string, unknown> | null> {
     if (!this.active) return Promise.resolve(null);
@@ -69,14 +82,19 @@ export class SubagentObserver {
     try {
       if (!this.negotiated) {
         const ping = await this.rpc("ping");
-        if (!this.active || epoch !== this.epoch || !ping) return;
+        if (!this.active || epoch !== this.epoch) return;
+        if (!ping || !record(ping.capabilities)) { this.unavailable(); return; }
         this.negotiated = true;
         this.fleet = record(ping.capabilities) && record(ping.capabilities.fleetStatus) && ping.capabilities.fleetStatus.version === 1;
-        if (!this.fleet) { this.changed([], 0, false); return; }
+        if (!this.fleet) { this.unavailable(false); return; }
       }
       if (!this.fleet) return;
       const status = await this.rpc("status");
-      if (!this.active || epoch !== this.epoch || !status || !record(status.fleet) || status.fleet.version !== 1 || !Array.isArray(status.fleet.entries)) return;
+      if (!this.active || epoch !== this.epoch) return;
+      if (!status || !record(status.fleet) || status.fleet.version !== 1 || !Array.isArray(status.fleet.entries) ||
+          !Number.isSafeInteger(status.fleet.omitted) || (status.fleet.omitted as number) < 0) {
+        this.unavailable(); return;
+      }
       const entries = status.fleet.entries;
       const next = new Map<string, Agent>();
       // Work is bounded even if another extension publishes an unexpectedly large object.
@@ -108,7 +126,11 @@ export class SubagentObserver {
       if (omitted > 0) for (const [id, row] of this.rows) if (!next.has(id) && next.size < MAX_AGENTS - 1) next.set(id, { ...row, state: "stale", tool: null });
       this.rows = next;
       this.changed([...next.values()], omitted, true);
-    } catch { /* Never expose provider error text or affect Pi. */ }
+    } catch {
+      // Only this observation epoch can invalidate its roster. An old plugin's
+      // delayed failure cannot erase or revive the replacement plugin's rows.
+      if (this.active && epoch === this.epoch) this.unavailable();
+    }
     finally {
       this.busy = false;
       if (this.again && this.active) { this.again = false; queueMicrotask(() => { void this.refresh(); }); }

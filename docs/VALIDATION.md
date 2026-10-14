@@ -11,14 +11,16 @@ This is an unreleased clean rewrite. Automated and native validation are tracked
 
 Verified before initial publication:
 
-- 54 frontend tests and 28 observer tests; both strict TypeScript checks pass.
+- 54 frontend tests and 42 observer tests; both strict TypeScript checks pass.
 - 42 core Rust tests and 9 platform-independent shell tests pass, including a real Node observer-to-Rust HTTP roundtrip.
 - Strict Clippy passes for the core/shell crates; shell policy and Windows ACL test code also compile with strict Clippy for the Windows GNU target.
 - The production build preserves all 15 PNG bytes and excludes synthetic review data and source maps. A forced review environment cannot enable the fixture in a production build.
 - npm reports no known vulnerabilities in production dependencies at this checkpoint. This is not a whole-system security certification.
 - Rust formatting, public-source privacy scan and dependency-notice generation pass.
 
-Native Windows compile/test/installer results will be recorded from CI after publication. Native GUI acceptance remains pending.
+The first Windows CI run for 1aae427 passed native compilation, workspace tests and strict Rust linting. The final observer-disconnect regression is being rebuilt before delivery. Native GUI acceptance remains pending.
+
+The observer now clears cached child rows when its optional plugin becomes unavailable or emits malformed status, while keeping the connected root visible. The real adapter-to-Rust roundtrip verifies that root heartbeats cannot revive those cached children and that a valid reconnect restores idle children.
 
 ## Required Windows acceptance
 
