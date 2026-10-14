@@ -103,6 +103,22 @@ describe('semantic popup roster', () => {
     click(first); emit(state([agent(1)], 2)); expect(document.activeElement).toBe(buttons()[0]);
     expect(root.querySelector('.detail')?.hasAttribute('hidden')).toBe(true);
   });
+  it('keeps long agent details scrollable and closes back to the selected agent', async () => {
+    const task = 'A long task description with preserved line breaks.\n'.repeat(60);
+    const name = 'Long agent name '.repeat(15);
+    platform.current = state([agent(0, { name, task, cwd: '/work/' + 'long-project-name/'.repeat(12) })]);
+    await start(); const selected = buttons()[0]; click(selected);
+    const details = root.querySelector<HTMLElement>('.detail')!;
+    expect(details.getAttribute('aria-labelledby')).toBe('detail-title');
+    expect(details.querySelector('#detail-title')?.textContent).toBe(name);
+    expect(details.querySelector('.detail-task')?.textContent).toBe(task);
+    interact(() => { details.scrollTop = 500; details.dispatchEvent(new Event('scroll')); });
+    expect(details.querySelector('.detail-head')?.contains(byText('Close details'))).toBe(true);
+    click(byText('Close details')); expect(details.hidden).toBe(true);
+    expect(document.activeElement).toBe(selected);
+    click(selected); key(document.activeElement!, 'Escape');
+    expect(details.hidden).toBe(true); expect(document.activeElement).toBe(selected);
+  });
   it('moves focus to a surviving resident or menu when a focused agent is removed', async () => {
     platform.current = state([agent(0), agent(1)]); await start();
     interact(() => buttons()[0].focus()); emit(state([agent(1)], 2)); expect(document.activeElement).toBe(buttons()[0]);
@@ -304,6 +320,23 @@ describe('one-time Pi connection setup', () => {
 });
 
 describe('compact options menu', () => {
+  it('keeps decorative border overlays out of the scrolling menu content', async () => {
+    await start(); openMenu();
+    const content = menu()!;
+    // Borders on absolutely positioned child boxes move across options while scrolling.
+    expect(content.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(0);
+    for (const scrollTop of [0, 80, 180, 360, 0]) {
+      interact(() => { content.scrollTop = scrollTop; content.dispatchEvent(new Event('scroll')); });
+      expect(content.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(0);
+      expect(content.contains(byText('2× · original'))).toBe(true);
+      expect(content.contains(byText('Hide'))).toBe(true);
+    }
+    choose('Artwork scale', '2× · original');
+    expect(content.querySelector('[aria-label="Artwork scale"] [data-state="checked"]')?.textContent).toContain('2×');
+    key(document.activeElement!, 'Escape');
+    expect(menu()).toBeNull(); expect(document.activeElement).toBe(menuButton());
+  });
+
   it('keeps every option under one button and never renders native selects or list switches', async () => {
     await start(); expect(menu()).toBeNull(); expect(document.querySelectorAll('select')).toHaveLength(0);
     openMenu();
@@ -335,6 +368,16 @@ describe('compact options menu', () => {
     expect(platform.commands).toEqual([]);
     interact(() => root.querySelector('.brand')?.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })));
     expect(platform.commands).toEqual([{ name: 'start_dragging' }]);
+  });
+  it('keeps the scrollable connection guide free of decorative border overlays', async () => {
+    platform.current.bridge.observerEntry = '/private/companion/observer/index.ts';
+    await start(); openGuide();
+    const guide = document.querySelector<HTMLElement>('.guide[role="dialog"]')!;
+    expect(guide.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(0);
+    interact(() => { guide.scrollTop = 180; guide.dispatchEvent(new Event('scroll')); });
+    expect(guide.querySelector('textarea')?.value).toContain('extensions');
+    click(byText('Got it')); expect(document.querySelector('.guide')).toBeNull();
+    expect(document.activeElement).toBe(menuButton());
   });
   it('closes settings for the connection dialog and restores focus after dismissal', async () => {
     await start(); openGuide(); expect(menu()).toBeNull(); expect(document.querySelector('.guide[role="dialog"]')).not.toBeNull();

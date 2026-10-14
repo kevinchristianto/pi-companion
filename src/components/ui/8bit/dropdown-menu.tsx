@@ -111,18 +111,9 @@ function DropdownMenuSubContent({
   return (
     <ShadcnDropdownMenuSubContent
       {...props}
-      className={cn("bg-popover", font !== "normal" && "retro", className)}
+      className={cn("bg-popover rounded-none border-2 border-foreground", font !== "normal" && "retro", className)}
     >
       {children}
-
-      <div
-        className="absolute inset-0 border-x-6 -mx-1.5 border-foreground dark:border-ring pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 border-y-6 -my-1.5 border-foreground dark:border-ring pointer-events-none"
-        aria-hidden="true"
-      />
     </ShadcnDropdownMenuSubContent>
   );
 }
@@ -143,19 +134,10 @@ function DropdownMenuContent({
 }: BitDropownMenuContentProps) {
   return (
     <ShadcnDropdownMenuContent
-      className={cn("mt-1 py-2", font !== "normal" && "retro", className)}
+      className={cn("mt-1 py-2 rounded-none border-2 border-foreground", font !== "normal" && "retro", className)}
       {...props}
     >
       {children}
-
-      <div
-        className="mt-2.5 absolute inset-0 border-x-6 -mx-1.5 border-foreground dark:border-ring pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="mt-1 absolute inset-0 border-y-6 -my-1.5 border-foreground dark:border-ring pointer-events-none"
-        aria-hidden="true"
-      />
     </ShadcnDropdownMenuContent>
   );
 }

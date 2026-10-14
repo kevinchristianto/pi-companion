@@ -17,7 +17,8 @@
     "All component icons use local integer-grid SVG shapes instead of smooth lucide symbols; lucide-react is not installed.",
     "Client-only Next.js directives are omitted because this is a local Vite WebView application.",
     "The tooltip arrow is a stepped integer-grid SVG instead of a rotated rounded arrow.",
-    "Tooltip roots honor the surrounding TooltipProvider delay rather than overriding it with an extra zero-delay provider."
+    "Tooltip roots honor the surrounding TooltipProvider delay rather than overriding it with an extra zero-delay provider.",
+    "Scrollable dropdown content, subcontent and dialog content use real outer borders instead of absolute inset border layers, preventing decoration from scrolling across labels or creating horizontal overflow."
   ],
   "files": [
     {
@@ -32,14 +33,14 @@
       "localPath": "src/components/ui/8bit/dropdown-menu.tsx",
       "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/dropdown-menu.tsx",
       "upstreamSha256": "1ef1933f3ec2cee1e9e37ffc0f68e24f19b2081282169c40f8dd364614b7dbf2",
-      "localSha256": "b6250393aba58552fe48e56efb40428096ad55e00e520bbeb49ca0cbe619276e"
+      "localSha256": "9fa2c5da808bf8e72d0e4a88823e3dc2213e67c99ee2ba8bd0be1758aef56ae8"
     },
     {
       "upstreamPath": "components/ui/8bit/dialog.tsx",
       "localPath": "src/components/ui/8bit/dialog.tsx",
       "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/dialog.tsx",
       "upstreamSha256": "e7e6a6eb2b25377707c93665779ce7911f0324532f259eaee2901b688128f664",
-      "localSha256": "a604579f7972f75cffe692a1fb79d5a007b9ae55f656c493b419b21d2890370e"
+      "localSha256": "b032ff26e8ccc0382148c53f8ca7de7682fa1ef5054c4ef6668319c565964db0"
     },
     {
       "upstreamPath": "components/ui/8bit/tooltip.tsx",

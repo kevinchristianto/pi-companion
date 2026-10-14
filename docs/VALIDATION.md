@@ -50,3 +50,11 @@ Version 0.1.2 replaces the vanilla controls with React plus pinned actual 8bitcn
 Browser rendering is unavailable in this task: the supported cloud browser cannot reach the workspace's loopback review server, and its URL policy explicitly rejects data URLs. No alternate browser or injection route is used. The offline composition uses final local styles, font and approved sprite layers, but is not a browser or native-app screenshot. It cannot verify Radix geometry/collision positioning, WebView font metrics, native drag/resize or mixed-DPI rendering.
 
 Native Windows acceptance must additionally check the compact menu at 320×280 and 480×380, scrolling long project lists, full paths with Unicode, project disappearance/reconnect, custom pixel tooltips/dialogs, and restoring the window after hide/pass-through. The user confirmed connection succeeds with published 0.1.1; the new UI itself has not been run on their Windows machine.
+
+## Menu and agent-details correction (0.1.3)
+
+The scrolling dropdown and Connection guide no longer contain absolute decorative border layers. Their pixel frames use real outer borders, preventing the reported thick line from scrolling across Artwork scale labels. The menu, project list and guide scroll vertically without horizontal scrollbars. The intended thin section separators remain.
+
+Agent details use a 55% preferred height instead of the former 45% cap, with flex shrink and a viewport clamp reserving space for window controls. The Close header stays visible while long details scroll. Long titles use at most two visual lines while retaining their full accessible text, so the sticky header cannot consume the panel.
+
+Local checks pass: 93 frontend, 51 observer, 49 Rust core and 22 shell tests (215 total), strict TypeScript, production asset/font/component/license verification, Rust formatting and strict core/shell Clippy. Ten additional checks cover the border structure, scrolling style contract and long agent details. These DOM/style checks do not verify browser painting. Corrected Windows scrolling appearance, clipping and DPI behavior remain acceptance checks; the artifact-only workflow separately compiles and packages the exact published commit.

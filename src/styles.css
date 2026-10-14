@@ -103,15 +103,17 @@ h1 { margin: 0; font-size: 12px; line-height: 16px; font-weight: 400; letter-spa
 .current-project::before { content: '/'; margin-right: 8px; color: #8e7856; }
 .agent-count { flex-shrink: 0; color: #e0c99e; white-space: nowrap; }
 
+/* Draw the pixel frame on the scroll container itself. Absolute decorative border
+   children scroll across options and can create horizontal overflow. */
 /* Actual vendored 8bitcn menu components use Radix portals and keyboard behavior. */
 .office-menu, .project-menu, .choice-menu {
   position: relative; z-index: 50; min-width: 0; width: min(280px, calc(100vw - 28px));
   max-height: min(var(--radix-dropdown-menu-content-available-height, 80vh), calc(100dvh - 34px));
-  overflow: auto; overscroll-behavior: contain; margin: 0; padding: 6px;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px;
   border: 2px solid #9e7947; border-radius: 0; background: #352d23;
   box-shadow: 4px 4px #14110ed9, inset 0 0 0 2px #211b14; color: #f5e6c8; text-align: left;
 }
-.project-options { max-height: 112px; overflow: auto; overscroll-behavior: contain; border: 2px solid #74603e; background: #282218; scrollbar-width: thin; scrollbar-color: #ae8751 #201b14; }
+.project-options { max-height: 112px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 2px solid #74603e; background: #282218; scrollbar-width: thin; scrollbar-color: #ae8751 #201b14; }
 .menu-choice-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); gap: 3px; }
 .menu-choice-row [data-slot='dropdown-menu-radio-item'] { padding-left: 22px; padding-right: 3px; font-size: 8px; }
 .office-menu > [data-slot='dropdown-menu-label']:not(:first-child) { color: #cbb18b; font-size: 8px; letter-spacing: 0; }
@@ -178,9 +180,10 @@ h1 { margin: 0; font-size: 12px; line-height: 16px; font-weight: 400; letter-spa
 .command-feedback { flex-shrink: 0; max-height: 35%; overflow: auto; padding: 7px 9px; border-top: 2px solid #9d7742; color: #f2d39b; background: #493820; font-size: 8px; line-height: 14px; overflow-wrap: anywhere; }
 .review-banner { flex-shrink: 0; padding: 4px 8px; border-bottom: 2px solid #241b10; color: #f5d6a0; background: #5b4528; font-size: 8px; line-height: 14px; }
 
-.detail { flex-shrink: 0; max-height: 45%; overflow: auto; overscroll-behavior: contain; padding: 9px 10px 10px; border-top: 3px solid #a47e49; background: #372d21; box-shadow: inset 0 1px #dfb776; }
-.detail-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
-.detail h2 { min-width: 0; margin: 0; color: #f4d49e; font-size: 10px; font-weight: 400; line-height: 14px; overflow-wrap: anywhere; }
+.detail { flex: 0 1 55%; min-height: 0; max-height: min(55%, calc(100dvh - 128px)); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 9px 10px 10px; border-top: 3px solid #a47e49; background: #372d21; box-shadow: inset 0 1px #dfb776; }
+.detail-head { position: sticky; top: 0; z-index: 1; background: #372d21; padding-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+.detail h2 { flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-height: 28px; overflow: hidden; min-width: 0; margin: 0; color: #f4d49e; font-size: 10px; font-weight: 400; line-height: 14px; overflow-wrap: anywhere; }
+.detail-head .quiet-button { flex: 0 0 auto; max-width: 50%; }
 .detail-status { margin: 2px 0 7px; color: #c9b593; font-size: 8px; line-height: 14px; }
 .detail-task { margin: 0 0 8px; color: #f1dfbf; font-size: 8px; line-height: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .detail-fields { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; margin: 0; font-size: 8px; line-height: 14px; }
@@ -188,7 +191,7 @@ h1 { margin: 0; font-size: 12px; line-height: 16px; font-weight: 400; letter-spa
 .detail-fields dt { color: #bda47e; }
 .detail-fields dd { margin: 0; color: #e2ceb0; overflow-wrap: anywhere; }
 
-.guide { display: block; width: 440px; max-width: calc(100vw - 24px); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow: auto; overscroll-behavior: contain; padding: 16px; border: 3px solid #171510; outline: 2px solid #b38a52; background: #352c20; color: #f4e0ba; box-shadow: 6px 6px #12100de6, inset 0 1px #826a45; }
+.guide { display: block; width: 440px; max-width: calc(100vw - 24px); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 16px; border: 3px solid #171510; outline: 2px solid #b38a52; background: #352c20; color: #f4e0ba; box-shadow: 6px 6px #12100de6, inset 0 1px #826a45; }
 .guide > button:last-child { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; top: 8px; right: 8px; border-radius: 0; }
 .guide > button:last-child svg { width: 16px; height: 16px; }
 .guide h2 { padding-right: 24px; }

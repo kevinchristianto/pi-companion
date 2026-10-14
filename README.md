@@ -43,7 +43,7 @@ The local redesign uses actual MIT-licensed [8bitcn](https://www.8bitcn.com/) co
 - The undecorated native window has a custom pixel frame/titlebar, square menus/dialogs/tooltips/scrollbars, pixel icons and a bundled OFL Press Start 2P font at compact sizes. There are no remote font requests.
 - Long rosters and option menus scroll within the compact window. Keyboard navigation, Escape/outside dismissal, focus recovery, reduced motion and native recovery guards remain supported.
 
-Version 0.1.2 contains the reviewed compact 8bitcn redesign and locally bundled Press Start 2P. The Windows preview workflow verifies and builds an unsigned test installer; it does not create a formal release. Native GUI acceptance is still required.
+Version 0.1.3 includes the compact 8bitcn redesign and locally bundled Press Start 2P, with corrected scrolling menu borders and a taller agent-details panel. The Windows preview workflow verifies and builds an unsigned test installer; it does not create a formal release. Native GUI acceptance is still required.
 
 ## Development
 
