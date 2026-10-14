@@ -1,6 +1,6 @@
-/** Load in Pi only: pi --extension /absolute/path/to/observer/index.ts */
+/** Load in Pi only: register the installed observer/index.ts once in Pi's extensions array. */
 import { randomUUID } from "node:crypto";
-import { readConnection } from "./connection.ts";
+import { loadObserverConnection } from "./connection.ts";
 import { display, HEARTBEAT_MS, identity, modelName, record, type Agent, type Snapshot } from "./protocol.ts";
 import { SubagentObserver, type EventBus } from "./subagents.ts";
 import { SnapshotTransport, type Request } from "./transport.ts";
@@ -45,7 +45,7 @@ export function installObserver(pi: Pi, options: ObserverOptions = {}) {
   let intent = 0;
   let pendingSessionId: string | null = null;
   let transitions: Promise<void> = Promise.resolve();
-  const load = options.loadConnection || (() => readConnection(process.env.PI_COMPANION_CONNECTION_FILE || ""));
+  const load = options.loadConnection || (() => loadObserverConnection(import.meta.url));
   const publish = (runtime: Runtime) => { if (!runtime.closed) runtime.transport.submit(runtime.snapshot); };
   const root = (runtime: Runtime): Agent => runtime.snapshot.session.agents[0]!;
   const lifecycle = (kind: "start" | "stop", source: string) => ({ version: 1 as const, eventId: randomUUID(), kind, source, at: new Date().toISOString() });

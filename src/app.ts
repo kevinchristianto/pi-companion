@@ -80,13 +80,15 @@ export function createApp(root: HTMLElement, platform: Platform, assetsPromise: 
   const feedback = el('div', 'command-feedback'); feedback.setAttribute('role', 'status'); feedback.hidden = true;
   const guide = el('dialog', 'guide'); guide.setAttribute('aria-labelledby', 'guide-title');
   const guideTitle = el('h2', '', 'Bring your Pi sessions in'); guideTitle.id = 'guide-title';
-  const guideLead = el('p', '', 'The desktop companion listens on your computer at 127.0.0.1:4318. Load the bundled observer extension in each Pi session you want to see.');
+  const guideLead = el('p', '', 'Add the observer to your Pi settings once. After that, ordinary Pi launches connect automatically while the companion is running.');
   const guideSteps = el('ol');
-  for (const text of ['Leave Pi companion running in the tray.', 'Set PI_COMPANION_CONNECTION_FILE to the connection file below. Start Pi with --extension followed by the observer entry shown below.', 'Use a session name in Pi to name its lead agent. Closing the session removes its residents automatically.']) guideSteps.append(el('li', '', text));
-  const observerLabel = el('p', 'path-label', 'OBSERVER ENTRY'); const observerPath = el('p', 'connection-path');
-  const pathLabel = el('p', 'path-label', 'CONNECTION FILE'); const connectionPath = el('p', 'connection-path');
-  const guideNote = el('p', 'guide-note', 'The file contains a local authentication token. Keep it private. The companion does not display or copy the token. See observer/README.md for installation commands.');
-  const closeGuide = button('Got it', 'primary-button'); guide.append(guideTitle, guideLead, guideSteps, pathLabel, connectionPath, observerLabel, observerPath, guideNote, closeGuide);
+  for (const text of ['Open your Pi user settings (normally ~/.pi/agent/settings.json). Add the path below to the existing extensions array; keep your other settings and extensions.', 'When Pi is idle, run /reload once in each already-open session, or start Pi normally. If replacing Pi Office, remove its old observer entry to avoid loading both.', 'Keep the companion running. It reconnects automatically after an app restart; no environment variable or special launch command is needed.']) guideSteps.append(el('li', '', text));
+  const observerLabel = el('label', 'path-label', 'PI SETTINGS EXAMPLE'); observerLabel.htmlFor = 'observer-settings-entry';
+  const observerEntry = el('textarea', 'connection-path'); observerEntry.id = 'observer-settings-entry'; observerEntry.readOnly = true; observerEntry.rows = 5; observerEntry.spellcheck = false; observerEntry.setAttribute('aria-label', 'Pi settings entry');
+  const selectEntry = button('Select config entry', 'quiet-button'); selectEntry.disabled = true;
+  const selectHint = el('p', 'guide-note', 'Select the example, then copy with Ctrl+C (Cmd+C on macOS). Merge the path into your existing extensions array rather than replacing your settings file.');
+  const guideNote = el('p', 'guide-note', 'The observer finds its private connection file automatically. The companion does not change your Pi settings or expose the credential. Remove this extension entry to stop loading the observer.');
+  const closeGuide = button('Got it', 'primary-button'); guide.append(guideTitle, guideLead, guideSteps, observerLabel, observerEntry, selectEntry, selectHint, guideNote, closeGuide);
   shell.append(header, reviewBanner, toolbar, summary, warning, workspace, detail, feedback, footer, live, guide); root.replaceChildren(shell);
 
   const scheduler = new RenderScheduler(elapsed => {
@@ -167,8 +169,11 @@ export function createApp(root: HTMLElement, platform: Platform, assetsPromise: 
     help.textContent = agents.length ? 'Connection guide' : 'Connect Pi';
     warning.hidden = recovery && !state.bridge.message;
     warning.textContent = !recovery ? 'Window recovery is unavailable. Hide and pass-through are disabled so you can keep control of the companion.' : state.bridge.message || '';
-    observerPath.textContent = state.bridge.observerEntry || 'Use observer/index.ts from the companion source checkout. Installed builds show their bundled path here.';
-    connectionPath.textContent = state.bridge.connectionFile || (platform.review ? 'Shown by the running desktop companion' : 'Available after the desktop listener starts');
+    const entry = state.bridge.observerEntry;
+    const config = entry ? JSON.stringify({ extensions: [entry] }, null, 2) : '';
+    if (observerEntry.value !== config) observerEntry.value = config;
+    observerEntry.placeholder = platform.review ? 'The running desktop app shows your stable observer entry here.' : 'The observer entry will appear after the desktop app prepares it.';
+    selectEntry.disabled = !entry;
     empty.hidden = visible.length > 0;
     if (!visible.length) {
       emptyTitle.textContent = state.bridge.status === 'listening' ? 'A little room for your next idea' : state.bridge.status === 'starting' ? 'Opening the office…' : 'Waiting for a live connection';
@@ -244,6 +249,7 @@ export function createApp(root: HTMLElement, platform: Platform, assetsPromise: 
   size.addEventListener('change', () => void run({ name: 'resize_window', args: { preset: size.value as 'compact' | 'wide' | 'tall' } }));
   motion.addEventListener('click', () => { motionPaused = !motionPaused; for (const card of cards.values()) card.drawn = ''; updateMotion(); });
   help.addEventListener('click', showGuide); emptyHelp.addEventListener('click', showGuide);
+  selectEntry.addEventListener('click', () => { observerEntry.focus(); observerEntry.select(); });
   closeGuide.addEventListener('click', () => { guide.close(); help.focus(); });
   closeDetail.addEventListener('click', () => closeDetails());
   shell.addEventListener('keydown', event => { if (event.key === 'Escape' && !guide.open && selected) { event.preventDefault(); closeDetails(); } });

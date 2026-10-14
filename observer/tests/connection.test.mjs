@@ -42,8 +42,20 @@ test('bounded regular private file succeeds; unsafe files fail closed', async t 
   await fs.writeFile(file, '{broken'); await assert.rejects(readConnection(file));
   await fs.writeFile(file, JSON.stringify(config()));
   if (process.platform !== 'win32') { await fs.chmod(file, 0o644); await assert.rejects(readConnection(file)); await fs.chmod(file, 0o600); }
-  const link = path.join(dir, 'alias.json'); await fs.symlink(file, link); await assert.rejects(readConnection(link));
-  const parentLink = path.join(dir, 'parent-link'); await fs.symlink(dir, parentLink, 'dir'); await assert.rejects(readConnection(path.join(parentLink,'connection.json')));
+  await t.test('final-component file symlink is rejected', async subtest => {
+    const link = path.join(dir, 'alias.json');
+    try { await fs.symlink(file, link); }
+    catch (error) {
+      if (process.platform === 'win32' && ['EPERM', 'EACCES', 'ENOTSUP'].includes(error.code)) {
+        subtest.skip('This Windows account cannot create file symlinks; junction rejection is still tested'); return;
+      }
+      throw error;
+    }
+    await assert.rejects(readConnection(link));
+  });
+  const parentLink = path.join(dir, 'parent-link');
+  await fs.symlink(dir, parentLink, process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(readConnection(path.join(parentLink,'connection.json')));
   const hard = path.join(dir, 'hard.json'); await fs.link(file, hard); await assert.rejects(readConnection(file));
 });
 test('HTTP transport authenticates only local routes and ignores proxy env', async t => {

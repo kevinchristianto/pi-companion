@@ -2,28 +2,29 @@
 
 An independent, metadata-only Pi extension for Pi Companion. It runs **inside Pi's existing process**. The packaged Tauri app contains no Node server, Node runtime, Pi runtime, or observer sidecar. This directory has no dependency on the old office application or the renderer.
 
-## Manual activation
+## One-time Pi settings entry
 
-1. Start the Pi Companion desktop app. The app creates its private local connection file at runtime and shows the exact file path in its connection/settings view. Do not paste its contents into chat, a terminal command, a screenshot, or a repository.
-2. Keep this entire `observer` directory together. Set `PI_COMPANION_CONNECTION_FILE` to the **absolute file path shown by the app**. The adapter deliberately does not guess platform-specific paths.
-3. Explicitly launch Pi with this extension. This does not install or enable anything persistently:
+1. Start Pi Companion. Its native app prepares the five observer source files in its private per-user config folder, under `observer/`, beside the protected `connection.json`. Open **Connect Pi** for the actual stable entry and a selectable JSON example.
+2. Add that observer path to the **existing** `extensions` array in your Pi user settings (normally `~/.pi/agent/settings.json`, unless you customized Pi's agent directory). Preserve other entries and settings. For example, with your actual app-provided path:
 
-   macOS/Linux shell:
-   ```sh
-   export PI_COMPANION_CONNECTION_FILE='/absolute/path/shown/by/the/app/connection.json'
-   pi --extension /absolute/path/to/pi-companion/observer/index.ts
+   ```json
+   { "extensions": ["C:/your/private/app-config/observer/index.ts"] }
    ```
 
-   PowerShell:
-   ```powershell
-   $env:PI_COMPANION_CONNECTION_FILE = 'C:\absolute\path\shown\by\the\app\connection.json'
-   pi --extension 'C:\absolute\path\to\pi-companion\observer\index.ts'
-   ```
+   The example path is not a literal installation location. If replacing the old Pi Office observer, remove that old entry to avoid loading two observers. Pi Companion does not make either settings edit for you.
+3. Run `/reload` once in each already-open interactive Pi session **when its response, compaction and subagent work are idle**, or start Pi normally. Future ordinary Pi launches load the extension automatically. Extensions-disabled Pi launches cannot be observed.
+4. Keep Pi Companion running. An idle connected session stays visible. If Pi starts first, the observer retries until the companion is available; app restart/token rotation also reconnects automatically. Observation starts when loaded, not retroactively from transcripts.
+5. To stop using it, remove its entry from your Pi settings and reload when idle, or restart Pi. Closing the companion never stops Pi.
 
-4. The session should appear in the companion. An idle but connected session stays visible. Quitting or replacing the Pi session sends a final disconnected snapshot. A crash or forced kill cannot guarantee a final send; the app expires missing heartbeats.
-5. To stop using it, quit that Pi invocation and launch Pi without `--extension`. No global/project Pi settings were changed by these instructions.
+The default connection file is resolved **relative to the installed observer module** as `../connection.json`. No environment variable, special launcher, profile-folder guessing or token copying is needed. Keep the exported observer directory in the app-managed location shown by the guide. The app refreshes its own five source files on startup after an upgrade; the stable entry does not change. Already-running Pi extensions pick up updated code after an idle `/reload` or a normal Pi restart.
 
-The new bridge uses `http://127.0.0.1:4318`; the old office application's port 4317 is unrelated. Neither `PI_OFFICE_*`, a token environment variable, a URL override, nor credentials from a conversation are supported. If port 4318 is occupied, resolve the conflict in the desktop app; this adapter never kills processes or switches to another service.
+### Optional development override
+
+For an observer loaded directly from a source checkout or another intentional location, `PI_COMPANION_CONNECTION_FILE` may override discovery with an explicit absolute local path. It is optional and uses the same security validation; an invalid override fails closed rather than searching elsewhere. Unset a leftover override to return to automatic discovery. Do not put a token value in this variable.
+
+The app creates and owns the private credential. Never paste its contents into chat, a terminal command, a screenshot, or a repository. The source artifact is useful for inspection/development but is not a second required installation download.
+
+The bridge uses `http://127.0.0.1:4318`; the old office application's port 4317 is unrelated. `PI_OFFICE_*`, a token environment variable, a URL override and credentials from a conversation are not supported. If port 4318 is occupied, resolve the conflict in the desktop app; this adapter never kills processes or switches to another service.
 
 ## What it observes
 

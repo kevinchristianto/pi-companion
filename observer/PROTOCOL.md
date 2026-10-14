@@ -2,7 +2,7 @@
 
 ## Authentication and routes
 
-Read the app-owned connection file via the explicit absolute `PI_COMPANION_CONNECTION_FILE` path:
+Read the app-owned connection file at `../connection.json`, relative to the exported observer module. An explicitly supplied absolute `PI_COMPANION_CONNECTION_FILE` is an optional development override, not required setup:
 
 ```json
 {"version":1,"url":"http://127.0.0.1:4318","token":"<app-generated private base64url token>"}

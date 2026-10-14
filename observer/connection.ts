@@ -1,5 +1,6 @@
 import { constants, promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { record } from "./protocol.ts";
 
 export interface Connection { url: string; token: string }
@@ -17,6 +18,13 @@ export function parseConnection(value: unknown): Connection {
   if (!record(value) || value.version !== 1 || typeof value.token !== "string" ||
       !/^[A-Za-z0-9_-]{32,512}$/.test(value.token)) throw new Error("Invalid local connection file");
   return { url: validateOrigin(value.url), token: value.token };
+}
+/** The installed observer lives beside its app's connection file, independent of cwd or OS profile layout. */
+export function loadObserverConnection(observerModuleUrl: string): Promise<Connection> {
+  const override = process.env.PI_COMPANION_CONNECTION_FILE;
+  // An explicitly supplied but invalid override must fail closed, never silently fall back.
+  const file = override === undefined ? fileURLToPath(new URL("../connection.json", observerModuleUrl)) : override;
+  return readConnection(file);
 }
 /** File-only credentials. The size-limited read never follows a final-component symlink. */
 export async function readConnection(file: string): Promise<Connection> {

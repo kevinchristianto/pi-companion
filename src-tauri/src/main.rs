@@ -5,15 +5,13 @@ use companion_core::{
     BridgeStatus, Observer, Snapshot,
 };
 use companion_shell::{
-    fit_window, load_or_create_connection, preset_size, Rect, WindowState, RECOVERY_SHORTCUT,
+    export_observer, fit_window, load_or_create_connection, preset_size, Rect, WindowState,
+    RECOVERY_SHORTCUT,
 };
 use serde::Serialize;
-use std::{
-    path::PathBuf,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Mutex,
-    },
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Mutex,
 };
 use tauri::{
     menu::{Menu, MenuItem},
@@ -341,15 +339,6 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         .build(app)?;
     Ok(())
 }
-fn bundled_observer(app: &tauri::AppHandle) -> Option<PathBuf> {
-    let entry = app
-        .path()
-        .resource_dir()
-        .ok()?
-        .join("observer")
-        .join("index.ts");
-    entry.is_file().then_some(entry)
-}
 fn main() {
     let observer = Observer::new();
     observer.set_bridge_status(BridgeStatus::Starting);
@@ -373,7 +362,6 @@ fn main() {
                 let shared = app.state::<Shared>();
                 let mut view = shared.view.lock().map_err(|_| "View state unavailable")?;
                 view.window.recovery_available = tray_ok || shortcut_ok;
-                view.observer_entry = bundled_observer(&handle).map(|path| path.to_string_lossy().into_owned());
                 if !shortcut_ok { view.message = Some("Recovery shortcut unavailable. Use the tray to restore input.".into()); }
                 if !tray_ok && !shortcut_ok { view.message = Some("Tray and recovery shortcut unavailable. Hide and click-through are disabled.".into()); }
             }
@@ -407,17 +395,40 @@ fn main() {
             let bridge_task = tauri::async_runtime::spawn(async move {
                 let Some(shared) = handle.try_state::<Shared>() else { return; };
                 if shared.stopping.load(Ordering::Acquire) { return; }
-                let connection = handle.path().app_config_dir().ok().and_then(|directory| {
-                    let connection = load_or_create_connection(&directory).ok()?;
-                    shared.view.lock().ok()?.connection_file = Some(directory.join("connection.json").to_string_lossy().into_owned());
-                    Some(connection)
-                });
-                let Some(connection) = connection else {
-                    shared.message("Could not open a private observer connection file. Existing files were left unchanged.");
-                    shared.observer.set_bridge_status(BridgeStatus::Error);
-                    emit_state(&handle);
-                    return;
+                let directory = match handle.path().app_config_dir() {
+                    Ok(directory) => directory,
+                    Err(_) => {
+                        shared.message("Could not locate the per-user application configuration directory.");
+                        shared.observer.set_bridge_status(BridgeStatus::Error);
+                        emit_state(&handle);
+                        return;
+                    }
                 };
+                let connection = match load_or_create_connection(&directory) {
+                    Ok(connection) => connection,
+                    Err(_) => {
+                        shared.message("Could not open a private observer connection file. Check ownership and private access in the app configuration directory. Existing files were left unchanged.");
+                        shared.observer.set_bridge_status(BridgeStatus::Error);
+                        emit_state(&handle);
+                        return;
+                    }
+                };
+                if let Ok(mut view) = shared.view.lock() {
+                    view.connection_file = Some(directory.join("connection.json").to_string_lossy().into_owned());
+                }
+                match export_observer(&directory) {
+                    Ok(entry) => {
+                        if let Ok(mut view) = shared.view.lock() {
+                            view.observer_entry = Some(entry.to_string_lossy().into_owned());
+                        }
+                    }
+                    Err(_) => {
+                        shared.message(&format!("Could not prepare the observer extension in {}. Check that this directory and its files are private, owned by you, and not links, then restart Companion. The connection credential and Pi settings were left unchanged.", directory.join("observer").display()));
+                        shared.observer.set_bridge_status(BridgeStatus::Error);
+                        emit_state(&handle);
+                        return;
+                    }
+                }
                 let token = match SecretToken::new(connection.token) {
                     Ok(token) => token,
                     Err(_) => { shared.observer.set_bridge_status(BridgeStatus::Error); emit_state(&handle); return; }

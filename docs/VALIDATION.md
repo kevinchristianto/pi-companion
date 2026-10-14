@@ -9,18 +9,25 @@ This is an unreleased clean rewrite. Automated and native validation are tracked
 - Reused artwork is checked against retained SHA-256 hashes and exact atlas dimensions.
 - Linux native compilation is blocked in the development environment by missing GLib/GTK/WebKit development libraries. Attempting the supported package installation failed before the package manager launched. No workaround or bypass is used.
 
-Verified before initial publication:
+Verified locally for the 0.1.1 connection-parity update:
 
-- 54 frontend tests and 42 observer tests; both strict TypeScript checks pass.
-- 42 core Rust tests and 9 platform-independent shell tests pass, including a real Node observer-to-Rust HTTP roundtrip.
+- 57 frontend tests and 51 observer tests; both strict TypeScript checks pass.
+- 43 core Rust tests and 19 shell tests pass, including both real Node observer-to-Rust HTTP roundtrips (normal discovery and lifecycle/ordering).
 - Strict Clippy passes for the core/shell crates; shell policy and Windows ACL test code also compile with strict Clippy for the Windows GNU target.
 - The production build preserves all 15 PNG bytes and excludes synthetic review data and source maps. A forced review environment cannot enable the fixture in a production build.
 - npm reports no known vulnerabilities in production dependencies at this checkpoint. This is not a whole-system security certification.
 - Rust formatting, public-source privacy scan and dependency-notice generation pass.
 
-The first Windows CI run for 1aae427 passed native compilation, workspace tests and strict Rust linting. The final observer-disconnect regression is being rebuilt before delivery. Native GUI acceptance remains pending.
+Version 0.1.0 at 4ed9b0f passed the complete Windows CI run, including 149 tests and unsigned NSIS packaging. Version 0.1.1 restores one-time Pi settings registration with automatic relative connection discovery and secure native observer export; its final validation is recorded with its successful build. Native GUI acceptance remains pending.
 
 The observer now clears cached child rows when its optional plugin becomes unavailable or emits malformed status, while keeping the connected root visible. The real adapter-to-Rust roundtrip verifies that root heartbeats cannot revive those cached children and that a valid reconnect restores idle children.
+
+## Connection setup regression coverage
+
+- The settings guide emits valid, selectable JSON preserving spaces, Unicode and quoted path characters; no required environment variable or special Pi command is shown.
+- Real HTTP discovery tests exercise the ordinary observer entry with no injected loader or environment override, relocated folders, missing app/config followed by automatic retry, and bridge/token restart.
+- The real Node-to-Rust roundtrip imports the relocated observer bundle and uses its default relative connection lookup.
+- Native export tests cover stable paths, private files, idempotence/upgrades and rejection of unsafe pre-existing destinations. Existing Pi settings and credentials are not modified by export.
 
 ## Required Windows acceptance
 

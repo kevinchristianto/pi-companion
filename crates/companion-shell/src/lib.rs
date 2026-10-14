@@ -6,10 +6,12 @@ use std::{
     path::Path,
 };
 
+mod observer_export;
 #[cfg(unix)]
 mod unix_private;
 #[cfg(windows)]
 mod windows_private;
+pub use observer_export::export_observer;
 
 pub const BRIDGE_PORT: u16 = 4318;
 pub const RECOVERY_SHORTCUT: &str = "CommandOrControl+Shift+P";

@@ -87,7 +87,7 @@ select { height: 30px; padding: 3px 22px 3px 8px; font-size: 11px; min-width: 54
 .guide ol { padding-left: 20px; }
 .guide li { padding-left: 5px; margin: 8px 0; }
 .guide .path-label { font: 10px/1.5 'Companion Mono', monospace; letter-spacing: 1px; color: #bb9e76; margin-bottom: 5px; }
-.guide .connection-path { padding: 10px; border: 1px solid #675237; border-radius: 5px; font: 11px/1.6 'Companion Mono', monospace; overflow-wrap: anywhere; background: #241e16; margin-top: 0; user-select: text; }
+.guide .connection-path { display: block; width: 100%; min-height: 110px; resize: vertical; color: #eee2cf; padding: 10px; border: 1px solid #675237; border-radius: 5px; font: 11px/1.6 'Companion Mono', monospace; overflow-wrap: anywhere; background: #241e16; margin-top: 5px; user-select: text; }
 .guide .guide-note { font-size: 11px; color: #b9a98f; }
 .guide .primary-button { margin-top: 6px; width: 100%; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

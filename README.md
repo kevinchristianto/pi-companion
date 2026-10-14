@@ -6,7 +6,7 @@ This is a clean rewrite. It does not bundle Electron, Node.js, the old 3D web ap
 
 ## Windows test build
 
-The **Windows preview artifact** workflow builds an unsigned x64 NSIS installer and uploads it to that workflow run's artifacts. It never creates a GitHub release. Download both the installer artifact and observer artifact from the same successful commit.
+The **Windows preview artifact** workflow builds an unsigned x64 NSIS installer and uploads it to that workflow run's artifacts. It never creates a GitHub release. Download the installer artifact from the successful commit. The separate observer source artifact is optional; normal setup uses the stable observer entry prepared by the installed app.
 
 The installer includes the Rust bridge, six character designs, all four animation states, shared furniture and observer files. If WebView2 is missing, its bootstrapper downloads the required runtime, so first installation can need internet. No signing certificate is configured; Windows can show an unknown-publisher warning. Verify the source commit and artifact origin before deciding whether to install.
 
@@ -14,9 +14,11 @@ This preview still requires real Windows GUI acceptance, especially tray recover
 
 ## Connect Pi
 
-1. Start Pi Companion. Open its connection guide to find the local connection-file path and bundled observer entry.
-2. In the terminal where you run Pi, set `PI_COMPANION_CONNECTION_FILE` to that exact path. The file contains a private local bearer credential; do not paste its contents into chat, a command, source control or a screenshot.
-3. Load the observer for the desired Pi process. See [observer/README.md](observer/README.md) for PowerShell and shell commands. Loading the observer is explicit; the app does not modify Pi's configuration automatically.
+1. Start Pi Companion and open **Connect Pi**. It prepares its observer in a stable private per-user folder and shows a copyable Pi settings example.
+2. Add the shown observer path once to the `extensions` array in your existing Pi user settings (normally `~/.pi/agent/settings.json`). Preserve other settings and extension entries. If you are replacing Pi Office, remove its old observer entry rather than loading both.
+3. Run `/reload` once in each already-open Pi session **when its response, compaction and subagent work are idle**, or start Pi normally. Future ordinary Pi launches load the observer and connect automatically.
+
+No environment variable or special Pi launch command is required. The observer finds `../connection.json` beside its stable exported directory, using the app-provided location rather than guessing platform paths. App startup and restarts are retried automatically. The companion never edits your Pi settings. To disable observation, remove its extension entry and reload when idle. See [observer/README.md](observer/README.md) for details and the optional development override.
 
 The observer sends metadata only: session and agent names, lifecycle, state, tool name and model. It does not send prompts, message contents, tool arguments or results. There are no commands that control agents. Closing the companion does not stop Pi.
 

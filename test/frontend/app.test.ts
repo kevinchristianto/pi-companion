@@ -191,3 +191,42 @@ describe('animation and native controls', () => {
     expect(unsubscribe).toHaveBeenCalledOnce(); expect(platform.reads).toBe(0); expect(vi.getTimerCount()).toBe(0);
   });
 });
+
+describe('one-time Pi connection setup', () => {
+  it('provides a selectable JSON settings entry without per-session setup or credential data', async () => {
+    const path = 'C:\\Users\\Zoë Work\\AppData\\Roaming\\Pi Companion\\observer\\index.ts';
+    platform.current.bridge.observerEntry = path;
+    await start(); byText('Connection guide').click();
+    const entry = root.querySelector<HTMLTextAreaElement>('[aria-label="Pi settings entry"]')!;
+    expect(JSON.parse(entry.value)).toEqual({ extensions: [path] });
+    expect(entry.readOnly).toBe(true);
+    expect(root.querySelector('.guide')?.textContent).toContain('existing extensions array');
+    expect(root.querySelector('.guide')?.textContent).toContain('/reload');
+    expect(root.querySelector('.guide')?.textContent).not.toContain('PI_COMPANION_CONNECTION_FILE');
+    expect(root.querySelector('.guide')?.textContent).not.toContain('--extension');
+    expect(root.querySelector('.guide')?.textContent).not.toContain('/local/config/connection.json');
+    byText('Select config entry').click();
+    expect(document.activeElement).toBe(entry);
+    expect(entry.selectionStart).toBe(0); expect(entry.selectionEnd).toBe(entry.value.length);
+    expect(platform.commands).toEqual([]);
+  });
+  it('does not invent an observer path before a verified native export is available', async () => {
+    await start();
+    const entry = root.querySelector<HTMLTextAreaElement>('[aria-label="Pi settings entry"]')!;
+    expect(entry.value).toBe(''); expect(byText('Select config entry').disabled).toBe(true);
+    const available = state([], 2); available.bridge.observerEntry = '/relocated/私の profile/observer/index.ts';
+    platform.emit(available);
+    expect(JSON.parse(entry.value)).toEqual({ extensions: ['/relocated/私の profile/observer/index.ts'] });
+    expect(byText('Select config entry').disabled).toBe(false);
+    platform.emit(state([], 3));
+    expect(entry.value).toBe(''); expect(byText('Select config entry').disabled).toBe(true);
+  });
+  it('encodes quoted path characters as JSON and never treats them as HTML', async () => {
+    const path = '/private/<img src=x>/a"quoted/observer/index.ts';
+    platform.current.bridge.observerEntry = path;
+    await start();
+    const entry = root.querySelector<HTMLTextAreaElement>('[aria-label="Pi settings entry"]')!;
+    expect(JSON.parse(entry.value).extensions).toEqual([path]);
+    expect(root.querySelector('img, script')).toBeNull();
+  });
+});

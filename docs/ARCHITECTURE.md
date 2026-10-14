@@ -10,7 +10,7 @@ This is a clean, standalone rewrite. The existing Pi Office repository and 3D we
 
 ## Boundaries
 
-The app listens only on `127.0.0.1:4318`. A port conflict fails closed and never terminates another program. It neither requires nor reuses the old Pi Office web bridge at 4317. A versioned, private `connection.json` links the separately installed observer. Credentials never enter renderer IPC, logs, clipboard or repository files. No prompts or tool outputs are recorded.
+The app listens only on `127.0.0.1:4318`. A port conflict fails closed and never terminates another program. It neither requires nor reuses the old Pi Office web bridge at 4317. A versioned, private `connection.json` links the explicitly registered observer. The native app exports five embedded observer sources into its protected per-user config directory under `observer/`, beside that connection file. A user adds the stable exported `observer/index.ts` path to Pi settings once; the observer resolves its connection relative to itself. No profile-folder guessing or per-session environment variable is needed. Export refreshes only the app-owned observer sources and never edits Pi settings. Credentials never enter renderer IPC, logs, clipboard or repository files. No prompts or tool outputs are recorded.
 
 The bridge owns authenticated hello/ingest/snapshot endpoints, bounded request bodies and valid host/origin checks. A source lease orders restarts and monotonically increasing sequence numbers order updates. UI snapshots contain display-only metadata and a monotonic shell sequence. Stale or disconnected sources and explicitly stopped agents do not appear; connected idle agents do.
 

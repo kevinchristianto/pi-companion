@@ -2,14 +2,18 @@
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import {setImmediate as tick,setTimeout as sleep} from 'node:timers/promises';
-import {installObserver} from '../index.ts';
 import {requestLocal} from '../transport.ts';
 import {validateOrigin} from '../connection.ts';
+import {installedFixture,fixtureToken} from './installed-fixture.mjs';
 const origin=validateOrigin(process.argv[2]);
 const deadline=setTimeout(()=>{process.stderr.write('Adapter roundtrip exceeded its 15-second test deadline.\n');process.exit(1);},15_000);deadline.unref();
 // Public synthetic test marker, never read from the user's connection file.
-const token='TEST_ONLY_NOT_A_REAL_CREDENTIAL_0123456789';
+const token=fixtureToken;
 const connection={url:origin,token};
+assert.equal(process.env.PI_COMPANION_CONNECTION_FILE,undefined,'Roundtrip must exercise ordinary no-env discovery');
+const installed=await installedFixture();
+await installed.connect(origin);
+const {installObserver}=await installed.load();
 async function readSnapshot(){
   return new Promise((resolve,reject)=>{
     const request=http.get(`${origin}/api/snapshot`,{agent:false,headers:{authorization:`Bearer ${token}`}},response=>{
@@ -32,7 +36,7 @@ function create(name,options={}){
   }};
   const context={cwd:'/fixture/project',model:{id:'fixture-model'},sessionManager:{getSessionId:()=> 'adapter-roundtrip-session'},isIdle:()=>false};
   const pi={on(event,handler){handlers.set(event,handler);},getSessionName:()=>name,events:bus};
-  const adapter=installObserver(pi,{heartbeatMs:options.heartbeatMs,loadConnection:async()=>connection,request:async(config,route,body)=>{
+  const adapter=installObserver(pi,{heartbeatMs:options.heartbeatMs,request:async(config,route,body)=>{
     const result=await requestLocal(config,route,body);wire.push({route,body:structuredClone(body),status:result.status});return result;
   }});
   return {adapter,wire,bus,context,emit(event,data={}){return handlers.get(event)?.(data,context);},async flush(){await tick();await adapter.flush();}};
@@ -72,5 +76,5 @@ try{
   failStatus=false;heartbeatProbe.bus.emit('subagent:async-started',{});await heartbeatProbe.flush();snapshot=await readSnapshot();
   assert.equal(snapshot.agents.length,2);assert.equal(snapshot.agents.find(agent=>agent.name==='Connected idle child').state,'idle');
   await heartbeatProbe.adapter.close();assert.equal((await readSnapshot()).agents.length,0);
-  process.stdout.write('Actual Node Pi adapter ↔ Rust HTTP bridge roundtrip passed.\n');
-} finally {await first.adapter.close();await replacement?.adapter.close();await heartbeatProbe?.adapter.close();clearTimeout(deadline);}
+  process.stdout.write('Relocated no-env Node Pi adapter ↔ Rust HTTP bridge roundtrip passed.\n');
+} finally {await first.adapter.close();await replacement?.adapter.close();await heartbeatProbe?.adapter.close();await installed.remove();clearTimeout(deadline);}
