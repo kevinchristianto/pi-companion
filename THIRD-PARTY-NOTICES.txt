@@ -1,0 +1,2258 @@
+PI COMPANION THIRD-PARTY DEPENDENCY NOTICES
+
+Generated from locked Cargo and npm dependencies, including build dependencies for completeness.
+Identical license/notice texts are printed once and referenced by content hash from every applicable package.
+Whitespace at line ends is normalized; terms and attribution text are retained.
+Inclusion does not imply every dependency ships in the executable.
+The project itself has no selected blanket license.
+
+DEPENDENCY INDEX
+
+Complete license texts are bundled in the licenses/ folder and stored in docs/licenses/ in the source repository.
+No license terms are omitted; each numbered part contains whole license/notice texts.
+
+LICENSE-TEXTS-01.txt
+LICENSE-TEXTS-02.txt
+LICENSE-TEXTS-03.txt
+LICENSE-TEXTS-04.txt
+LICENSE-TEXTS-05.txt
+LICENSE-TEXTS-06.txt
+LICENSE-TEXTS-07.txt
+LICENSE-TEXTS-08.txt
+LICENSE-TEXTS-09.txt
+
+adler2 2.0.1
+License metadata: 0BSD OR MIT OR Apache-2.0
+LICENSE-0BSD => 861399f8c21c042b
+LICENSE-APACHE => 56a24963c5251611
+LICENSE-MIT => 23f18e03dc49df91
+
+aho-corasick 1.1.5
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+alloc-no-stdlib 3.0.0
+License metadata: BSD-3-Clause
+LICENSE => c0c56f26d9c051ca
+
+alloc-stdlib 0.3.0
+License metadata: BSD-3-Clause
+License text supplied with original package source.
+
+android_system_properties 0.1.6
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 216486f29671a426
+LICENSE-MIT => 80f275e90d799911
+
+anyhow 1.0.104
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+async-broadcast 0.7.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6b286a8c17b82bbc
+LICENSE-MIT => 24e5860bf589d850
+
+async-channel 2.5.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-executor 1.14.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-io 2.6.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-lock 3.4.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-process 2.5.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-recursion 1.2.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-signal 0.2.14
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-task 4.7.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+async-trait 0.1.92
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+atk 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+atk-sys 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+atomic-waker 1.1.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+LICENSE-THIRD-PARTY => 6226d0632e2e1a80
+
+autocfg 1.5.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 27995d58ad5c1145
+
+axum 0.8.9
+License metadata: MIT
+LICENSE => 6a13bc24a100a681
+
+axum-core 0.5.6
+License metadata: MIT
+LICENSE => e5c343775a0e56c0
+
+base64 0.21.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 0dd882e53de11566
+
+base64 0.22.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 0dd882e53de11566
+
+base64 0.23.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ab499c75a0f0da8e
+
+bit-set 0.8.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => af975c9737b3bdcd
+LICENSE-MIT => f51ac2c59a222f74
+
+bit-vec 0.8.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => af975c9737b3bdcd
+LICENSE-MIT => f51ac2c59a222f74
+
+bitflags 1.3.2
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+bitflags 2.13.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+block-buffer 0.10.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6aed14a798714567
+LICENSE-MIT => d5c22aa3118d240e
+
+block2 0.6.2
+License metadata: MIT
+License text supplied with original package source.
+
+blocking 1.7.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+brotli 9.0.0
+License metadata: BSD-3-Clause AND MIT
+LICENSE.BSD-3-Clause => c0c56f26d9c051ca
+LICENSE.MIT => 3d180008e36922a4
+
+brotli-decompressor 6.0.1
+License metadata: BSD-3-Clause/MIT
+LICENSE => c0c56f26d9c051ca
+
+bs58 0.5.1
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 42d3bf7e7d4d49d7
+
+bumpalo 3.20.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 65f94e99ddaf4f5d
+
+bytemuck 1.25.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+LICENSE-APACHE => e3ba223bb1423f0a
+LICENSE-MIT => 9df9ba60a11af705
+LICENSE-ZLIB => 84b34dd7608f7fb9
+
+byteorder 1.5.0
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+byteorder-lite 0.1.0
+License metadata: Unlicense OR MIT
+LICENSE-MIT => 0f96a83840e146e4
+
+bytes 1.12.1
+License metadata: MIT
+LICENSE => 45f522cacecb1023
+
+cairo-rs 0.18.5
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+cairo-sys-rs 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+camino 1.2.6
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+cargo-platform 0.1.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 56a24963c5251611
+LICENSE-MIT => 23f18e03dc49df91
+
+cargo_metadata 0.19.2
+License metadata: MIT
+LICENSE-MIT => 23f18e03dc49df91
+
+cargo_toml 1.0.1
+License metadata: Apache-2.0 OR MIT
+LICENSE => 6742bd3e9c203552
+
+cc 1.8.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+cesu8 1.1.0
+License metadata: Apache-2.0/MIT
+License text supplied with original package source.
+
+cfb 0.14.0
+License metadata: MIT
+LICENSE => ebaac853b53fec0e
+
+cfg-expr 0.15.8
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => af975c9737b3bdcd
+LICENSE-MIT => 090a294a492ab2f4
+
+cfg-if 1.0.5
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+chrono 0.4.45
+License metadata: MIT OR Apache-2.0
+LICENSE.txt => 2200505ceae34bd9
+
+combine 4.6.8
+License metadata: MIT
+LICENSE => 09f1f96437694942
+
+concurrent-queue 2.5.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+cookie 0.18.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 9b1e51075f295634
+LICENSE-MIT => f28420c1906af38b
+
+core-foundation 0.10.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+core-foundation-sys 0.8.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+core-graphics 0.25.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+core-graphics-types 0.2.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+cpufeatures 0.2.17
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6aed14a798714567
+LICENSE-MIT => ae9baa7beea91027
+
+crc32fast 1.5.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 61d383b05b87d78f
+
+crossbeam-channel 0.5.17
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 5734ed989dfca1f6
+LICENSE-THIRD-PARTY => b16db96b93b1d7cf
+
+crossbeam-utils 0.8.23
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 5734ed989dfca1f6
+
+crypto-common 0.1.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6aed14a798714567
+LICENSE-MIT => 3521672491a34794
+
+cssparser 0.37.0
+License metadata: MPL-2.0
+LICENSE => 1f256ecad1928805
+
+cssparser-macros 0.7.1
+License metadata: MPL-2.0
+LICENSE => 1f256ecad1928805
+
+ctor 1.0.13
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => fd80a26fbb3f644a
+
+darling 0.24.1
+License metadata: MIT
+LICENSE => 8ea93490d74a5a1b
+
+darling_core 0.24.1
+License metadata: MIT
+LICENSE => 8ea93490d74a5a1b
+
+darling_macro 0.24.1
+License metadata: MIT
+LICENSE => 8ea93490d74a5a1b
+
+dbus 0.9.12
+License metadata: Apache-2.0/MIT
+LICENSE-APACHE => 3f75361c9252bd71
+LICENSE-MIT => 444bdf624b51f207
+
+defmt 1.1.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => af975c9737b3bdcd
+LICENSE-MIT => 0d17b75c1867fd56
+
+defmt-macros 1.1.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => af975c9737b3bdcd
+LICENSE-MIT => 0d17b75c1867fd56
+
+defmt-parser 1.0.0
+License metadata: MIT OR Apache-2.0
+License text supplied with original package source.
+
+deranged 0.5.9
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => 8502aec5e5641474
+LICENSE-MIT => 231c837c45eb53f1
+
+derive_more 2.1.1
+License metadata: MIT
+LICENSE => 8a35369f3ca263b3
+
+derive_more-impl 2.1.1
+License metadata: MIT
+LICENSE => 8a35369f3ca263b3
+
+digest 0.10.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6aed14a798714567
+LICENSE-MIT => 9e0dfd2dd4173a53
+
+dirs 7.0.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2efd6a447c8c5d5f
+LICENSE-MIT => 6a2e0ade09a7d5f8
+
+dirs-sys 0.5.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2efd6a447c8c5d5f
+LICENSE-MIT => 6a2e0ade09a7d5f8
+
+dispatch2 0.3.1
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+displaydoc 0.2.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+dlopen2 0.8.2
+License metadata: MIT
+License text supplied with original package source.
+
+dlopen2_derive 0.4.3
+License metadata: MIT
+License text supplied with original package source.
+
+dom_query 0.28.0
+License metadata: MIT
+LICENSE => ac481b3d81aa8fdd
+
+dpi 0.1.2
+License metadata: Apache-2.0 AND MIT
+LICENSE => a8ad31b1c3f40dca
+LICENSE-LIBM-MIT => 9eff396a99bafd20
+
+dtoa 1.0.11
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+dtoa-short 0.3.5
+License metadata: MPL-2.0
+LICENSE => 1f256ecad1928805
+
+dunce 1.0.5
+License metadata: CC0-1.0 OR MIT-0 OR Apache-2.0
+LICENSE => a2010f343487d3f7
+
+dyn-clone 1.0.20
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+embed-resource 3.0.12
+License metadata: MIT
+LICENSE => 1abdbbd4e3f95e56
+
+embed_plist 1.2.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => daacc37f680c7dd0
+
+endi 1.1.1
+License metadata: MIT
+LICENSE-MIT => 23f18e03dc49df91
+
+enumflags2 0.7.12
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 5d5050b4897d9f5b
+LICENSE-MIT => 2e3edd2716fb1561
+
+enumflags2_derive 0.7.12
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 73663aa1887e9ff1
+LICENSE-MIT => d13669f0eaff9b70
+
+equivalent 1.0.3
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7365cc8878a1d7ce
+
+erased-serde 0.4.10
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+errno 0.3.14
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 8764a597675778dd
+
+event-listener 5.4.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+event-listener-strategy 0.5.4
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+fastrand 2.5.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+fdeflate 0.3.7
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => c77a4cf9da729987
+
+field-offset 0.3.6
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => 9dd44491b4cf95dc
+
+find-msvc-tools 0.1.14
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+flate2 1.1.10
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 025436edff4cfcdd
+
+fnv 1.0.7
+License metadata: Apache-2.0 / MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 65fdb6c76cd61612
+
+foldhash 0.2.0
+License metadata: Zlib
+LICENSE => 1d4c38d56650edc2
+
+foreign-types 0.5.0
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 333ea3aaa3cadb81
+
+foreign-types-macros 0.2.4
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 333ea3aaa3cadb81
+
+foreign-types-shared 0.3.1
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 333ea3aaa3cadb81
+
+form_urlencoded 1.2.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 20c7855c364d57ea
+
+futures-channel 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-core 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-executor 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-io 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-lite 2.6.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+LICENSE-THIRD-PARTY => 6226d0632e2e1a80
+
+futures-macro 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-sink 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-task 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+futures-util 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 8337133fbd3cd6b5
+LICENSE-MIT => 6652c868f35dfe5e
+
+gdk 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdk-pixbuf 0.18.5
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdk-pixbuf-sys 0.18.0
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdk-sys 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdkwayland-sys 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdkx11 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gdkx11-sys 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+generic-array 0.14.7
+License metadata: MIT
+LICENSE => eb69613e00e596e1
+
+gethostname 1.1.0
+License metadata: Apache-2.0
+LICENSE => 143368af9701a24e
+
+getrandom 0.3.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 228e99750197fe32
+LICENSE-MIT => 29e9fe5074bd27e0
+
+getrandom 0.4.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 228e99750197fe32
+LICENSE-MIT => 523a42c25d245dde
+
+gio 0.18.4
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gio-sys 0.18.1
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+glib 0.18.5
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+glib-macros 0.18.5
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+glib-sys 0.18.1
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+glob 0.3.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+global-hotkey 0.8.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 2ab5537b8c0cb1d4
+LICENSE.spdx => 83d5a0b4f3fb9e40
+
+gobject-sys 0.18.0
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gtk 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gtk-sys 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+gtk3-macros 0.18.2
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+hashbrown 0.12.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ff8f68cb076caf8c
+
+hashbrown 0.17.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ff8f68cb076caf8c
+
+heck 0.4.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7b63ecd5f1902af1
+
+heck 0.5.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7b63ecd5f1902af1
+
+hermit-abi 0.5.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+hex 0.4.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => f7bdb3426d045cd5
+
+html5ever 0.39.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 86dd7f026f916daf
+
+http 1.5.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 336977372a4072c6
+LICENSE-MIT => dc91f8200e4b2a1f
+
+http-body 1.1.0
+License metadata: MIT
+LICENSE => 248378d0a3383c17
+
+http-body-util 0.1.5
+License metadata: MIT
+LICENSE => 248378d0a3383c17
+
+httparse 1.10.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 1626f2c950cee975
+
+httpdate 1.0.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 4d10fe5f3aa176b0
+LICENSE-MIT => 934887691e05d69d
+
+hyper 1.12.0
+License metadata: MIT
+LICENSE => 2d01890414494742
+
+hyper-util 0.1.21
+License metadata: MIT
+LICENSE => 9e0a97848ea543ae
+
+iana-time-zone 0.1.65
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => fd45b9dd6fed3821
+LICENSE-MIT => da28ccc6b158fc2d
+
+iana-time-zone-haiku 0.1.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => fd45b9dd6fed3821
+LICENSE-MIT => da28ccc6b158fc2d
+
+ico 0.5.0
+License metadata: MIT
+LICENSE => 41ca90213441b294
+
+icu_collections 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_locale_core 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_normalizer 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_normalizer_data 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_properties 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_properties_data 2.3.0
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+icu_provider 2.3.1
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+ident_case 1.0.1
+License metadata: MIT/Apache-2.0
+LICENSE => 508a77d2e7b51d98
+
+idna 1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => b38f11f6096706e6
+
+idna_adapter 1.2.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 8b43ce8accd61e9d
+
+image 0.25.10
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => c77a4cf9da729987
+
+indexmap 1.9.3
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ecc269ef87fd38a1
+
+indexmap 2.14.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ecc269ef87fd38a1
+
+infer 0.22.0
+License metadata: MIT
+LICENSE => 270b0d81891aa44c
+
+ipnet 2.12.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6366ebae0a4c6d4a
+LICENSE-MIT => 47dc9ff29128ddfb
+
+itoa 1.0.18
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+javascriptcore-rs 1.1.2
+License metadata: MIT
+LICENSE => a0acdc9f96ac4efb
+
+javascriptcore-rs-sys 1.1.1
+License metadata: MIT
+LICENSE => bb8c4e3a2aaef466
+
+jiff 0.2.38
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+jiff-core 0.1.1
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+jiff-static 0.2.38
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+jiff-tzdb 0.1.9
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+jiff-tzdb-platform 0.1.3
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+jni 0.21.1
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => fea1d5bf3dd71605
+
+jni-sys 0.3.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 1d85bd754b04ceec
+
+jni-sys 0.4.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 1d85bd754b04ceec
+
+jni-sys-macros 0.4.1
+License metadata: MIT OR Apache-2.0
+License text supplied with original package source.
+
+js-sys 0.3.106
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+json-patch 4.2.0
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 87f7527b10663377
+
+jsonptr 0.7.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 7320e6a3fa91141a
+LICENSE-MIT => 2bc107bdc18a7426
+
+keyboard-types 0.7.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => dd57ede7eb6b56bc
+
+keyboard-types 0.8.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => dd57ede7eb6b56bc
+
+libappindicator 0.9.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => eb227437252b2a7a
+
+libappindicator-sys 0.9.0
+License metadata: Apache-2.0 OR MIT
+License text supplied with original package source.
+
+libc 0.2.190
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 123a331b5dbf04c3
+
+libdbus-sys 0.2.7
+License metadata: Apache-2.0/MIT
+LICENSE-APACHE => 3f75361c9252bd71
+LICENSE-MIT => 444bdf624b51f207
+
+libloading 0.7.4
+License metadata: ISC
+LICENSE => b29f8b01452350c2
+
+libredox 0.1.25
+License metadata: MIT
+LICENSE => 8d073a6a80d1ef2d
+
+linux-raw-sys 0.12.1
+License metadata: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-Apache-2.0_WITH_LLVM-exception => ae6e99144a735503
+LICENSE-MIT => 23f18e03dc49df91
+
+litemap 0.8.3
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+lock_api 0.4.14
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => c9a75f18b9ab2927
+
+log 0.4.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+markup5ever 0.39.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 86dd7f026f916daf
+
+matchit 0.8.4
+License metadata: MIT AND BSD-3-Clause
+LICENSE => de701d0618d694fe
+LICENSE.httprouter => 162ce11ad71338d0
+
+memchr 2.8.3
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+memoffset 0.9.1
+License metadata: MIT
+LICENSE => eb69eece7d469c69
+
+mime 0.3.17
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 8b87502eddb2d7fa
+
+miniz_oxide 0.8.9
+License metadata: MIT OR Zlib OR Apache-2.0
+LICENSE => 4108245a1f2df9d4
+LICENSE-APACHE.md => bb28c48e3e078166
+LICENSE-MIT.md => 799e9ca9d179295e
+LICENSE-ZLIB.md => 0a54e647fe541046
+
+miniz_oxide 0.9.1
+License metadata: MIT OR Zlib OR Apache-2.0
+LICENSE => 4108245a1f2df9d4
+LICENSE-APACHE.md => bb28c48e3e078166
+LICENSE-MIT.md => 799e9ca9d179295e
+LICENSE-ZLIB.md => 0a54e647fe541046
+
+mio 1.2.4
+License metadata: MIT
+LICENSE => 07919255c7e04793
+
+moxcms 0.8.1
+License metadata: BSD-3-Clause OR Apache-2.0
+LICENSE-APACHE.md => eefdaaf8f4ef07e9
+LICENSE.md => 4b6c5ac5c550bea2
+
+muda 0.20.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 2ab5537b8c0cb1d4
+LICENSE.spdx => 135bd40d7e812073
+
+ndk 0.9.0
+License metadata: MIT OR Apache-2.0
+License text supplied with original package source.
+
+ndk-context 0.1.1
+License metadata: MIT OR Apache-2.0
+License text supplied with original package source.
+
+ndk-sys 0.6.0+11769913
+License metadata: MIT OR Apache-2.0
+License text supplied with original package source.
+
+new_debug_unreachable 1.0.6
+License metadata: MIT
+LICENSE-MIT => f7715d38a3fa1b4a
+
+num-conv 0.2.2
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => bb28c48e3e078166
+LICENSE-MIT => e2e245f2b566d0bf
+
+num-traits 0.2.19
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+num_enum 0.7.6
+License metadata: BSD-3-Clause OR MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-BSD => 0be96d891d00e0ae
+LICENSE-MIT => 23f18e03dc49df91
+
+num_enum_derive 0.7.6
+License metadata: BSD-3-Clause OR MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-BSD => 0be96d891d00e0ae
+LICENSE-MIT => 23f18e03dc49df91
+
+objc2 0.6.5
+License metadata: MIT
+License text supplied with original package source.
+
+objc2-app-kit 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-cloud-kit 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-data 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-foundation 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-graphics 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-image 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-location 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-core-text 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-encode 4.1.0
+License metadata: MIT
+License text supplied with original package source.
+
+objc2-exception-helper 0.1.1
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-foundation 0.3.2
+License metadata: MIT
+License text supplied with original package source.
+
+objc2-io-surface 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-quartz-core 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-ui-kit 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-user-notifications 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+objc2-web-kit 0.3.2
+License metadata: Zlib OR Apache-2.0 OR MIT
+License text supplied with original package source.
+
+once_cell 1.21.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+option-ext 0.2.0
+License metadata: MPL-2.0
+LICENSE.txt => 3f3d9e0024b1921b
+
+ordered-stream 0.2.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+pango 0.18.3
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+pango-sys 0.18.0
+License metadata: MIT
+LICENSE => f9c4c77baa382800
+
+parking 2.2.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+LICENSE-THIRD-PARTY => 9a6d7a3c1b8edcc7
+
+parking_lot 0.12.5
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => c9a75f18b9ab2927
+
+parking_lot_core 0.9.12
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => c9a75f18b9ab2927
+
+percent-encoding 2.3.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => b38f11f6096706e6
+
+phf 0.13.1
+License metadata: MIT
+LICENSE => 0ab4d106b6faac07
+
+phf_codegen 0.13.1
+License metadata: MIT
+LICENSE => 0ab4d106b6faac07
+
+phf_generator 0.13.1
+License metadata: MIT
+LICENSE => 0ab4d106b6faac07
+
+phf_macros 0.13.1
+License metadata: MIT
+LICENSE => 0ab4d106b6faac07
+
+phf_shared 0.13.1
+License metadata: MIT
+LICENSE => 0ab4d106b6faac07
+
+pin-project-lite 0.2.17
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => 23f18e03dc49df91
+
+piper 0.2.5
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+pkg-config 0.3.34
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+plist 1.10.1
+License metadata: MIT
+LICENCE => b61cf1a75b378860
+
+png 0.17.16
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => eaf40297c75da471
+
+png 0.18.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => eaf40297c75da471
+
+polling 3.11.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+portable-atomic 1.15.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => 23f18e03dc49df91
+
+portable-atomic-util 0.2.8
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => bb28c48e3e078166
+LICENSE-MIT => 23f18e03dc49df91
+
+potential_utf 0.1.6
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+powerfmt 0.2.1
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => 195928f85a6d2b9a
+LICENSE-MIT => 070dbc7dda03a292
+
+precomputed-hash 0.1.1
+License metadata: MIT
+LICENSE => 7ca6700600dfa9c9
+
+proc-macro-crate 1.3.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 56a24963c5251611
+LICENSE-MIT => 23f18e03dc49df91
+
+proc-macro-crate 2.0.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 56a24963c5251611
+LICENSE-MIT => 23f18e03dc49df91
+
+proc-macro-crate 3.5.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 56a24963c5251611
+LICENSE-MIT => 23f18e03dc49df91
+
+proc-macro-error 1.0.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 7ae853285b1a4f08
+LICENSE-MIT => 544b3aed1fd723d0
+
+proc-macro-error-attr 1.0.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 7ae853285b1a4f08
+LICENSE-MIT => 544b3aed1fd723d0
+
+proc-macro2 1.0.107
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+pxfm 0.1.30
+License metadata: BSD-3-Clause OR Apache-2.0
+LICENSE-APACHE.md => eefdaaf8f4ef07e9
+LICENSE.md => 4b6c5ac5c550bea2
+
+quick-xml 0.42.0
+License metadata: MIT
+LICENSE-MIT.md => f0cf9b1c62bbe3bd
+
+quote 1.0.47
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+r-efi 5.3.0
+License metadata: MIT OR Apache-2.0 OR LGPL-2.1-or-later
+License text supplied with original package source.
+
+r-efi 6.0.0
+License metadata: MIT OR Apache-2.0 OR LGPL-2.1-or-later
+License text supplied with original package source.
+
+raw-window-handle 0.6.2
+License metadata: MIT OR Apache-2.0 OR Zlib
+LICENSE-APACHE.md => bb28c48e3e078166
+LICENSE-MIT.md => 9c5a80639a57c1c9
+LICENSE-ZLIB.md => ae895c8576e682f3
+
+redox_syscall 0.5.18
+License metadata: MIT
+LICENSE => efcfee7981ff7243
+
+redox_users 0.5.3
+License metadata: MIT
+LICENSE => e4374ca982ab0914
+
+ref-cast 1.0.27
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+ref-cast-impl 1.0.27
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+regex 1.13.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+regex-automata 0.4.18
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+regex-syntax 0.8.11
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 6485b8ed310d3f03
+
+reqwest 0.13.5
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2ffc690bebe151fe
+LICENSE-MIT => 917c0fe02296eec6
+
+rustc-hash 2.1.3
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+rustc_version 0.4.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => c9a75f18b9ab2927
+
+rustix 1.1.5
+License metadata: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-Apache-2.0_WITH_LLVM-exception => ae6e99144a735503
+LICENSE-MIT => 23f18e03dc49df91
+
+rustversion 1.0.23
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+ryu 1.0.23
+License metadata: Apache-2.0 OR BSL-1.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-BOOST => c9bff75738922193
+
+same-file 1.0.6
+License metadata: Unlicense/MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => cb3c929a05e6cbc9
+
+schemars 0.8.22
+License metadata: MIT
+LICENSE => 1954992a2b32e8a2
+
+schemars 0.9.0
+License metadata: MIT
+LICENSE => 1954992a2b32e8a2
+
+schemars 1.2.3
+License metadata: MIT
+LICENSE => 1954992a2b32e8a2
+
+schemars_derive 0.8.22
+License metadata: MIT
+LICENSE => 1954992a2b32e8a2
+
+scopeguard 1.2.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => fb77f0a9c53e473a
+
+selectors 0.38.0
+License metadata: MPL-2.0
+License text supplied with original package source.
+
+semver 1.0.28
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde 1.0.229
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde-untagged 0.1.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_core 1.0.229
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_derive 1.0.229
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_derive_internals 0.29.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_json 1.0.154
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_path_to_error 0.1.20
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_repr 0.1.21
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+serde_spanned 0.6.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 6efb0476a1cc0850
+
+serde_spanned 1.1.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+serde_urlencoded 0.7.1
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => b9eb266294324f67
+
+serde_with 3.24.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7576269ea71f767b
+
+serde_with_macros 3.24.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7576269ea71f767b
+
+serialize-to-javascript 0.1.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => e53a7165e8bc3ced
+
+serialize-to-javascript-impl 0.1.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => e53a7165e8bc3ced
+
+servo_arc 0.4.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+sha2 0.10.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6aed14a798714567
+LICENSE-MIT => b4eb00df6e2a4d22
+
+shlex 2.0.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 553fffcd9b1cb158
+LICENSE-MIT => 4455bf75a9115410
+
+signal-hook-registry 1.4.8
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 503558bfefe66ca1
+
+simd-adler32 0.3.10
+License metadata: MIT
+LICENSE.md => 42a35170233e83e1
+
+siphasher 1.0.4
+License metadata: MIT OR Apache-2.0
+COPYING => c962ee4d1d05ddc1
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => f9c4c77baa382800
+
+slab 0.4.12
+License metadata: MIT
+LICENSE => 8ce0830173fdac60
+
+smallvec 1.16.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 0b28172679e0009b
+
+socket2 0.6.5
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+softbuffer 0.4.8
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a4445427440043e8
+LICENSE-MIT => 74f180f4d19f51ae
+
+soup3 0.5.0
+License metadata: MIT
+LICENSE => bb8c4e3a2aaef466
+
+soup3-sys 0.5.0
+License metadata: MIT
+LICENSE => bb8c4e3a2aaef466
+
+stable_deref_trait 1.2.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 3c125f249fc6fb19
+
+string_cache 0.9.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+string_cache_codegen 0.6.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 62065228e42caebc
+
+strsim 0.11.1
+License metadata: MIT
+LICENSE => 1e697ce8d21401fb
+
+subtle 2.6.1
+License metadata: BSD-3-Clause
+LICENSE => cc0332a88c2ea21d
+
+swift-rs 1.0.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 6d5eecf5284c4b10
+LICENSE-MIT => f3c3e9f4febe81ff
+
+syn 1.0.109
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+syn 2.0.119
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+syn 3.0.9
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+sync_wrapper 1.0.2
+License metadata: Apache-2.0
+LICENSE => bb28c48e3e078166
+
+synstructure 0.14.0
+License metadata: MIT
+LICENSE => 219920e865eee70b
+
+system-deps 6.2.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 23f18e03dc49df91
+
+tao 0.37.1
+License metadata: Apache-2.0
+LICENSE => a8ad31b1c3f40dca
+LICENSE.spdx => 02b6448337b75777
+
+tao-macros 0.1.4
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ca52f53b2ee0b6a9
+LICENSE.spdx => 8f96817f33d08e12
+
+target-lexicon 0.12.16
+License metadata: Apache-2.0 WITH LLVM-exception
+LICENSE => ae6e99144a735503
+
+tauri 2.12.3
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-build 2.7.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-codegen 2.7.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-macros 2.7.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-plugin 2.7.1
+License metadata: Apache-2.0 OR MIT
+License text supplied with original package source.
+
+tauri-plugin-global-shortcut 2.4.1
+License metadata: Apache-2.0 OR MIT
+LICENSE.spdx => 9c1db6b7e7eb83e1
+LICENSE_APACHE-2.0 => bb28c48e3e078166
+LICENSE_MIT => 9dd42ea92cff2ede
+
+tauri-plugin-single-instance 2.5.3
+License metadata: Apache-2.0 OR MIT
+LICENSE.spdx => 9c1db6b7e7eb83e1
+LICENSE_APACHE-2.0 => bb28c48e3e078166
+LICENSE_MIT => af76c60594af325c
+
+tauri-runtime 2.12.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-runtime-wry 2.12.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-utils 2.10.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+tauri-winres 0.3.6
+License metadata: MIT
+LICENSE => d9fa6b0e6fed50d4
+
+tempfile 3.27.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 8b427f5bc5017645
+
+tendril 0.5.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 60a7062291b01ba0
+
+thiserror 1.0.69
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+thiserror 2.0.21
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+thiserror-impl 1.0.69
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+thiserror-impl 2.0.21
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+time 0.3.55
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => bb28c48e3e078166
+LICENSE-MIT => 2537228d9a1b44a5
+
+time-core 0.1.9
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => bb28c48e3e078166
+LICENSE-MIT => 2537228d9a1b44a5
+
+time-macros 0.2.32
+License metadata: MIT OR Apache-2.0
+LICENSE-Apache => bb28c48e3e078166
+LICENSE-MIT => 2537228d9a1b44a5
+
+tinystr 0.8.4
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+tinyvec 1.13.3
+License metadata: Zlib OR Apache-2.0 OR MIT
+LICENSE-APACHE.md => 50e6751797c50ded
+LICENSE-MIT.md => fd80a26fbb3f644a
+LICENSE-ZLIB.md => 84b34dd7608f7fb9
+
+tokio 1.53.3
+License metadata: MIT
+LICENSE => 253cd04c6714889d
+
+tokio-macros 2.7.2
+License metadata: MIT
+LICENSE => 0b83dc40cba89b99
+
+tokio-util 0.7.20
+License metadata: MIT
+LICENSE => 253cd04c6714889d
+
+toml 0.8.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml 1.1.8+spec-1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_datetime 0.6.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+toml_datetime 1.1.2+spec-1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_edit 0.19.15
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_edit 0.20.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_edit 0.25.17+spec-1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_parser 1.1.5+spec-1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+toml_writer 1.1.3+spec-1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 2615b7a45c2002e1
+LICENSE-MIT => 6efb0476a1cc0850
+
+tower 0.5.3
+License metadata: MIT
+LICENSE => 4249c8e6c5ebb85f
+
+tower-http 0.6.11
+License metadata: MIT
+LICENSE => 5049cf464977eff4
+
+tower-layer 0.3.3
+License metadata: MIT
+LICENSE => 4249c8e6c5ebb85f
+
+tower-service 0.3.3
+License metadata: MIT
+LICENSE => 4249c8e6c5ebb85f
+
+tracing 0.1.44
+License metadata: MIT
+LICENSE => 898b1ae9821e98da
+
+tracing-attributes 0.1.31
+License metadata: MIT
+LICENSE => 898b1ae9821e98da
+
+tracing-core 0.1.36
+License metadata: MIT
+LICENSE => 898b1ae9821e98da
+
+tray-icon 0.25.1
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 2ab5537b8c0cb1d4
+LICENSE.spdx => 44181d1db740d984
+
+try-lock 0.2.5
+License metadata: MIT
+LICENSE => 8b62775bacdfa5ae
+
+typeid 1.0.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+typenum 1.20.1
+License metadata: MIT OR Apache-2.0
+LICENSE => 36bb253818ac1376
+LICENSE-APACHE => adb48f9ee5be072e
+LICENSE-MIT => a825bd853ab71619
+
+uds_windows 1.2.1
+License metadata: MIT
+LICENSE => 09c990d042f0b5c7
+
+unicode-ident 1.0.27
+License metadata: (MIT OR Apache-2.0) AND Unicode-3.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+LICENSE-UNICODE => f7db81051789b729
+
+unicode-segmentation 1.13.3
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 7b63ecd5f1902af1
+
+url 2.5.8
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => b38f11f6096706e6
+
+urlpattern 0.6.0
+License metadata: MIT
+LICENSE => 5cf1c9dc617e4cad
+
+utf8_iter 1.0.4
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => 3fa4ca83dcc92378
+
+uuid 1.28.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 436bc5a105d8e57d
+
+version-compare 0.2.1
+License metadata: MIT
+LICENSE => 0c844b018e99f1b1
+
+version_check 0.9.5
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => b7e650f3fce5c532
+
+vswhom 0.1.0
+License metadata: MIT
+LICENSE => e339134e53732f09
+
+vswhom-sys 0.1.3
+License metadata: MIT
+LICENSE => e339134e53732f09
+
+walkdir 2.5.0
+License metadata: Unlicense/MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => 0f96a83840e146e4
+
+want 0.3.2
+License metadata: MIT
+LICENSE => 96d741569b18c610
+
+wasi 0.11.1+wasi-snapshot-preview1
+License metadata: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-Apache-2.0_WITH_LLVM-exception => ae6e99144a735503
+LICENSE-MIT => 23f18e03dc49df91
+
+wasip2 1.0.4+wasi-0.2.12
+License metadata: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-Apache-2.0_WITH_LLVM-exception => ae6e99144a735503
+LICENSE-MIT => 23f18e03dc49df91
+
+wasm-bindgen 0.2.129
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+wasm-bindgen-futures 0.4.79
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+wasm-bindgen-macro 0.2.129
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+wasm-bindgen-macro-support 0.2.129
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+wasm-bindgen-shared 0.2.129
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+wasm-streams 0.5.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => b30df9a48463d1c9
+LICENSE-MIT => 23f18e03dc49df91
+
+web-sys 0.3.106
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 378f5840b258e277
+
+web-time 1.1.0
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 485215d5d9408bda
+LICENSE-MIT => f428305bbf2e70fb
+
+web_atoms 0.2.6
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 86dd7f026f916daf
+
+webkit2gtk 2.0.2
+License metadata: MIT
+LICENSE => 3f39c032be4639be
+
+webkit2gtk-sys 2.0.2
+License metadata: MIT
+LICENSE => 281b72cb00846681
+
+webview2-com 0.39.1
+License metadata: MIT
+License text supplied with original package source.
+
+webview2-com-macros 0.8.1
+License metadata: MIT
+License text supplied with original package source.
+
+webview2-com-sys 0.39.1
+License metadata: MIT
+License text supplied with original package source.
+
+winapi 0.3.9
+License metadata: MIT/Apache-2.0
+LICENSE-APACHE => a8ad31b1c3f40dca
+LICENSE-MIT => ce7bc3499fee93d5
+
+winapi-i686-pc-windows-gnu 0.4.0
+License metadata: MIT/Apache-2.0
+License text supplied with original package source.
+
+winapi-util 0.1.11
+License metadata: Unlicense OR MIT
+COPYING => 01c266bced4a434d
+LICENSE-MIT => cb3c929a05e6cbc9
+
+winapi-x86_64-pc-windows-gnu 0.4.0
+License metadata: MIT/Apache-2.0
+License text supplied with original package source.
+
+window-vibrancy 0.8.1
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => 617b85f62a4f1b6a
+LICENSE.spdx => 7ccef0d35e8507fa
+
+windows 0.62.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-collections 0.3.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-core 0.62.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-future 0.3.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-implement 0.60.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-interface 0.59.3
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-link 0.2.1
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-numerics 0.3.1
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-result 0.4.1
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-strings 0.5.1
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-sys 0.45.0
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-sys 0.59.0
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-sys 0.61.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-targets 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-targets 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-threading 0.2.1
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows-version 0.1.7
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_aarch64_gnullvm 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_aarch64_gnullvm 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_aarch64_msvc 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_aarch64_msvc 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_i686_gnu 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_i686_gnu 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_i686_gnullvm 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_i686_msvc 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_i686_msvc 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_gnu 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_gnu 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_gnullvm 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_gnullvm 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_msvc 0.42.2
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+windows_x86_64_msvc 0.52.6
+License metadata: MIT OR Apache-2.0
+license-apache-2.0 => cb3b46a575dd9b39
+license-mit => 3d4ada4e04d153d7
+
+winnow 0.5.40
+License metadata: MIT
+LICENSE-MIT => cb5aedb296c5246d
+
+winnow 1.0.4
+License metadata: MIT
+LICENSE-MIT => cb5aedb296c5246d
+
+winreg 0.56.0
+License metadata: MIT
+LICENSE => ea021d8c6383c84d
+
+wit-bindgen 0.57.1
+License metadata: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-Apache-2.0_WITH_LLVM-exception => ae6e99144a735503
+LICENSE-MIT => 23f18e03dc49df91
+
+writeable 0.6.4
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+wry 0.57.0
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE => 143368af9701a24e
+LICENSE-MIT => ef88893533af22ff
+LICENSE.spdx => f73041468536d0b5
+
+x11 2.21.0
+License metadata: MIT
+LICENSE-MIT => 23f18e03dc49df91
+
+x11-dl 2.21.0
+License metadata: MIT
+LICENSE-MIT => 23f18e03dc49df91
+
+x11rb 0.13.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => a72561f47c1f6655
+
+x11rb-protocol 0.13.2
+License metadata: MIT OR Apache-2.0
+LICENSE-APACHE => 50e6751797c50ded
+LICENSE-MIT => a72561f47c1f6655
+
+xkeysym 0.2.1
+License metadata: MIT OR Apache-2.0 OR Zlib
+LICENSE-APACHE => 61dd4a49c484b094
+LICENSE-MIT => 875e64a5df9f892e
+LICENSE-ZLIB => 319736510aa7dbd6
+
+yoke 0.8.3
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+yoke-derive 0.8.4
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zbus 5.19.0
+License metadata: MIT
+LICENSE => 260e4ff3fc493695
+
+zbus_macros 5.19.0
+License metadata: MIT
+LICENSE => 260e4ff3fc493695
+
+zbus_names 4.3.4
+License metadata: MIT
+LICENSE => 260e4ff3fc493695
+
+zcheapstr 1.1.0
+License metadata: MIT
+LICENSE => 59871bb1612f8a05
+
+zerofrom 0.1.8
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zerofrom-derive 0.1.8
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zerotrie 0.2.5
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zerovec 0.11.8
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zerovec-derive 0.11.6
+License metadata: Unicode-3.0
+LICENSE => f367c1b8e1aa2624
+
+zlib-rs 0.6.8
+License metadata: Zlib
+LICENSE => ae078f5c300de754
+
+zmij 1.0.23
+License metadata: MIT
+LICENSE-MIT => 23f18e03dc49df91
+
+zvariant 5.15.0
+License metadata: MIT
+LICENSE => 260e4ff3fc493695
+
+zvariant_derive 5.15.0
+License metadata: MIT
+LICENSE => 260e4ff3fc493695
+
+zvariant_utils 4.2.0
+License metadata: MIT
+LICENSE => 23f18e03dc49df91
+
+@tauri-apps/api 2.12.3
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+LICENSE.spdx => 5e834fe9788c5242

@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "provider": "PixelLab",
+  "model": "Pixen",
+  "sourceDate": "2026-10-14",
+  "pipeline": "Static generated source artwork, followed by manually designed, code-authored integer-pixel registration, masks, furniture corrections and discrete raster animation. These atlases are derivatives, not AI-generated motion.",
+  "runtimeReuse": "All fifteen PNGs are retained byte-for-byte from the existing cast. This clean frontend introduces no new generation, palette remapping, pixel editing, or resampling.",
+  "sourceReferences": [
+    {
+      "designId": "moss-curls",
+      "sha256": "396713ba4f486ef552743e5bfe8e87070d68b9a7910d907676d3376f6e29b048"
+    },
+    {
+      "designId": "amber-braid",
+      "sha256": "2dbc88c49b231ff36053ba3d8f6d297a658385dbea112f1a6bf6e5a24ce316ac"
+    },
+    {
+      "designId": "plum-bun",
+      "sha256": "0d10acc39c8fb0eeac28f698b31682325040cc4d3780d0d5d3e3d96b52f6ea60"
+    },
+    {
+      "designId": "sky-part",
+      "sha256": "0db3612b2e3eab53723104aaf0d3baea014274bbb6862108830df3c09612fde9"
+    },
+    {
+      "designId": "coral-coils",
+      "sha256": "819508d992c88f375063e0a9b4713f2d107e6609fa2429b34253e0ad830af611"
+    },
+    {
+      "designId": "sage-bob",
+      "sha256": "91f9f5ce7e9e2c51c53285c0c609c5307785c398a232af4c6b1263eb5962e4c5"
+    },
+    {
+      "prop": "chair",
+      "sha256": "e56078fe066ef0c3320a7dd7ec7ddbb1d66f6bd19b2b3179382a615ecb528ca1"
+    },
+    {
+      "prop": "desk",
+      "sha256": "38c121fbc9b376a125b93c95f6b7fd042a0c4a891e2e0c0f627285cb3a716c57"
+    },
+    {
+      "prop": "laptop",
+      "sha256": "c39b0fcc90b5b9863737fb011dc46b1e1fce84b1aaed1544d0b391e0a8698036"
+    }
+  ],
+  "composition": {
+    "cell": [
+      64,
+      64
+    ],
+    "atlas": [
+      512,
+      256
+    ],
+    "slotsPerState": 8,
+    "rows": [
+      "idle",
+      "typing",
+      "thinking",
+      "attention"
+    ],
+    "fps": {
+      "idle": 4,
+      "typing": 8,
+      "thinking": 4,
+      "attention": 4
+    },
+    "layerOrder": [
+      "chair",
+      "character",
+      "desk",
+      "laptop",
+      "matching foreground hands"
+    ],
+    "edits": [
+      "Fixed whole-pixel registration and articulated frame changes.",
+      "Source-derived blink, wrist tapping, chin-touch, and two-segment attention gestures.",
+      "Desk and laptop geometry corrected together to show the rear laptop lid facing the viewer.",
+      "Character-specific foreground hand pixels preserved above the keyboard without crossing the opaque laptop lid.",
+      "Native source colors retained; repeated frame holds are intentional."
+    ]
+  },
+  "acceptance": "Runtime bundling is authorized for this unreleased application. Full-cast native-window visual, animation, interaction and DPI acceptance remains pending. Raster hashes are not a visual-approval claim.",
+  "files": [
+    {
+      "path": "characters/amber-braid-hands.png",
+      "sha256": "7bfe8af5e685e068602601249e25b459e633652eda9ac80a5a43e95952437aaf",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/amber-braid.png",
+      "sha256": "5509c8fc1dc0ebd71d30bd5c52703e04d960a06d5e02d5ded365315af649cc57",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/coral-coils-hands.png",
+      "sha256": "72a00ea7cadecc1a115a921d8a75daef3481e4ffc5d96de912339062c8360809",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/coral-coils.png",
+      "sha256": "b4aa06140da32737386ba3d667d7ead95795acf5edacbf589f840a165109c1a4",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/moss-curls-hands.png",
+      "sha256": "bc474604f8ac33f9e9e96d551e039ea13fa9b193e5a4f089eaefba9a11c25c7a",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/moss-curls.png",
+      "sha256": "99d9942e195947c142275b5174dec4094baaf038b075041e8e5bc4ee8d9ccd29",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/plum-bun-hands.png",
+      "sha256": "297c36c9a89bd1abc0355ab2c22db62b6633918f81bfb4f6c3b089ed38c59e85",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/plum-bun.png",
+      "sha256": "9a5ca88827aa3a94ed421d3fa83b4704bf6d93a52ec3d737013cb07ebf642ed9",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/sage-bob-hands.png",
+      "sha256": "720493a2766e807de3f7817a000a06021cd2c42bc6c4335c04042b0630cc77ae",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/sage-bob.png",
+      "sha256": "70819beb54dd00893c5fcdd0ea65f2ca0d69a3db46d050ab3c869cdc002a03de",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/sky-part-hands.png",
+      "sha256": "1b0ca0ddb8fb14f8c6c54a96498725693db85bab0ad1afd0f8e96a105edcd0a5",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "characters/sky-part.png",
+      "sha256": "8dc9ac429e9a3c90896646030d1f3b8305ada622e1eb710039ca1252b05f9bb0",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "path": "shared/chair.png",
+      "sha256": "f5db63adf6e725756e68b69321d62d8e717e6798a619a36bf558aaf2fd737e26",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "shared/desk.png",
+      "sha256": "88f0320c7d18d2bb5a69fbc4b3d1258d74a3420695c401f41e83cb90f3b632ed",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "shared/laptop.png",
+      "sha256": "a28f9b0824568064de4d8abb5a31a05abe0c9878a6b31e9b453c6bebb5c243de",
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

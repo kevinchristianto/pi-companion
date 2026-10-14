@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "session": {
+    "id": "fixture-session-001",
+    "name": "Documentation project",
+    "cwd": "/example/project",
+    "model": "example-model",
+    "connected": true,
+    "omittedAgentCount": 0,
+    "agents": [
+      {
+        "id": "main",
+        "name": "Pi",
+        "role": "orchestrator",
+        "state": "idle",
+        "tool": null,
+        "model": "example-model",
+        "lifecycle": {
+          "version": 1,
+          "eventId": "root-start-001",
+          "kind": "start",
+          "source": "pi:session_start",
+          "at": "2026-10-14T00:00:00.000Z"
+        }
+      },
+      {
+        "id": "child:fixture-child-001",
+        "name": "Reviewer",
+        "role": "subagent",
+        "state": "working",
+        "tool": "read",
+        "model": "example-model",
+        "lifecycle": {
+          "version": 1,
+          "eventId": "child-start-001",
+          "kind": "start",
+          "source": "pi-subagents:fleet",
+          "at": "2026-10-14T00:00:01.000Z"
+        }
+      }
+    ]
+  },
+  "capabilities": {
+    "pi": true,
+    "subagents": true,
+    "fleet": true,
+    "metadataOnly": true,
+    "omittedAgents": 0
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "pi-companion"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "A read-only, local Pi agent companion"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+companion-shell = { path = "../crates/companion-shell" }
+companion-core = { path = "../crates/companion-core" }
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"

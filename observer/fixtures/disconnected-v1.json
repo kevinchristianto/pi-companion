@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "session": {
+    "id": "fixture-session-001",
+    "name": "Documentation project",
+    "cwd": "/example/project",
+    "model": "example-model",
+    "connected": false,
+    "omittedAgentCount": 0,
+    "agents": [
+      {
+        "id": "main",
+        "name": "Pi",
+        "role": "orchestrator",
+        "state": "offline",
+        "tool": null,
+        "model": "example-model",
+        "lifecycle": {
+          "version": 1,
+          "eventId": "stop-0-001",
+          "kind": "stop",
+          "source": "pi:session_shutdown",
+          "at": "2026-10-14T00:01:00.000Z"
+        }
+      },
+      {
+        "id": "child:fixture-child-001",
+        "name": "Reviewer",
+        "role": "subagent",
+        "state": "offline",
+        "tool": null,
+        "model": "example-model",
+        "lifecycle": {
+          "version": 1,
+          "eventId": "stop-1-001",
+          "kind": "stop",
+          "source": "pi:session_shutdown",
+          "at": "2026-10-14T00:01:00.000Z"
+        }
+      }
+    ],
+    "agentsComplete": true
+  },
+  "capabilities": {
+    "pi": true,
+    "subagents": true,
+    "fleet": true,
+    "metadataOnly": true,
+    "omittedAgents": 0
+  },
+  "source": {
+    "generation": 7,
+    "sequence": 2
+  },
+  "streamId": "fixture-bridge-stream-001"
+}

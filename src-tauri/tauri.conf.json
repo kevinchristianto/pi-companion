@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Pi Companion",
+  "version": "0.1.0",
+  "identifier": "io.github.kevinchristianto.pi-companion",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Pi Companion",
+        "width": 620,
+        "height": 480,
+        "minWidth": 360,
+        "minHeight": 320,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "visible": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "center": true,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'",
+      "capabilities": [
+        "main"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../observer/index.ts": "observer/index.ts",
+      "../observer/connection.ts": "observer/connection.ts",
+      "../observer/protocol.ts": "observer/protocol.ts",
+      "../observer/subagents.ts": "observer/subagents.ts",
+      "../observer/transport.ts": "observer/transport.ts",
+      "../observer/README.md": "observer/README.md",
+      "../observer/PROTOCOL.md": "observer/PROTOCOL.md",
+      "../THIRD-PARTY-NOTICES.txt": "THIRD-PARTY-NOTICES.txt",
+      "../docs/licenses/": "licenses/"
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      }
+    }
+  }
+}

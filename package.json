@@ -1,0 +1,31 @@
+{
+  "name": "pi-companion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "dev:review": "node test/frontend/serve-review.mjs",
+    "build": "tsc --noEmit && vite build && node test/frontend/verify-build.mjs",
+    "check": "npm run typecheck && npm test && npm run build",
+    "test:frontend": "vitest run",
+    "test": "npm run test:frontend && npm run test:observer",
+    "tauri": "tauri",
+    "test:observer": "node --test observer/tests/*.test.mjs",
+    "typecheck": "tsc --noEmit && tsc -p observer/tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.0",
+    "@types/node": "^24.0.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
