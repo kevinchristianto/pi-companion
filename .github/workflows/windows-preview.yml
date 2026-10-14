@@ -1,0 +1,54 @@
+name: Windows preview artifact
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: windows-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-and-build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked frontend dependencies
+        run: npm ci
+      - name: Verify frontend and observer
+        run: npm run check
+      - name: Verify Rust format
+        run: cargo fmt --all -- --check
+      - name: Test Rust core and native shell
+        run: cargo test --workspace --locked
+      - name: Lint Rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Build unsigned test installer
+        run: npm run tauri -- build --bundles nsis --target x86_64-pc-windows-msvc
+      - name: Upload test installer only
+        uses: actions/upload-artifact@v4
+        with:
+          name: pi-companion-windows-preview-${{ github.sha }}
+          path: target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload manual Pi observer extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: pi-companion-observer-${{ github.sha }}
+          path: |
+            observer/index.ts
+            observer/connection.ts
+            observer/protocol.ts
+            observer/subagents.ts
+            observer/transport.ts
+            observer/README.md
+            observer/PROTOCOL.md
+            THIRD-PARTY-NOTICES.txt
+          if-no-files-found: error
+          retention-days: 14
