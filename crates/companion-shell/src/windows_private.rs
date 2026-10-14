@@ -29,8 +29,8 @@ use windows_sys::Win32::{
         GetFileInformationByHandle, GetFinalPathNameByHandleW, SetFileInformationByHandle,
         BY_HANDLE_FILE_INFORMATION, CREATE_NEW, DELETE, FILE_ATTRIBUTE_DIRECTORY,
         FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_REPARSE_POINT, FILE_DISPOSITION_INFO,
-        FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_RENAME_INFO,
-        FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING, READ_CONTROL,
+        FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_LIST_DIRECTORY,
+        FILE_RENAME_INFO, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING, READ_CONTROL,
     },
     System::Threading::{GetCurrentProcess, OpenProcessToken},
 };
@@ -230,7 +230,10 @@ fn open(path: &Path, create: bool, directory: bool, temporary: bool) -> io::Resu
     } else if create {
         GENERIC_READ | GENERIC_WRITE
     } else if directory {
-        READ_CONTROL
+        // Metadata-only READ_CONTROL opens do not participate in Windows
+        // data/delete sharing checks. Directory-list access is the read-data
+        // bit that makes the omitted FILE_SHARE_DELETE actually pin this name.
+        READ_CONTROL | FILE_LIST_DIRECTORY
     } else {
         GENERIC_READ
     };
@@ -486,11 +489,20 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let config = root.path().join("private");
         super::super::export_observer(&config).unwrap();
-        let _config_handle = directory(&config).unwrap();
+        let config_handle = directory(&config).unwrap();
         let observer = config.join("observer");
-        let _observer_handle = directory(&observer).unwrap();
-        assert!(std::fs::rename(&config, root.path().join("moved")).is_err());
-        assert!(std::fs::rename(&observer, config.join("moved")).is_err());
+        let observer_handle = directory(&observer).unwrap();
+        let moved_config = root.path().join("moved config");
+        let moved_observer = config.join("moved observer");
+        assert!(std::fs::rename(&config, &moved_config).is_err());
+        assert!(std::fs::rename(&observer, &moved_observer).is_err());
+        // Dropping only the observer pin must permit that child rename, while
+        // the config remains pinned by its own handle, not an open descendant.
+        drop(observer_handle);
+        std::fs::rename(&observer, &moved_observer).unwrap();
+        assert!(std::fs::rename(&config, &moved_config).is_err());
+        drop(config_handle);
+        std::fs::rename(&config, &moved_config).unwrap();
     }
     #[test]
     fn hard_linked_fixture_is_rejected() {
