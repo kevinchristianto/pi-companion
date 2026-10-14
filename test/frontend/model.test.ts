@@ -22,6 +22,20 @@ describe('authoritative snapshot boundary', () => {
     const parsed = parseShellState(state([agent(0, { tool: null as never, model: null as never }), agent(1, { state: 'offline' }), agent(2, { state: 'stale' })]))!;
     expect(parsed.snapshot.agents[0].tool).toBeUndefined(); expect(parsed.snapshot.agents[0].model).toBeUndefined(); expect(liveAgents(parsed)).toHaveLength(1);
   });
+  it('preserves exact workspace identity, while absent, null, and blank cwd remain unknown', () => {
+    for (const cwd of ['/projects/Companion/', 'C:\\work\\Companion', ' /significant spaces ', '🚀'.repeat(2048)]) {
+      const parsed = parseShellState(state([agent(0, { cwd })]));
+      expect(parsed?.snapshot.agents[0].cwd).toBe(cwd);
+    }
+    for (const cwd of [undefined, null, '', '   ']) {
+      expect(parseShellState(state([agent(0, { cwd: cwd as never })]))?.snapshot.agents[0].cwd).toBeUndefined();
+    }
+  });
+  it('rejects malformed workspace identities instead of truncating or merging them', () => {
+    for (const cwd of [42, [], {}, 'x'.repeat(4097), '/repo\nname', '/repo\0name', '/repo\uD800', '/repo\uDFFF']) {
+      expect(parseShellState(state([agent(0, { cwd: cwd as never })]))).toBeNull();
+    }
+  });
   it('copies accepted input and orders updates by shell sequence', () => {
     const store = new StateStore(); const original = state();
     expect(store.accept(original)).toBe('accepted'); original.snapshot.agents[0].name = 'Changed outside';

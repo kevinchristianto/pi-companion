@@ -10,7 +10,7 @@ export function reviewPlatform(): Platform {
   const tasks = ['Building the next thoughtful little thing.', 'Reviewing the implementation plan.', 'Waiting for your choice of approach.', 'Ready when you are.', 'A test needs a closer look.', 'Checking the final details.'];
   const agents: Agent[] = DESIGN_IDS.map((design, index) => {
     let key = `${index}`; for (let candidate = 0; candidate < 1000; candidate++) { key = `review-${index}-${candidate}`; if (designForIdentity(key) === design) break; }
-    return { key, sessionId: index < 3 ? 'review-workshop' : 'review-studio', agentId: `sample-${index}`, name: names[index], sessionName: index < 3 ? 'Companion workshop' : 'Small ideas studio', role: index === 0 || index === 3 ? 'orchestrator' : 'subagent', task: tasks[index], state: states[index], ...(index === 0 ? { tool: 'edit' } : {}), model: 'Review fixture' };
+    return { key, cwd: index < 4 ? '/Projects/pi-companion' : '/Projects/side-project', sessionId: index < 3 ? 'review-workshop' : 'review-studio', agentId: `sample-${index}`, name: names[index], sessionName: index < 3 ? 'Companion workshop' : 'Small ideas studio', role: index === 0 || index === 3 ? 'orchestrator' : 'subagent', task: tasks[index], state: states[index], ...(index === 0 ? { tool: 'edit' } : {}), model: 'Review fixture' };
   });
   let state: ShellState = { sequence: 1, snapshot: { streamId: 'explicit-dev-review', revision: 1, agents }, bridge: { status: 'listening' }, window: { pinned: false, clickThrough: false, recoveryAvailable: true } };
   const listeners = new Set<(value: unknown) => void>();

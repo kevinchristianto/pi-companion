@@ -15,6 +15,9 @@ pub use observer_export::export_observer;
 
 pub const BRIDGE_PORT: u16 = 4318;
 pub const RECOVERY_SHORTCUT: &str = "CommandOrControl+Shift+P";
+/// Logical pixels; keep the initial native window in sync with these values.
+pub const DEFAULT_WINDOW_SIZE: (f64, f64) = (480.0, 380.0);
+pub const MINIMUM_WINDOW_SIZE: (f64, f64) = (320.0, 280.0);
 
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -76,11 +79,30 @@ pub fn fit_window(window: Rect, work: Rect) -> Rect {
 }
 pub fn preset_size(preset: &str) -> Option<(f64, f64)> {
     match preset {
-        "compact" => Some((620.0, 480.0)),
-        "wide" => Some((960.0, 480.0)),
-        "tall" => Some((620.0, 760.0)),
+        "compact" => Some(DEFAULT_WINDOW_SIZE),
+        "wide" => Some((720.0, 420.0)),
+        "tall" => Some((400.0, 620.0)),
         _ => None,
     }
+}
+
+/// Monitor work areas are physical pixels. A tiny display may temporarily need a
+/// lower minimum, but the original logical minimum returns on a larger display.
+pub fn minimum_size_for_work_area(scale: f64, width: u32, height: u32) -> (u32, u32) {
+    let scale = if scale.is_finite() && scale > 0.0 {
+        scale
+    } else {
+        1.0
+    };
+    let fit = |logical: f64, extent: u32| {
+        (logical * scale)
+            .round()
+            .clamp(1.0, f64::from(extent.max(1))) as u32
+    };
+    (
+        fit(MINIMUM_WINDOW_SIZE.0, width),
+        fit(MINIMUM_WINDOW_SIZE.1, height),
+    )
 }
 
 // Deliberately no Debug or Serialize implementation: credentials never enter UI state or logs.
@@ -161,8 +183,70 @@ mod tests {
     use std::fs;
     #[test]
     fn presets_are_bounded_and_unknown_denied() {
-        assert_eq!(preset_size("wide"), Some((960.0, 480.0)));
+        assert_eq!(preset_size("compact"), Some((480.0, 380.0)));
+        assert_eq!(preset_size("wide"), Some((720.0, 420.0)));
+        assert_eq!(preset_size("tall"), Some((400.0, 620.0)));
+        for preset in ["compact", "wide", "tall"] {
+            let (width, height) = preset_size(preset).unwrap();
+            assert!(width >= MINIMUM_WINDOW_SIZE.0 && height >= MINIMUM_WINDOW_SIZE.1);
+        }
         assert!(preset_size("javascript:open").is_none());
+    }
+    #[test]
+    fn native_configuration_matches_compact_geometry() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../../../src-tauri/tauri.conf.json")).unwrap();
+        let main = &config["app"]["windows"][0];
+        assert_eq!(main["label"], "main");
+        assert_eq!(main["width"].as_f64(), Some(DEFAULT_WINDOW_SIZE.0));
+        assert_eq!(main["height"].as_f64(), Some(DEFAULT_WINDOW_SIZE.1));
+        assert_eq!(main["minWidth"].as_f64(), Some(MINIMUM_WINDOW_SIZE.0));
+        assert_eq!(main["minHeight"].as_f64(), Some(MINIMUM_WINDOW_SIZE.1));
+        assert_eq!(preset_size("compact"), Some(DEFAULT_WINDOW_SIZE));
+    }
+    #[test]
+    fn physical_minimum_tracks_scale_and_available_work_area() {
+        assert_eq!(minimum_size_for_work_area(1.0, 1920, 1040), (320, 280));
+        assert_eq!(minimum_size_for_work_area(1.25, 1920, 1040), (400, 350));
+        assert_eq!(minimum_size_for_work_area(1.5, 1920, 1040), (480, 420));
+        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (640, 560));
+        assert_eq!(minimum_size_for_work_area(2.0, 500, 400), (500, 400));
+        // A subsequent fit on a larger screen restores both logical minima.
+        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (640, 560));
+        for invalid_scale in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            assert_eq!(
+                minimum_size_for_work_area(invalid_scale, 1920, 1040),
+                (320, 280)
+            );
+        }
+        assert_eq!(minimum_size_for_work_area(1.0, 0, 0), (1, 1));
+    }
+    #[test]
+    fn every_preset_fits_scaled_and_negative_work_areas() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for preset in ["compact", "wide", "tall"] {
+                let (width, height) = preset_size(preset).unwrap();
+                let work = Rect {
+                    x: -800.0,
+                    y: -400.0,
+                    width: 800.0,
+                    height: 600.0,
+                };
+                let fitted = fit_window(
+                    Rect {
+                        x: 2000.0,
+                        y: 2000.0,
+                        width: width * scale,
+                        height: height * scale,
+                    },
+                    work,
+                );
+                assert_eq!(fitted.width, (width * scale).min(work.width));
+                assert_eq!(fitted.height, (height * scale).min(work.height));
+                assert!(fitted.x >= work.x && fitted.x + fitted.width <= work.x + work.width);
+                assert!(fitted.y >= work.y && fitted.y + fitted.height <= work.y + work.height);
+            }
+        }
     }
     #[test]
     fn monitor_removal_and_negative_coordinates() {

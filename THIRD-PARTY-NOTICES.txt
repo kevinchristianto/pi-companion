@@ -8,6 +8,7 @@ The project itself has no selected blanket license.
 
 DEPENDENCY INDEX
 
+Bundled font and adapted 8bitcn/shadcn source licenses are also included as named text files in this licenses folder.
 Complete license texts are bundled in the licenses/ folder and stored in docs/licenses/ in the source repository.
 No license terms are omitted; each numbered part contains whole license/notice texts.
 
@@ -20,6 +21,9 @@ LICENSE-TEXTS-06.txt
 LICENSE-TEXTS-07.txt
 LICENSE-TEXTS-08.txt
 LICENSE-TEXTS-09.txt
+LICENSE-TEXTS-10.txt
+LICENSE-TEXTS-11.txt
+LICENSE-TEXTS-12.txt
 
 adler2 2.0.1
 License metadata: 0BSD OR MIT OR Apache-2.0
@@ -2251,8 +2255,665 @@ zvariant_utils 4.2.0
 License metadata: MIT
 LICENSE => 23f18e03dc49df91
 
+@asamuzakjp/css-color 3.2.0
+License metadata: MIT
+LICENSE => 2f11a643ac2dfffa
+
+@csstools/color-helpers 5.1.0
+License metadata: MIT-0
+LICENSE.md => 947e32047a166cd0
+
+@csstools/css-calc 2.1.4
+License metadata: MIT
+LICENSE.md => d00d032f517721b4
+
+@csstools/css-color-parser 3.1.0
+License metadata: MIT
+LICENSE.md => d00d032f517721b4
+
+@csstools/css-parser-algorithms 3.0.5
+License metadata: MIT
+LICENSE.md => d00d032f517721b4
+
+@csstools/css-tokenizer 3.0.4
+License metadata: MIT
+LICENSE.md => d00d032f517721b4
+
+@esbuild/linux-x64 0.28.2
+License metadata: MIT
+License text supplied with original package source.
+
+@floating-ui/core 1.8.0
+License metadata: MIT
+LICENSE => 0e4c9a9b6c71019c
+
+@floating-ui/dom 1.8.0
+License metadata: MIT
+LICENSE => 0e4c9a9b6c71019c
+
+@floating-ui/react-dom 2.1.9
+License metadata: MIT
+LICENSE => 0e4c9a9b6c71019c
+
+@floating-ui/utils 0.2.12
+License metadata: MIT
+LICENSE => 0e4c9a9b6c71019c
+
+@jridgewell/gen-mapping 0.3.13
+License metadata: MIT
+LICENSE => 769d154fbde32a91
+
+@jridgewell/remapping 2.3.5
+License metadata: MIT
+LICENSE => 769d154fbde32a91
+
+@jridgewell/resolve-uri 3.1.2
+License metadata: MIT
+LICENSE => 1ad100697b2b3320
+
+@jridgewell/sourcemap-codec 1.6.0
+License metadata: MIT
+LICENSE => 769d154fbde32a91
+
+@jridgewell/trace-mapping 0.3.31
+License metadata: MIT
+LICENSE => 769d154fbde32a91
+
+@napi-rs/lzma-linux-x64-gnu 1.5.1
+License metadata: MIT
+License text supplied with original package source.
+
+@radix-ui/primitive 1.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-arrow 1.1.17
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-collection 1.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-compose-refs 1.1.5
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-context 1.3.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-dialog 1.3.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-direction 1.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-dismissable-layer 1.2.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-dropdown-menu 2.2.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-focus-guards 1.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-focus-scope 1.3.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-id 1.1.4
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-menu 2.2.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-popper 1.4.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-portal 1.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-presence 1.1.11
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-primitive 2.2.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-roving-focus 1.2.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-slot 1.5.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-tooltip 1.4.1
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-callback-ref 1.1.5
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-controllable-state 1.3.0
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-effect-event 0.0.5
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-is-hydrated 0.1.3
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-layout-effect 1.1.4
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-rect 1.1.4
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-use-size 1.1.5
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/react-visually-hidden 1.2.13
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@radix-ui/rect 1.1.3
+License metadata: MIT
+LICENSE => 0e80a2d229d2fd4f
+
+@rollup/rollup-linux-x64-gnu 4.64.6
+License metadata: MIT
+License text supplied with original package source.
+
+@rollup/rollup-linux-x64-musl 4.64.6
+License metadata: MIT
+License text supplied with original package source.
+
+@tailwindcss/node 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
+@tailwindcss/oxide 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
+@tailwindcss/oxide-linux-x64-gnu 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
+@tailwindcss/oxide-linux-x64-musl 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
+@tailwindcss/vite 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
 @tauri-apps/api 2.12.3
 License metadata: Apache-2.0 OR MIT
 LICENSE-APACHE-2.0 => bb28c48e3e078166
 LICENSE-MIT => 9dd42ea92cff2ede
 LICENSE.spdx => 5e834fe9788c5242
+
+@tauri-apps/cli 2.12.2
+License metadata: Apache-2.0 OR MIT
+LICENSE-APACHE-2.0 => bb28c48e3e078166
+LICENSE-MIT => 9dd42ea92cff2ede
+
+@tauri-apps/cli-linux-x64-gnu 2.12.2
+License metadata: Apache-2.0 OR MIT
+License text supplied with original package source.
+
+@tauri-apps/cli-linux-x64-musl 2.12.2
+License metadata: Apache-2.0 OR MIT
+License text supplied with original package source.
+
+@types/chai 5.2.3
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@types/deep-eql 4.0.2
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@types/estree 1.0.9
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@types/node 24.19.2
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@types/react 19.3.0
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@types/react-dom 19.3.0
+License metadata: MIT
+LICENSE => 3d4ada4e04d153d7
+
+@vitest/expect 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/mocker 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/pretty-format 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/runner 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/snapshot 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/spy 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+@vitest/utils 3.2.7
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+agent-base 7.1.4
+License metadata: MIT
+LICENSE => 71368fd0f5b41291
+
+aria-hidden 1.2.6
+License metadata: MIT
+LICENSE => 30f0cfddf483d112
+
+assertion-error 2.0.1
+License metadata: MIT
+LICENSE => 2130216d5ab4c021
+
+cac 6.7.14
+License metadata: MIT
+LICENSE => 709131d7af352b81
+
+chai 5.3.3
+License metadata: MIT
+LICENSE => b181da80336ff9dd
+
+check-error 2.1.3
+License metadata: MIT
+LICENSE => e5aee0714b6ecc41
+
+class-variance-authority 0.7.1
+License metadata: Apache-2.0
+LICENSE => 2d35024b0d328a99
+
+clsx 2.1.1
+License metadata: MIT
+license => 9a9edad7baae5262
+
+cssstyle 4.6.0
+License metadata: MIT
+LICENSE => 768faff9f6908c78
+
+csstype 3.2.3
+License metadata: MIT
+LICENSE => 11d55bd4541c75ee
+
+data-urls 5.0.0
+License metadata: MIT
+LICENSE.txt => 528eec83cb836a0a
+
+debug 4.4.3
+License metadata: MIT
+LICENSE => 23eb8602cd5902bc
+
+decimal.js 10.6.0
+License metadata: MIT
+LICENCE.md => 528c29f424e6304e
+
+deep-eql 5.0.2
+License metadata: MIT
+LICENSE => e5aee0714b6ecc41
+
+detect-libc 2.1.2
+License metadata: Apache-2.0
+LICENSE => a8ad31b1c3f40dca
+
+detect-node-es 1.1.0
+License metadata: MIT
+LICENSE => 54b32293ea560d22
+
+enhanced-resolve 5.26.0
+License metadata: MIT
+LICENSE => 9068a8782d2fb4c6
+
+entities 6.0.1
+License metadata: BSD-2-Clause
+LICENSE => cb992345949ccd6e
+
+es-module-lexer 1.7.0
+License metadata: MIT
+LICENSE => 8a4b6c44eebfb026
+
+esbuild 0.28.2
+License metadata: MIT
+LICENSE.md => b40ec5baec7bb34f
+
+estree-walker 3.0.3
+License metadata: MIT
+LICENSE => dc63692c70bf95b6
+
+expect-type 1.4.0
+License metadata: Apache-2.0
+LICENSE => 6b615d00f2d0df74
+
+fdir 6.5.0
+License metadata: MIT
+LICENSE => 9a39f2aadab11a36
+
+get-nonce 1.0.1
+License metadata: MIT
+LICENSE => acf3b087b348d2f2
+
+graceful-fs 4.2.11
+License metadata: ISC
+LICENSE => f65c5d9f22a317b2
+
+html-encoding-sniffer 4.0.0
+License metadata: MIT
+LICENSE.txt => 528eec83cb836a0a
+
+http-proxy-agent 7.0.2
+License metadata: MIT
+LICENSE => 71368fd0f5b41291
+
+https-proxy-agent 7.0.6
+License metadata: MIT
+LICENSE => 71368fd0f5b41291
+
+iconv-lite 0.6.3
+License metadata: MIT
+LICENSE => f9c6da891840e895
+
+is-potential-custom-element-name 1.0.1
+License metadata: MIT
+LICENSE-MIT.txt => 483acb265f182907
+
+jiti 2.7.0
+License metadata: MIT
+LICENSE => 46231df5a7733c3f
+
+js-tokens 9.0.1
+License metadata: MIT
+LICENSE => 33038d552d766f45
+
+jsdom 26.1.0
+License metadata: MIT
+LICENSE.txt => 242d37e7cab25cba
+
+lightningcss 1.32.0
+License metadata: MPL-2.0
+LICENSE => 0b76f4835e70e57d
+
+lightningcss-linux-x64-gnu 1.32.0
+License metadata: MPL-2.0
+LICENSE => 0b76f4835e70e57d
+
+lightningcss-linux-x64-musl 1.32.0
+License metadata: MPL-2.0
+LICENSE => 0b76f4835e70e57d
+
+loupe 3.2.1
+License metadata: MIT
+LICENSE => 592141f7b861426c
+
+lru-cache 10.4.3
+License metadata: ISC
+LICENSE => 451ec07eeb9c4e1b
+
+magic-string 0.30.21
+License metadata: MIT
+LICENSE => 1cbe51b907662f6c
+
+ms 2.1.3
+License metadata: MIT
+license.md => 1662fae9b5314d11
+
+nanoid 3.3.20
+License metadata: MIT
+LICENSE => da4db1480d9beea3
+
+nwsapi 2.2.28
+License metadata: MIT
+LICENSE => 2aebdf8ae67777cc
+
+parse5 7.3.0
+License metadata: MIT
+LICENSE => 8c535800331e1e44
+
+pathe 2.0.3
+License metadata: MIT
+LICENSE => 52e92576851154ba
+
+pathval 2.0.1
+License metadata: MIT
+LICENSE => 5d45910e7ed82fec
+
+picocolors 1.1.1
+License metadata: ISC
+LICENSE => 6582629e29794668
+
+picomatch 4.0.7
+License metadata: MIT
+LICENSE => d0cd141b0c322fde
+
+postcss 8.5.30
+License metadata: MIT
+LICENSE => 5be1f3465bba68a6
+
+punycode 2.3.1
+License metadata: MIT
+LICENSE-MIT.txt => 483acb265f182907
+
+react 19.3.0
+License metadata: MIT
+LICENSE => da6d3703ed11cbe4
+
+react-dom 19.3.0
+License metadata: MIT
+LICENSE => da6d3703ed11cbe4
+
+react-remove-scroll 2.7.2
+License metadata: MIT
+LICENSE => 30f0cfddf483d112
+
+react-remove-scroll-bar 2.3.8
+License metadata: MIT
+License text supplied with original package source.
+
+react-style-singleton 2.2.3
+License metadata: MIT
+LICENSE => 30f0cfddf483d112
+
+rollup 4.64.6
+License metadata: MIT
+LICENSE.md => ad457a6619017a7f
+
+rrweb-cssom 0.8.0
+License metadata: MIT
+LICENSE.txt => e539937c489c4928
+
+safer-buffer 2.1.2
+License metadata: MIT
+LICENSE => 4bc935e71be198c6
+
+saxes 6.0.0
+License metadata: ISC
+License text supplied with original package source.
+
+scheduler 0.28.0
+License metadata: MIT
+LICENSE => da6d3703ed11cbe4
+
+siginfo 2.0.0
+License metadata: ISC
+LICENSE => 3bdddf0b9b08aaa2
+
+source-map-js 1.2.2
+License metadata: BSD-3-Clause
+LICENSE => c9d85a24226fa4dd
+
+stackback 0.0.2
+License metadata: MIT
+License text supplied with original package source.
+
+std-env 3.10.0
+License metadata: MIT
+LICENCE => 46231df5a7733c3f
+
+strip-literal 3.1.0
+License metadata: MIT
+LICENSE => af32efdd008a371c
+
+symbol-tree 3.2.4
+License metadata: MIT
+LICENSE => 9ea1eccdabe46976
+
+tailwind-merge 3.7.0
+License metadata: MIT
+LICENSE.md => d4c70c7ce38cea87
+
+tailwindcss 4.3.3
+License metadata: MIT
+LICENSE => 60e0b68c0f35c078
+
+tapable 2.3.3
+License metadata: MIT
+LICENSE => 824ef6c33ae5ecbb
+
+tinybench 2.9.0
+License metadata: MIT
+LICENSE => cebc084d54e6dd99
+
+tinyexec 0.3.2
+License metadata: MIT
+LICENSE => f95f668fe64081dd
+
+tinyglobby 0.2.17
+License metadata: MIT
+LICENSE => 22c68811e174cbbf
+
+tinypool 1.1.1
+License metadata: MIT
+LICENSE => 0d506ca1b2adc4ee
+
+tinyrainbow 2.0.0
+License metadata: MIT
+LICENCE => cebc084d54e6dd99
+
+tinyspy 4.0.6
+License metadata: MIT
+LICENCE => cebc084d54e6dd99
+
+tldts 6.1.86
+License metadata: MIT
+LICENSE => c64182d48160db94
+
+tldts-core 6.1.86
+License metadata: MIT
+LICENSE => c64182d48160db94
+
+tough-cookie 5.1.2
+License metadata: BSD-3-Clause
+LICENSE => 22ec6791c91ba42c
+
+tr46 5.1.1
+License metadata: MIT
+LICENSE.md => 499d6d466d064e04
+
+tslib 2.8.1
+License metadata: 0BSD
+LICENSE.txt => 5989359645911c04
+
+typescript 5.9.3
+License metadata: Apache-2.0
+LICENSE.txt => 527adf9d4c760f73
+
+undici-types 7.24.6
+License metadata: MIT
+LICENSE => a6db8096b2707bc0
+
+use-callback-ref 1.3.3
+License metadata: MIT
+LICENSE => 30f0cfddf483d112
+
+use-sidecar 1.1.3
+License metadata: MIT
+LICENSE => 30f0cfddf483d112
+
+vite 7.3.7
+License metadata: MIT
+LICENSE.md => 9bf374b9978cb5b4
+
+vite-node 3.2.4
+License metadata: MIT
+LICENSE => ddc110f3b89cc397
+
+vitest 3.2.7
+License metadata: MIT
+LICENSE.md => cfafacba246783f8
+
+w3c-xmlserializer 5.0.0
+License metadata: MIT
+LICENSE.md => ab654de803cdaa9e
+
+webidl-conversions 7.0.0
+License metadata: BSD-2-Clause
+LICENSE.md => a889cc4dbee2ae17
+
+whatwg-encoding 3.1.1
+License metadata: MIT
+LICENSE.txt => 528eec83cb836a0a
+
+whatwg-mimetype 4.0.0
+License metadata: MIT
+LICENSE.txt => 528eec83cb836a0a
+
+whatwg-url 14.2.0
+License metadata: MIT
+LICENSE.txt => db480f236292a093
+
+why-is-node-running 2.3.0
+License metadata: MIT
+LICENSE => 6a134e51aa31496c
+
+ws 8.22.0
+License metadata: MIT
+LICENSE => 2b29dcfe0d6471f7
+
+xml-name-validator 5.0.0
+License metadata: Apache-2.0
+LICENSE.txt => bb28c48e3e078166
+
+xmlchars 2.2.0
+License metadata: MIT
+LICENSE => 45d196313c2647d3

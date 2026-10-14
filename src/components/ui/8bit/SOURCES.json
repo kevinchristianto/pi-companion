@@ -1,0 +1,107 @@
+{
+  "project": "8bitcn/ui",
+  "repository": "https://github.com/TheOrcDev/8bitcn-ui",
+  "revision": "da3c0722b110d7bb99a7b7d7e2ee53251f2151e1",
+  "retrieved": "2026-10-14",
+  "license": "MIT",
+  "licenseFile": "public/licenses/8bitcn-MIT.txt",
+  "distribution": "Only the listed component sources are vendored. The Next.js website, server, package manifest and registry tooling are not included.",
+  "adaptations": [
+    "Button imports use the directly installed @radix-ui/react-slot instead of the aggregate radix-ui package.",
+    "The dropdown entry point additionally exposes the upstream underlying radio group and radio item, with matching pixel choice styling; checkbox styling is squared.",
+    "DialogContent accepts the underlying Radix content props; DialogTitle does not forward the font-only prop into the DOM.",
+    "TooltipContent removes its empty non-portaled wrapper so it does not occupy layout space.",
+    "The retro CSS uses the original Press Start 2P family bundled locally instead of the upstream Google Fonts request. Compact UI text uses 8px with integer line boxes; headings use 10\u201312px and unsupported Unicode uses system fallbacks.",
+    "The project-local cn helper uses clsx and tailwind-merge instead of the upstream website helper and site configuration.",
+    "App-specific colors, compact spacing and square window chrome are in src/styles.css; component accessibility and popup behavior use actual Radix-backed 8bitcn sources.",
+    "All component icons use local integer-grid SVG shapes instead of smooth lucide symbols; lucide-react is not installed.",
+    "Client-only Next.js directives are omitted because this is a local Vite WebView application.",
+    "The tooltip arrow is a stepped integer-grid SVG instead of a rotated rounded arrow.",
+    "Tooltip roots honor the surrounding TooltipProvider delay rather than overriding it with an extra zero-delay provider."
+  ],
+  "files": [
+    {
+      "upstreamPath": "components/ui/8bit/button.tsx",
+      "localPath": "src/components/ui/8bit/button.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/button.tsx",
+      "upstreamSha256": "6a1e6ec841b43c6b1d745c6b5171e8186f5e3eadd864cc8cc60a7c68cd6cd233",
+      "localSha256": "ac14adcb6a3f41ab00623ec35dbcd81ee4df00f188de1120b44fd0fcf4224e40"
+    },
+    {
+      "upstreamPath": "components/ui/8bit/dropdown-menu.tsx",
+      "localPath": "src/components/ui/8bit/dropdown-menu.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/dropdown-menu.tsx",
+      "upstreamSha256": "1ef1933f3ec2cee1e9e37ffc0f68e24f19b2081282169c40f8dd364614b7dbf2",
+      "localSha256": "b6250393aba58552fe48e56efb40428096ad55e00e520bbeb49ca0cbe619276e"
+    },
+    {
+      "upstreamPath": "components/ui/8bit/dialog.tsx",
+      "localPath": "src/components/ui/8bit/dialog.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/dialog.tsx",
+      "upstreamSha256": "e7e6a6eb2b25377707c93665779ce7911f0324532f259eaee2901b688128f664",
+      "localSha256": "a604579f7972f75cffe692a1fb79d5a007b9ae55f656c493b419b21d2890370e"
+    },
+    {
+      "upstreamPath": "components/ui/8bit/tooltip.tsx",
+      "localPath": "src/components/ui/8bit/tooltip.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/tooltip.tsx",
+      "upstreamSha256": "9757c86919891b30c464693bffa4a2fec1c6ed05ed17c36835c5985ddf73be5b",
+      "localSha256": "0e2955907a461fedd6419bd3960848b94113acb2c96cf049a27be76ac4a60889"
+    },
+    {
+      "upstreamPath": "components/ui/8bit/styles/retro.css",
+      "localPath": "src/components/ui/8bit/styles/retro.css",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/8bit/styles/retro.css",
+      "upstreamSha256": "0e96902b74184e53ac5fbb806b8ef077bdd781357b3e47e83628a8c66842c010",
+      "localSha256": "0d40da72804f1cc1bceba96b11aebf0e83a0c90885fa2f988a5e847741128a1f"
+    },
+    {
+      "upstreamPath": "components/ui/button.tsx",
+      "localPath": "src/components/ui/button.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/button.tsx",
+      "upstreamSha256": "cc36af0f8b5019c33cc039fbf03bb952a513072b15b55b53c592b78af3e5f4c4",
+      "localSha256": "cd391fe08b5ce518af9af677b6071e4c923f9c85830d45ef4594874e09cbbd62"
+    },
+    {
+      "upstreamPath": "components/ui/dropdown-menu.tsx",
+      "localPath": "src/components/ui/dropdown-menu.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/dropdown-menu.tsx",
+      "upstreamSha256": "5e84c03da3aefb471af57860ac78d7dc994bc9e70067cc0084582c0718466bd1",
+      "localSha256": "4ccbee531f32fb93d6e7f26d40c3181c63026267af4f07773b2b92efa08e63f4"
+    },
+    {
+      "upstreamPath": "components/ui/dialog.tsx",
+      "localPath": "src/components/ui/dialog.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/dialog.tsx",
+      "upstreamSha256": "eb9dfff90cde1fae6854f5ae57e66c9313b4e9792c3d47806b11c480ecb3d4e8",
+      "localSha256": "9d76e275c5d12f6bf6800cb5c1373c43bbb85724cf5cbe0a3c72513597d13d0f"
+    },
+    {
+      "upstreamPath": "components/ui/tooltip.tsx",
+      "localPath": "src/components/ui/tooltip.tsx",
+      "upstreamUrl": "https://raw.githubusercontent.com/TheOrcDev/8bitcn-ui/da3c0722b110d7bb99a7b7d7e2ee53251f2151e1/components/ui/tooltip.tsx",
+      "upstreamSha256": "989a17bd314f69722b7dbe7a6f3d116e409a4adadfad60ef24cf7f12b32d3867",
+      "localSha256": "f3a832730b0ac6f859859b2d01f0d999e973fafb41767d4911ab7972b041d700"
+    }
+  ],
+  "licenseSha256": "1f7c401e999345dc159be2023cb7587d72e044f3e736b378dff8828a7060c31e",
+  "supportingLicenses": [
+    {
+      "project": "shadcn/ui",
+      "licenseFile": "public/licenses/shadcn-ui-MIT.txt",
+      "source": "https://raw.githubusercontent.com/shadcn-ui/ui/main/LICENSE.md",
+      "sha256": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f"
+    }
+  ],
+  "localHelperFiles": [
+    {
+      "path": "src/lib/utils.ts",
+      "sha256": "040a59b476c11541bf85c9d9942a3668b268484e2610a58c57f6d75ae12a0d41"
+    },
+    {
+      "path": "src/components/ui/pixel-icons.tsx",
+      "sha256": "681c93af670439c4145209a1a7ed55fcafb7f38cf7a7123ec7911a47ec512740"
+    }
+  ],
+  "licenseDistribution": "Complete licenses are shipped both in the frontend public/licenses assets and as readable native resources copied from docs/licenses."
+}

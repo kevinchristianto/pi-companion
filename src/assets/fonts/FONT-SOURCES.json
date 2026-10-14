@@ -1,0 +1,24 @@
+{
+  "family": "Press Start 2P",
+  "style": "normal",
+  "weight": 400,
+  "license": "SIL Open Font License 1.1 (OFL-1.1)",
+  "copyright": "Copyright 2012 The Press Start 2P Project Authors (cody@zone38.net), with Reserved Font Name \"Press Start 2P\".",
+  "officialDistribution": "https://github.com/google/fonts/tree/main/ofl/pressstart2p",
+  "retrieved": "2026-10-14",
+  "modifications": "None. The regular TrueType font and full license are byte-identical to the official Google Fonts downloads.",
+  "font": {
+    "path": "src/assets/fonts/PressStart2P-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf",
+    "bytes": 118204,
+    "sha256": "034c77f1f05ec89421e4a63f0e3a4ca1ecf852cc6d2bf611f126f275728e017d"
+  },
+  "licenseFile": {
+    "path": "public/licenses/PressStart2P-OFL.txt",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/OFL.txt",
+    "bytes": 4413,
+    "sha256": "705960c3281a5765ecc0b59bd4ed7ca59eed165748076bc2fc3e8fdbfeb944b0"
+  },
+  "distribution": "Vite emits the imported font into dist/assets and copies the complete license to dist/licenses/PressStart2P-OFL.txt. Native builds include dist in their frontend bundle; an identical docs/licenses/PressStart2P-OFL.txt is installed as a readable resource through the existing licenses resource mapping.",
+  "runtime": "All UI uses bundled Press Start 2P at 8px for compact controls/body text and 10\u201312px for headings. The 16px CSS root retains integer 8bitcn borders. There are no runtime font CDN requests. System sans-serif fallbacks preserve unsupported Unicode glyphs."
+}

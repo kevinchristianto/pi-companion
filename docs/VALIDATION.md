@@ -42,3 +42,11 @@ The observer now clears cached child rows when its optional plugin becomes unava
 - Measure idle/64-agent CPU and memory; no performance numbers are claimed before measurement.
 
 No browser or native screenshot has been claimed for this implementation.
+
+## Compact 8bitcn revision (0.1.2)
+
+Version 0.1.2 replaces the vanilla controls with React plus pinned actual 8bitcn/Radix sources, groups sessions by exact workspace cwd and shrinks the default window. Verified: 83 frontend + 51 observer + 49 core Rust + 22 shell tests (205 total), both TypeScript checks, production asset/font/component/license checks, formatting, strict core/shell Clippy and the isolated Windows GNU shell-policy check pass. The explicitly labeled offline layout preview is reviewed separately. Windows compilation, workspace tests and unsigned installer packaging are additionally run by the artifact-only Windows preview workflow. Inspect the run for the exact commit before treating those stages as passed.
+
+Browser rendering is unavailable in this task: the supported cloud browser cannot reach the workspace's loopback review server, and its URL policy explicitly rejects data URLs. No alternate browser or injection route is used. The offline composition uses final local styles, font and approved sprite layers, but is not a browser or native-app screenshot. It cannot verify Radix geometry/collision positioning, WebView font metrics, native drag/resize or mixed-DPI rendering.
+
+Native Windows acceptance must additionally check the compact menu at 320×280 and 480×380, scrolling long project lists, full paths with Unicode, project disappearance/reconnect, custom pixel tooltips/dialogs, and restoring the window after hide/pass-through. The user confirmed connection succeeds with published 0.1.1; the new UI itself has not been run on their Windows machine.

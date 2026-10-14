@@ -2612,7 +2612,7 @@ dependencies = [
 
 [[package]]
 name = "pi-companion"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "companion-core",
  "companion-shell",

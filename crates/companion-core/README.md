@@ -33,6 +33,7 @@ status changes; a metadata-identical heartbeat need not increment the revision.
     "agentId": "main",
     "name": "Documentation project",
     "sessionName": "Documentation project",
+    "cwd": "/local/workspace",
     "role": "orchestrator",
     "task": "",
     "state": "idle"
@@ -40,7 +41,11 @@ status changes; a metadata-identical heartbeat need not increment the revision.
 }
 ```
 
-`tool` and `model` are optional strings. The bridge states are `starting`,
+`tool`, `model`, and `cwd` are optional strings. `cwd` is the exact workspace identity
+reported by the session's observer and is copied to each projected agent. The
+bridge does not resolve filesystem paths, normalize separators or case, or merge
+agents from different sessions. The renderer can group equal cwd identities while
+preserving every session-local agent. The bridge states are `starting`,
 `listening`, `error`, and `stopped`. Agent states are `idle`, `thinking`, `working`,
 `waiting`, `completed`, `error`, `stale`, and `offline`; stale/offline agents are
 never included. A completed/error task alone is not proof that its agent process
@@ -100,10 +105,14 @@ restarts. This intentional bound prevents unbounded replay tombstones.
 ## Protocol-v1 compatibility
 
 Legacy hello `{ "version": 1 }` is supported. Legacy ingest may omit version and
-source ordering. Its session requires an `id`; `name`, `model`, `connected`, and
+source ordering. Its session requires an `id`; `name`, `cwd`, `model`, `connected`, and
 `agents` may be omitted. Omission keeps metadata and agent membership. Connected
 is true on an accepted heartbeat unless explicitly false. Explicit null clears
-`tool` or `model`. Session and agent identifiers are not normalized or truncated.
+`tool`, `model`, or `cwd`. Blank cwd also means unknown. Cwd must be control-free
+and at most 4,096 UTF-16 code units, matching the observer/renderer bound; invalid
+values reject the entire update rather than being truncated. A new ordered source
+activation clears the previous workspace until the new source supplies it.
+Session, agent, and workspace identities are not normalized or truncated.
 
 `agentsComplete:true` requires an ordered source and an explicit array. Once a
 session uses source ordering, a source-less packet cannot supersede it. New
@@ -116,7 +125,7 @@ Lifecycle markers contain `version:1`, eventId, `kind:start|stop`, source, and
 `pi:session_start`, `pi:session_shutdown`, `pi-subagents:child-status`, and the new
 `pi-subagents:fleet` extension. Stop stays hidden until a distinct later explicit
 start (ordered sources use accepted packet order; legacy sources use marker time); clearing lifecycle metadata does not revive it. Source timestamps never
-establish freshness. Logs, cwd, project, usage, and other unused metadata are
+establish freshness. Logs, project, usage, and other unused metadata are
 accepted as unknown fields but are neither projected nor retained.
 
 The new parser rejects malformed record/array types, invalid identities, invalid

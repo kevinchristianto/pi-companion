@@ -42,6 +42,9 @@ pub struct AgentSnapshot {
     pub agent_id: String,
     pub name: String,
     pub session_name: String,
+    /// Exact observer-provided workspace identity, never normalized or truncated.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cwd: Option<String>,
     pub role: String,
     pub task: String,
     pub state: AgentState,
@@ -63,7 +66,7 @@ pub struct Snapshot {
 }
 
 /// Missing fields preserve protocol-v1 partial-update behavior. Metadata not used
-/// by the live projection (logs, usage, cwd, project, timestamps) is ignored.
+/// by the live projection (logs, usage, project, timestamps) is ignored.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IngestPayload {
@@ -88,6 +91,8 @@ pub struct SessionUpdate {
     pub id: String,
     #[serde(default)]
     pub name: Option<String>,
+    #[serde(default)]
+    pub cwd: Patch<String>,
     #[serde(default)]
     pub model: Patch<String>,
     #[serde(default)]
@@ -188,6 +193,8 @@ pub enum IngestError {
     SourceLimit,
     #[error("Invalid lifecycle metadata")]
     Lifecycle,
+    #[error("Workspace identity must be control-free and at most 4096 UTF-16 code units")]
+    Workspace,
 }
 
 pub(crate) fn valid_identity(value: &str) -> bool {

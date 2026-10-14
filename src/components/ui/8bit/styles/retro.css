@@ -1,0 +1,12 @@
+/* Adapted from 8bitcn: use the licensed offline font instead of a Google Fonts request. */
+.retro {
+  font-family: "Press Start 2P", "Segoe UI", system-ui, sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 14px;
+  letter-spacing: 0;
+}
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

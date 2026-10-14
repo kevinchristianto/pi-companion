@@ -7,6 +7,8 @@ export interface Agent {
   agentId: string;
   name: string;
   sessionName: string;
+  /** Exact observer-provided workspace identity; never a renderer filesystem path. */
+  cwd?: string;
   role: string;
   task: string;
   state: AgentState;
@@ -31,6 +33,7 @@ const text = (value: unknown, max = 8192): value is string => typeof value === '
 const integer = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
 const optionalText = (value: unknown): boolean => value === undefined || text(value);
 const optionalAgentText = (value: unknown): boolean => value === null || optionalText(value);
+const optionalWorkspace = (value: unknown): boolean => value === undefined || value === null || (text(value, 4096) && !/\p{Cc}/u.test(value) && !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(value));
 
 /** Untrusted bridge values never become markup, paths, sprite keys, or commands. */
 export function parseShellState(value: unknown): ShellState | null {
@@ -44,13 +47,13 @@ export function parseShellState(value: unknown): ShellState | null {
   for (const agent of snapshot.agents) {
     if (!object(agent) || !['key', 'sessionId', 'agentId', 'name', 'sessionName', 'role', 'task'].every(key => text(agent[key]))) return null;
     if (!agent.key || !agent.sessionId || !agent.agentId || keys.has(agent.key as string)) return null;
-    if (!AGENT_STATES.includes(agent.state as AgentState) || !optionalAgentText(agent.tool) || !optionalAgentText(agent.model)) return null;
+    if (!AGENT_STATES.includes(agent.state as AgentState) || !optionalAgentText(agent.tool) || !optionalAgentText(agent.model) || !optionalWorkspace(agent.cwd)) return null;
     keys.add(agent.key as string);
   }
   // Copy accepted data: callers cannot mutate an accepted snapshot through its input object.
   return {
     sequence: value.sequence,
-    snapshot: { streamId: snapshot.streamId, revision: snapshot.revision, ...(snapshot.omittedAgentCount === undefined ? {} : { omittedAgentCount: snapshot.omittedAgentCount as number }), agents: snapshot.agents.map(a => ({ key: a.key, sessionId: a.sessionId, agentId: a.agentId, name: a.name, sessionName: a.sessionName, role: a.role, task: a.task, state: a.state, ...(typeof a.tool === 'string' ? { tool: a.tool } : {}), ...(typeof a.model === 'string' ? { model: a.model } : {}) })) as Agent[] },
+    snapshot: { streamId: snapshot.streamId, revision: snapshot.revision, ...(snapshot.omittedAgentCount === undefined ? {} : { omittedAgentCount: snapshot.omittedAgentCount as number }), agents: snapshot.agents.map(a => ({ key: a.key, sessionId: a.sessionId, agentId: a.agentId, name: a.name, sessionName: a.sessionName, ...(typeof a.cwd === 'string' && a.cwd.trim() ? { cwd: a.cwd } : {}), role: a.role, task: a.task, state: a.state, ...(typeof a.tool === 'string' ? { tool: a.tool } : {}), ...(typeof a.model === 'string' ? { model: a.model } : {}) })) as Agent[] },
     bridge: { status: bridge.status as BridgeStatus, ...(bridge.message === undefined ? {} : { message: bridge.message as string }), ...(bridge.connectionFile === undefined ? {} : { connectionFile: bridge.connectionFile as string }), ...(bridge.observerEntry === undefined ? {} : { observerEntry: bridge.observerEntry as string }) },
     window: { pinned: window.pinned, clickThrough: window.clickThrough, ...(window.recoveryAvailable === undefined ? {} : { recoveryAvailable: window.recoveryAvailable }) },
   };

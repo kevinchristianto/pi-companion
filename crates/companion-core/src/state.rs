@@ -26,6 +26,7 @@ struct Agent {
 struct Session {
     id: String,
     name: String,
+    cwd: Option<String>,
     model: Option<String>,
     agents: BTreeMap<String, Agent>,
     connected: bool,
@@ -40,6 +41,7 @@ impl Session {
         Self {
             id,
             name: "Pi session".into(),
+            cwd: None,
             model: None,
             agents: BTreeMap::new(),
             connected: false,
@@ -213,6 +215,7 @@ impl StateStore {
             // This is a new source activation, not a partial update to a departed
             // process. Old children must not leak into its first heartbeat.
             session.agents.clear();
+            session.cwd = None;
             session.model = None;
             session.name = "Pi session".into();
             session.omitted_agent_count = 0;
@@ -242,6 +245,19 @@ impl StateStore {
             };
         }
         apply_text_patch(&mut session.model, payload.session.model, 240);
+        // Workspace paths are identity, not lossy display text. Validation runs
+        // before mutation; blank and null mean unknown, omission preserves it.
+        match payload.session.cwd {
+            Patch::Missing => {}
+            Patch::Clear => session.cwd = None,
+            Patch::Set(value) => {
+                session.cwd = if value.trim().is_empty() {
+                    None
+                } else {
+                    Some(value)
+                };
+            }
+        }
         session.connected = payload.session.connected.unwrap_or(true);
         session.last_receipt = Some(now);
         session.order = payload.source.or(session.order);
@@ -351,6 +367,7 @@ impl StateStore {
                             agent.name.clone()
                         },
                         session_name: session.name.clone(),
+                        cwd: session.cwd.clone(),
                         role: agent.role.clone(),
                         task: agent.task.clone(),
                         state: agent.state,
@@ -421,6 +438,11 @@ fn validate(payload: &IngestPayload) -> Result<(), IngestError> {
     }
     if !valid_identity(&payload.session.id) {
         return Err(IngestError::Identity);
+    }
+    if let Patch::Set(cwd) = &payload.session.cwd {
+        if cwd.encode_utf16().count() > 4096 || cwd.chars().any(char::is_control) {
+            return Err(IngestError::Workspace);
+        }
     }
     if payload.source.is_some_and(|order| {
         order.generation == 0

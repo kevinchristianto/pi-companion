@@ -17,9 +17,13 @@ def add(name,version,expression,directory):
     packages.append(f'{name} {version}\nLicense metadata: {expression or "See package source"}\n'+ ('\n'.join(references) if references else 'License text supplied with original package source.')+'\n')
 for p in sorted(metadata['packages'],key=lambda p:(p['name'],p['version'])):
     if p.get('source'):add(p['name'],p['version'],p.get('license'),Path(p['manifest_path']).parent)
-package=root/'node_modules/@tauri-apps/api/package.json'
-if package.exists():
-    p=json.loads(package.read_text());add(p['name'],p['version'],p.get('license'),package.parent)
+lock=json.loads((root/'package-lock.json').read_text())
+for relative, info in sorted(lock.get('packages', {}).items()):
+    if not relative.startswith('node_modules/'):
+        continue
+    package=root/relative/'package.json'
+    if package.exists():
+        p=json.loads(package.read_text());add(p['name'],p['version'],p.get('license'),package.parent)
 header='PI COMPANION THIRD-PARTY DEPENDENCY NOTICES\n\nGenerated from locked Cargo and npm dependencies, including build dependencies for completeness.\nIdentical license/notice texts are printed once and referenced by content hash from every applicable package.\nWhitespace at line ends is normalized; terms and attribution text are retained.\nInclusion does not imply every dependency ships in the executable.\nThe project itself has no selected blanket license.\n\nDEPENDENCY INDEX\n\n'
 directory=root/'docs/licenses';directory.mkdir(parents=True,exist_ok=True)
 parts=[];chunk=''
@@ -28,7 +32,9 @@ for digest,content in sorted(texts.items()):
     if chunk and len(chunk)+len(section)>90000:parts.append(chunk);chunk=''
     chunk+=section
 if chunk:parts.append(chunk)
-index='Complete license texts are bundled in the licenses/ folder and stored in docs/licenses/ in the source repository.\nNo license terms are omitted; each numbered part contains whole license/notice texts.\n\n'
+for source in (root/'public/licenses').glob('*.txt'):
+    (directory/source.name).write_bytes(source.read_bytes())
+index='Bundled font and adapted 8bitcn/shadcn source licenses are also included as named text files in this licenses folder.\nComplete license texts are bundled in the licenses/ folder and stored in docs/licenses/ in the source repository.\nNo license terms are omitted; each numbered part contains whole license/notice texts.\n\n'
 for number,part in enumerate(parts,1):
     name=f'LICENSE-TEXTS-{number:02}.txt';(directory/name).write_text(part.strip()+'\n',encoding='utf-8');index+=name+'\n'
 (root/'THIRD-PARTY-NOTICES.txt').write_text((header+index+'\n'+'\n'.join(packages)).rstrip()+'\n',encoding='utf-8')

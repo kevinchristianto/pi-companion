@@ -5,8 +5,8 @@ use companion_core::{
     BridgeStatus, Observer, Snapshot,
 };
 use companion_shell::{
-    export_observer, fit_window, load_or_create_connection, preset_size, Rect, WindowState,
-    RECOVERY_SHORTCUT,
+    export_observer, fit_window, load_or_create_connection, minimum_size_for_work_area,
+    preset_size, Rect, WindowState, RECOVERY_SHORTCUT,
 };
 use serde::Serialize;
 use std::sync::{
@@ -160,11 +160,8 @@ fn fit_to_monitor(window: &WebviewWindow) -> Result<(), String> {
     );
     // Configuration minima are logical; monitor work areas are physical. Restore
     // the original logical minimum when moving from a tiny screen back to a large one.
-    let scale = monitor.scale_factor();
-    let minimum = (
-        ((360.0 * scale).round() as u32).min(area.size.width),
-        ((320.0 * scale).round() as u32).min(area.size.height),
-    );
+    let minimum =
+        minimum_size_for_work_area(monitor.scale_factor(), area.size.width, area.size.height);
     let changed = shared
         .minimum_size
         .lock()

@@ -45,6 +45,7 @@ const first=create('Original named Pi session');let replacement,heartbeatProbe;
 try{
   await first.emit('session_start');await first.flush();
   let snapshot=await readSnapshot();assert.equal(snapshot.agents.length,3);assert.equal(snapshot.agents.find(a=>a.agentId==='main').name,'Original named Pi session');
+  assert.ok(snapshot.agents.every(agent=>agent.cwd==='/fixture/project'),'Exact workspace metadata must reach every projected root and child');
   assert.deepEqual(new Set(snapshot.agents.filter(a=>a.agentId!=='main').map(a=>a.name)),new Set(['Fixture builder','Fixture reviewer']));
   assert.ok(first.wire.filter(x=>x.route==='/api/ingest').every(x=>x.status===202&&x.body.session.agentsComplete===true&&x.body.streamId));
   await first.emit('session_info_changed',{name:'Renamed from real adapter'});await first.emit('tool_execution_start',{toolCallId:'fixture-tool',toolName:'read',get args(){throw new Error('Private args must not be accessed');}});await first.flush();
