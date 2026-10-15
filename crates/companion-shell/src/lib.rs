@@ -7,6 +7,7 @@ use std::{
 };
 
 mod observer_export;
+pub mod taskbar;
 #[cfg(unix)]
 mod unix_private;
 #[cfg(windows)]
@@ -16,8 +17,16 @@ pub use observer_export::export_observer;
 pub const BRIDGE_PORT: u16 = 4318;
 pub const RECOVERY_SHORTCUT: &str = "CommandOrControl+Shift+P";
 /// Logical pixels; keep the initial native window in sync with these values.
-pub const DEFAULT_WINDOW_SIZE: (f64, f64) = (480.0, 380.0);
-pub const MINIMUM_WINDOW_SIZE: (f64, f64) = (320.0, 280.0);
+pub const DEFAULT_WINDOW_SIZE: (f64, f64) = (360.0, 300.0);
+pub const MINIMUM_WINDOW_SIZE: (f64, f64) = (280.0, 240.0);
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum WindowMode {
+    #[default]
+    Office,
+    Taskbar,
+}
 
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +34,8 @@ pub struct WindowState {
     pub pinned: bool,
     pub click_through: bool,
     pub recovery_available: bool,
+    pub mode: WindowMode,
+    pub fullscreen_hidden: bool,
 }
 impl WindowState {
     pub fn can_hide(&self) -> bool {
@@ -36,8 +47,13 @@ impl WindowState {
     pub fn can_click_through(&self, enabled: bool) -> bool {
         !enabled || self.recovery_available
     }
+    pub fn can_enter_mode(&self, mode: WindowMode) -> bool {
+        mode == WindowMode::Office || self.recovery_available
+    }
     pub fn restored(&mut self) {
         self.click_through = false;
+        self.mode = WindowMode::Office;
+        self.fullscreen_hidden = false;
     }
 }
 
@@ -183,7 +199,7 @@ mod tests {
     use std::fs;
     #[test]
     fn presets_are_bounded_and_unknown_denied() {
-        assert_eq!(preset_size("compact"), Some((480.0, 380.0)));
+        assert_eq!(preset_size("compact"), Some((360.0, 300.0)));
         assert_eq!(preset_size("wide"), Some((720.0, 420.0)));
         assert_eq!(preset_size("tall"), Some((400.0, 620.0)));
         for preset in ["compact", "wide", "tall"] {
@@ -202,21 +218,25 @@ mod tests {
         assert_eq!(main["height"].as_f64(), Some(DEFAULT_WINDOW_SIZE.1));
         assert_eq!(main["minWidth"].as_f64(), Some(MINIMUM_WINDOW_SIZE.0));
         assert_eq!(main["minHeight"].as_f64(), Some(MINIMUM_WINDOW_SIZE.1));
+        assert_eq!(main["transparent"], true);
+        assert_eq!(main["decorations"], false);
+        assert_eq!(main["shadow"], false);
+        assert_eq!(main["skipTaskbar"], false);
         assert_eq!(preset_size("compact"), Some(DEFAULT_WINDOW_SIZE));
     }
     #[test]
     fn physical_minimum_tracks_scale_and_available_work_area() {
-        assert_eq!(minimum_size_for_work_area(1.0, 1920, 1040), (320, 280));
-        assert_eq!(minimum_size_for_work_area(1.25, 1920, 1040), (400, 350));
-        assert_eq!(minimum_size_for_work_area(1.5, 1920, 1040), (480, 420));
-        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (640, 560));
+        assert_eq!(minimum_size_for_work_area(1.0, 1920, 1040), (280, 240));
+        assert_eq!(minimum_size_for_work_area(1.25, 1920, 1040), (350, 300));
+        assert_eq!(minimum_size_for_work_area(1.5, 1920, 1040), (420, 360));
+        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (560, 480));
         assert_eq!(minimum_size_for_work_area(2.0, 500, 400), (500, 400));
         // A subsequent fit on a larger screen restores both logical minima.
-        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (640, 560));
+        assert_eq!(minimum_size_for_work_area(2.0, 3840, 2080), (560, 480));
         for invalid_scale in [0.0, -1.0, f64::NAN, f64::INFINITY] {
             assert_eq!(
                 minimum_size_for_work_area(invalid_scale, 1920, 1040),
-                (320, 280)
+                (280, 240)
             );
         }
         assert_eq!(minimum_size_for_work_area(1.0, 0, 0), (1, 1));

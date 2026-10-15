@@ -17,8 +17,10 @@ describe('narrow native bridge', () => {
     await platform.getState(); await platform.command({ name: 'set_pinned', args: { pinned: true } });
     await platform.command({ name: 'set_click_through', args: { enabled: false } });
     await platform.command({ name: 'resize_window', args: { preset: 'wide' } });
+    await platform.command({ name: 'set_window_mode', args: { mode: 'taskbar' } });
+    await platform.command({ name: 'set_window_mode', args: { mode: 'office' } });
     await platform.command({ name: 'hide_window' }); await platform.command({ name: 'start_dragging' });
-    expect(mocks.invoke.mock.calls).toEqual([['get_state'], ['set_pinned', { pinned: true }], ['set_click_through', { enabled: false }], ['resize_window', { preset: 'wide' }], ['hide_window'], ['start_dragging']]);
+    expect(mocks.invoke.mock.calls).toEqual([['get_state'], ['set_pinned', { pinned: true }], ['set_click_through', { enabled: false }], ['resize_window', { preset: 'wide' }], ['set_window_mode', { mode: 'taskbar' }], ['set_window_mode', { mode: 'office' }], ['hide_window'], ['start_dragging']]);
   });
   it('has no silent sample-data fallback outside the explicitly enabled fixture', async () => {
     mocks.isTauri.mockReturnValue(false); const platform = nativePlatform();

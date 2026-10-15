@@ -2612,7 +2612,7 @@ dependencies = [
 
 [[package]]
 name = "pi-companion"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "companion-core",
  "companion-shell",
@@ -2621,6 +2621,8 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-global-shortcut",
  "tauri-plugin-single-instance",
+ "tokio",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

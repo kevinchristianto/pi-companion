@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Frozen, code-authored pre-revision atlases and exact restored torso plates from the original per-character sprite-authoring pipeline. Raw generated source references are retained in the runtime provenance. No raw source overwritten.",
+  "files": {
+    "amber-braid-before.png": "5509c8fc1dc0ebd71d30bd5c52703e04d960a06d5e02d5ded365315af649cc57",
+    "amber-braid-torso.png": "2fe87c9cb10d8d070863047fbc649c3f7ed57a19a24cd29b54e6f91afbb57530",
+    "coral-coils-before.png": "b4aa06140da32737386ba3d667d7ead95795acf5edacbf589f840a165109c1a4",
+    "coral-coils-torso.png": "8fc7e021cf879b397722b5e7b9efbda2639f8e454c8518dbdc226a76b9d414bf",
+    "moss-curls-before.png": "99d9942e195947c142275b5174dec4094baaf038b075041e8e5bc4ee8d9ccd29",
+    "moss-curls-torso.png": "a303dcc45f3e9553c4da0786b764ce76f355fa243fd933104cffdad32937109d",
+    "plum-bun-before.png": "9a5ca88827aa3a94ed421d3fa83b4704bf6d93a52ec3d737013cb07ebf642ed9",
+    "plum-bun-torso.png": "8d35cef5381fed5ff5b944fc5851a65aa49fa75206c1d9ba1cda0aebaf19b104",
+    "sage-bob-before.png": "70819beb54dd00893c5fcdd0ea65f2ca0d69a3db46d050ab3c869cdc002a03de",
+    "sage-bob-torso.png": "26f772bd98acc412e8df6bca65327c65ae3bb37ef7ef68afd47ff0219105df4f",
+    "sky-part-before.png": "8dc9ac429e9a3c90896646030d1f3b8305ada622e1eb710039ca1252b05f9bb0",
+    "sky-part-torso.png": "597b979c5c69620238fc3a39a90b7376a5ec807a6ddd4666562e7bea625d225c"
+  }
+}

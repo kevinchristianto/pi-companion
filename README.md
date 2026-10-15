@@ -4,13 +4,13 @@ A standalone, read-only Pi agent companion for Windows. A small Tauri 2 / Rust a
 
 This is a clean rewrite. It does not bundle Electron, Node.js, the old 3D web application, or a Node bridge process. Windows uses Microsoft WebView2 for the local React/TypeScript/Canvas UI. Pi runs the optional observer extension in its own existing runtime.
 
-## Windows test build
+## Windows release
 
-The **Windows preview artifact** workflow builds an unsigned x64 NSIS installer and uploads it to that workflow run's artifacts. It never creates a GitHub release. Download the installer artifact from the successful commit. The separate observer source artifact is optional; normal setup uses the stable observer entry prepared by the installed app.
+Versioned Windows x64 NSIS installers are published through [GitHub Releases](https://github.com/kevinchristianto/pi-companion/releases), alongside SHA-256 checksums and an optional observer source archive. Normal setup uses the stable observer entry prepared by the installed app.
 
 The installer includes the Rust bridge, six character designs, all four animation states, shared furniture and observer files. If WebView2 is missing, its bootstrapper downloads the required runtime, so first installation can need internet. No signing certificate is configured; Windows can show an unknown-publisher warning. Verify the source commit and artifact origin before deciding whether to install.
 
-This preview still requires real Windows GUI acceptance, especially tray recovery, transparency, mixed-DPI rendering, sleep/resume and accessibility. Compilation and automated tests are separate from that acceptance.
+The release workflow requires successful automated Windows verification and NSIS packaging before publishing. Real Windows GUI acceptance remains outstanding, especially tray recovery, transparency, mixed-DPI rendering, taskbar auto-hide/fullscreen handling, sleep/resume and accessibility. A successful build is not evidence of those native visual checks. See the [0.2.0 notes](docs/releases/v0.2.0.md).
 
 ## Connect Pi
 
@@ -33,17 +33,19 @@ The bridge binds only to `127.0.0.1:4318`, independently of the old Pi Office po
 - 1×/2× integer pixel sizes, reduced-motion behavior and hidden/offscreen pause are supported.
 - Tray and `Ctrl+Shift+P` restore the window and input. If neither independent recovery route is available, hide and click-through are disabled.
 
-## Compact pixel interface (local revision)
+## Compact pixel interface
 
 The local redesign uses actual MIT-licensed [8bitcn](https://www.8bitcn.com/) components, pinned and documented in `src/components/ui/8bit/SOURCES.json`. React owns controls and roster membership; one imperative Canvas2D clock paints the unchanged sprites without a React update per animation frame.
 
-- **Menu** contains the project/workspace picker, artwork scale, window size, pin, pass-through, motion, hide and connection guide. Office is the only view.
+- **Menu** contains the project/workspace picker, artwork scale, window size, Office/Taskbar mode, pin, pass-through, motion, hide and connection guide. The interface stays office-based; there is no separate list view.
 - Workspaces group by the exact cwd shared by Pi, never by a session ID or a folder basename. All live sessions in the same path stay together. Duplicate folder names show paths; missing cwd is labeled unknown and kept separate per session.
-- The default is 480×380 logical pixels; the minimum is 320×280. Window presets and monitor work-area clamping remain available.
+- Office defaults to 360×300 logical pixels with 1× artwork; its minimum is 280×240. An independent 2× artwork preference, window presets and monitor work-area clamping remain available.
 - The undecorated native window has a custom pixel frame/titlebar, square menus/dialogs/tooltips/scrollbars, pixel icons and a bundled OFL Press Start 2P font at compact sizes. There are no remote font requests.
+- Optional Taskbar mode is a transparent, borderless strip 104 logical pixels high above the selected monitor’s taskbar. It uses fixed 1× sprites, an always-visible retro status bubble above each desk, with a downward pixel tail. There is no permanent name or status row below the sprite. Names remain available on hover or keyboard focus, in accessible labels and in Office details. Additional agents scroll horizontally. The Office button returns to the full controls; agent details also open in Office. The strip does not embed into Explorer.
+- Mode changes preserve the workspace filter and live-only roster. Returning to Office restores its saved size, position and pin preference. Explicit tray/shortcut recovery restores input. Same-monitor fullscreen apps hide the strip without stealing focus; a user-hidden window stays hidden. Native Windows acceptance for these behaviors is pending.
 - Long rosters and option menus scroll within the compact window. Keyboard navigation, Escape/outside dismissal, focus recovery, reduced motion and native recovery guards remain supported.
 
-Version 0.1.3 includes the compact 8bitcn redesign and locally bundled Press Start 2P, with corrected scrolling menu borders and a taller agent-details panel. The Windows preview workflow verifies and builds an unsigned test installer; it does not create a formal release. Native GUI acceptance is still required.
+Version 0.2.0 adds the compact Office and optional transparent taskbar strip, the reviewed above-agent retro speech bubbles, and shorter attention arm poses. It retains the 8bitcn controls, local Press Start 2P font, corrected scrolling-menu borders and taller agent-details panel. Native GUI acceptance remains a disclosed follow-up; see the [release checklist](docs/TASKBAR-RELEASE-CHECKLIST.md).
 
 ## Development
 
@@ -59,7 +61,7 @@ npm run tauri -- dev
 
 Run `npm run dev:review` for an explicitly synthetic six-agent browser fixture. It is development-only and excluded from production builds. The ordinary browser page does not pretend to connect to a native bridge.
 
-On Windows, `npm run tauri -- build --bundles nsis` creates the unsigned test installer. `cargo test --workspace --locked` also checks the native shell on a machine with Tauri's platform dependencies.
+On Windows, `npm run tauri -- build --bundles nsis` creates the unsigned installer. `cargo test --workspace --locked` also checks the native shell on a machine with Tauri's platform dependencies.
 
 See [architecture](docs/ARCHITECTURE.md), [validation](docs/VALIDATION.md), [observer protocol](observer/PROTOCOL.md) and [art provenance](src/assets/pixel-office/SOURCE-README.md).
 

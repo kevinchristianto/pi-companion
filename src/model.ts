@@ -16,17 +16,26 @@ export interface Agent {
   model?: string;
 }
 export type BridgeStatus = 'starting' | 'listening' | 'error' | 'stopped';
+export type WindowMode = 'office' | 'taskbar';
+export interface WindowState {
+  pinned: boolean;
+  clickThrough: boolean;
+  recoveryAvailable?: boolean;
+  /** Older native envelopes remain office windows. */
+  mode?: WindowMode;
+  fullscreenHidden?: boolean;
+}
 export interface ShellState {
   sequence: number;
   snapshot: { streamId: string; revision: number; agents: Agent[]; omittedAgentCount?: number };
   bridge: { status: BridgeStatus; message?: string; connectionFile?: string; observerEntry?: string };
-  window: { pinned: boolean; clickThrough: boolean; recoveryAvailable?: boolean };
+  window: WindowState;
 }
 export const EMPTY_STATE: ShellState = {
   sequence: 0,
   snapshot: { streamId: '', revision: 0, agents: [] },
   bridge: { status: 'starting' },
-  window: { pinned: false, clickThrough: false },
+  window: { pinned: false, clickThrough: false, mode: 'office', fullscreenHidden: false },
 };
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const text = (value: unknown, max = 8192): value is string => typeof value === 'string' && value.length <= max;
@@ -43,6 +52,7 @@ export function parseShellState(value: unknown): ShellState | null {
   if (!text(snapshot.streamId, 256) || !integer(snapshot.revision) || !Array.isArray(snapshot.agents) || snapshot.agents.length > 1536) return null;
   if (typeof bridge.status !== 'string' || !['starting', 'listening', 'error', 'stopped'].includes(bridge.status) || !optionalText(bridge.message) || !optionalText(bridge.connectionFile) || !optionalText(bridge.observerEntry)) return null;
   if (typeof window.pinned !== 'boolean' || typeof window.clickThrough !== 'boolean' || (window.recoveryAvailable !== undefined && typeof window.recoveryAvailable !== 'boolean')) return null;
+  if ((window.mode !== undefined && window.mode !== 'office' && window.mode !== 'taskbar') || (window.fullscreenHidden !== undefined && typeof window.fullscreenHidden !== 'boolean')) return null;
   const keys = new Set<string>();
   for (const agent of snapshot.agents) {
     if (!object(agent) || !['key', 'sessionId', 'agentId', 'name', 'sessionName', 'role', 'task'].every(key => text(agent[key]))) return null;
@@ -55,7 +65,7 @@ export function parseShellState(value: unknown): ShellState | null {
     sequence: value.sequence,
     snapshot: { streamId: snapshot.streamId, revision: snapshot.revision, ...(snapshot.omittedAgentCount === undefined ? {} : { omittedAgentCount: snapshot.omittedAgentCount as number }), agents: snapshot.agents.map(a => ({ key: a.key, sessionId: a.sessionId, agentId: a.agentId, name: a.name, sessionName: a.sessionName, ...(typeof a.cwd === 'string' && a.cwd.trim() ? { cwd: a.cwd } : {}), role: a.role, task: a.task, state: a.state, ...(typeof a.tool === 'string' ? { tool: a.tool } : {}), ...(typeof a.model === 'string' ? { model: a.model } : {}) })) as Agent[] },
     bridge: { status: bridge.status as BridgeStatus, ...(bridge.message === undefined ? {} : { message: bridge.message as string }), ...(bridge.connectionFile === undefined ? {} : { connectionFile: bridge.connectionFile as string }), ...(bridge.observerEntry === undefined ? {} : { observerEntry: bridge.observerEntry as string }) },
-    window: { pinned: window.pinned, clickThrough: window.clickThrough, ...(window.recoveryAvailable === undefined ? {} : { recoveryAvailable: window.recoveryAvailable }) },
+    window: { pinned: window.pinned, clickThrough: window.clickThrough, mode: (window.mode ?? 'office') as WindowMode, fullscreenHidden: window.fullscreenHidden === true, ...(window.recoveryAvailable === undefined ? {} : { recoveryAvailable: window.recoveryAvailable }) },
   };
 }
 

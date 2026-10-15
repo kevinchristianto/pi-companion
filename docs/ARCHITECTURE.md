@@ -20,12 +20,18 @@ Hide and click-through require an independent Rust recovery route. The tray and 
 
 ## Validation gates
 
-Automated core/adapter/frontend checks do not establish native Windows appearance or usability. Windows build, tray behavior, transparency, click-through recovery, shortcut collisions, mixed DPI, monitor removal, sleep/resume, keyboard/screen-reader use and idle resource costs are separate gates. The preview workflow only uploads an unsigned test artifact; it does not publish a release or deploy a website.
+Automated core/adapter/frontend checks do not establish native Windows appearance or usability. Windows build, tray behavior, transparency, click-through recovery, shortcut collisions, mixed DPI, monitor removal, sleep/resume, keyboard/screen-reader use and idle resource costs are separate gates. Ordinary main pushes produce unsigned build artifacts. A specifically authorized release commit marker enables a separate write-scoped job that publishes a versioned GitHub Release only after Windows verification and packaging pass. Native GUI acceptance remains separate and is disclosed in the release notes. No website is deployed.
 
 ## Workspace identity and pixel UI
 
 Pi already supplies cwd; the core now preserves its exact validated value on every agent snapshot. Session restarts clear old workspace metadata. No filesystem scan, path alias normalization or inferred project identity is performed. The renderer groups only the authoritative live roster, so idle roots remain while stale/disconnected agents disappear as before. An unknown cwd falls back to a visibly unknown, per-session group. Removing the last agent releases that workspace filter and restores keyboard focus.
 
-The single options dropdown uses actual 8bitcn sources on Radix. Project, scale and size choices are inline radio groups, avoiding horizontal submenus that cannot fit the 320px minimum window. The menu itself scrolls, as does the bounded project list. The connection guide uses the adapted 8bitcn dialog and retains one-time settings registration. No IPC, capability, native privilege or Pi-control surface was added by the UI migration.
+The single options dropdown uses actual 8bitcn sources on Radix. Project, scale and size choices are inline radio groups, avoiding horizontal submenus that cannot fit the 280px minimum window. The menu itself scrolls, as does the bounded project list. The connection guide uses the adapted 8bitcn dialog and retains one-time settings registration. No IPC, capability, native privilege or Pi-control surface was added by the UI migration.
 
 The full font and component licenses are bundled locally. `SOURCES.json` records the exact upstream commit and hashes before/after documented adaptations. Production checks enforce the font/component hashes, original sprite bytes and absence of remote CSS URLs. CSS styles the existing undecorated window; native dragging, resizing and recovery remain Rust/Tauri responsibilities.
+
+## Optional transparent taskbar strip
+
+Rust owns Office/Taskbar mode, saved Office placement and input recovery. Taskbar mode reuses the transparent main window above the selected monitor work area, with a 104-logical-pixel viewport and 12px margins. It never embeds into Explorer. Bounded main-thread polling observes work-area/auto-hide/fullscreen changes; user-hidden state is distinct from automatic fullscreen hiding. Recovery returns to Office with input enabled.
+
+The same live-only workspace-filtered roster and single canvas clock serve both modes. The strip fixes artwork at 64×64 logical pixels and uses a retro status bubble above it with a downward tail. Agent names remain available through pixel-styled hover/focus content, accessible labels and Office details. Office preserves its independent 1×/2× artwork preference.

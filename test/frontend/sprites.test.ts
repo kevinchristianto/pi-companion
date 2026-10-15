@@ -58,3 +58,21 @@ describe('exact bundled sprite contract', () => {
     expect(validDimensions('shared/desk.png', 128, 128)).toBe(false);
   });
 });
+
+describe('attention correction state routing', () => {
+  it.each(DESIGN_IDS)('selects corrected row for needs-input/review across %s', design => {
+    const identity = Array.from({ length: 500 }, (_, i) => `attention/${i}`).find(id => designForIdentity(id) === design)!;
+    expect(identity).toBeTruthy();
+    const canvas = document.createElement('canvas'); const drawImage = vi.fn();
+    vi.spyOn(canvas, 'getContext').mockReturnValue({ drawImage, clearRect: vi.fn(), imageSmoothingEnabled: true } as unknown as CanvasRenderingContext2D);
+    const assets = Object.fromEntries(Object.keys(ASSET_URLS).map(key => [key, { key }])) as unknown as SpriteAssets;
+    for (const state of ['waiting', 'error'] as const) for (const reduced of [false, true]) {
+      for (let i = 0; i < 8; i++) {
+        drawImage.mockClear(); drawSprite(canvas, assets, identity, state, i * 250, 2, reduced);
+        expect((drawImage.mock.calls[1][0] as { key: string }).key).toBe(`characters/${design}.png`);
+        expect(drawImage.mock.calls[1].slice(1, 5)).toEqual([reduced ? 0 : i * 64, 192, 64, 64]);
+        expect(drawImage.mock.calls[4].slice(1, 5)).toEqual([reduced ? 0 : i * 64, 192, 64, 64]);
+      }
+    }
+  });
+});

@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "provider": "PixelLab",
   "model": "Pixen",
   "sourceDate": "2026-10-14",
   "pipeline": "Static generated source artwork, followed by manually designed, code-authored integer-pixel registration, masks, furniture corrections and discrete raster animation. These atlases are derivatives, not AI-generated motion.",
-  "runtimeReuse": "All fifteen PNGs are retained byte-for-byte from the existing cast. This clean frontend introduces no new generation, palette remapping, pixel editing, or resampling.",
+  "runtimeReuse": "Original generated sources, shared props, foreground hand atlases and idle/typing/thinking pixels are preserved. Attention row only was revised with a reproducible code-authored compact arm pose; no new generation or resampling.",
   "sourceReferences": [
     {
       "designId": "moss-curls",
@@ -77,7 +77,8 @@
       "Source-derived blink, wrist tapping, chin-touch, and two-segment attention gestures.",
       "Desk and laptop geometry corrected together to show the rear laptop lid facing the viewer.",
       "Character-specific foreground hand pixels preserved above the keyboard without crossing the opaque laptop lid.",
-      "Native source colors retained; repeated frame holds are intentional."
+      "Native source colors retained; repeated frame holds are intentional.",
+      "2026-10-15 attention revision: per-character elbow tucked 3\u20134px outward, 6px below the shoulder; forearm 7px high with 2px lateral offset. Exact existing palm pixels and localized finger flex retained. Shoulder/body registration stays fixed."
     ]
   },
   "acceptance": "Runtime bundling is authorized for this unreleased application. Full-cast native-window visual, animation, interaction and DPI acceptance remains pending. Raster hashes are not a visual-approval claim.",
@@ -90,7 +91,7 @@
     },
     {
       "path": "characters/amber-braid.png",
-      "sha256": "5509c8fc1dc0ebd71d30bd5c52703e04d960a06d5e02d5ded365315af649cc57",
+      "sha256": "ab2173af703833786f3ef944f60d3649e49678b94eed2d71d88d0c0e7352058e",
       "width": 512,
       "height": 256
     },
@@ -102,7 +103,7 @@
     },
     {
       "path": "characters/coral-coils.png",
-      "sha256": "b4aa06140da32737386ba3d667d7ead95795acf5edacbf589f840a165109c1a4",
+      "sha256": "a171486fb7b9833fd5dcc668a0f1dc07ac740101c7aaa7b3d2535cc73e7cdb55",
       "width": 512,
       "height": 256
     },
@@ -114,7 +115,7 @@
     },
     {
       "path": "characters/moss-curls.png",
-      "sha256": "99d9942e195947c142275b5174dec4094baaf038b075041e8e5bc4ee8d9ccd29",
+      "sha256": "106f9f64cafab62a0c68954748f039dfa20d35eb035010e51eb1d91087ed055f",
       "width": 512,
       "height": 256
     },
@@ -126,7 +127,7 @@
     },
     {
       "path": "characters/plum-bun.png",
-      "sha256": "9a5ca88827aa3a94ed421d3fa83b4704bf6d93a52ec3d737013cb07ebf642ed9",
+      "sha256": "4327086da81f36487d8994819831892c2a95ec9925a8279204367e0d911347f8",
       "width": 512,
       "height": 256
     },
@@ -138,7 +139,7 @@
     },
     {
       "path": "characters/sage-bob.png",
-      "sha256": "70819beb54dd00893c5fcdd0ea65f2ca0d69a3db46d050ab3c869cdc002a03de",
+      "sha256": "5547facbcda97115710522d6e7f011b626b7084d109003b12f0c246739de42d0",
       "width": 512,
       "height": 256
     },
@@ -150,7 +151,7 @@
     },
     {
       "path": "characters/sky-part.png",
-      "sha256": "8dc9ac429e9a3c90896646030d1f3b8305ada622e1eb710039ca1252b05f9bb0",
+      "sha256": "b02a3761073e852d433be4250094223eda2b853bb6e22ba62e52470f3a4746f6",
       "width": 512,
       "height": 256
     },
@@ -172,5 +173,16 @@
       "width": 64,
       "height": 64
     }
-  ]
+  ],
+  "attentionRevision": {
+    "date": "2026-10-15",
+    "authoringScript": "scripts/author-attention.py",
+    "inputManifest": "art-source/attention/INPUTS.json",
+    "states": [
+      "waiting",
+      "error"
+    ],
+    "row": 3,
+    "localReviewStatus": "Compact six-character sprite previews accepted on 2026-10-15. Subsequent feature work retains these runtime PNGs unchanged; native taskbar playback remains unverified."
+  }
 }

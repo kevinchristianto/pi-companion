@@ -1,4 +1,4 @@
 [[permission]]
 identifier = "allow-companion-ui"
 description = "Read the local roster and request a small set of recoverable companion window actions."
-commands.allow = ["get_state", "set_pinned", "set_click_through", "hide_window", "restore_window", "resize_window", "start_dragging"]
+commands.allow = ["get_state", "set_pinned", "set_window_mode", "set_click_through", "hide_window", "restore_window", "resize_window", "start_dragging"]

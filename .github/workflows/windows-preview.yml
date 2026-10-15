@@ -1,54 +1,207 @@
-name: Windows preview artifact
+name: Windows build and formal release
+
 on:
   workflow_dispatch:
   push:
     branches: [main]
+
+# Ordinary pushes and manual runs only build artifacts. Only the exact, approved
+# main commit message below can enter the separately privileged release job.
 permissions:
   contents: read
 concurrency:
-  group: windows-preview-${{ github.ref }}
-  cancel-in-progress: true
+  group: windows-${{ github.sha }}
+  cancel-in-progress: false
+
 jobs:
   verify-and-build:
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_authorized: ${{ steps.version.outputs.release_authorized }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify package versions and release intent
+        id: version
+        shell: python {0}
+        run: |
+          import json, os, re, tomllib
+          from pathlib import Path
+          package = json.loads(Path('package.json').read_text())
+          lock = json.loads(Path('package-lock.json').read_text())
+          tauri = json.loads(Path('src-tauri/tauri.conf.json').read_text())
+          native = tomllib.loads(Path('src-tauri/Cargo.toml').read_text())
+          rust_lock = tomllib.loads(Path('Cargo.lock').read_text())
+          rust_version = [p['version'] for p in rust_lock['package'] if p['name'] == 'pi-companion']
+          version = package['version']
+          assert re.fullmatch(r'\d+\.\d+\.\d+', version), 'Expected a stable version'
+          assert [lock['version'], lock['packages']['']['version'], tauri['version'], native['package']['version']] == [version] * 4, 'Package versions disagree'
+          assert rust_version == [version], 'Cargo.lock version disagrees'
+          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          release_requested = os.environ['GITHUB_EVENT_NAME'] == 'push' and event.get('head_commit', {}).get('message') == '[release v0.2.0]'
+          release_authorized = release_requested and os.environ['GITHUB_REF'] == 'refs/heads/main' and version == '0.2.0'
+          if release_requested:
+              assert release_authorized, 'Release gate only authorizes v0.2.0 on main'
+              assert Path('docs/releases/v0.2.0.md').is_file(), 'Release notes missing'
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'version={version}\nrelease_authorized={str(release_authorized).lower()}\n')
       - name: Install locked frontend dependencies
         run: npm ci
-      - name: Verify frontend and observer
+      - name: Verify frontend, observer, and production bundle
         run: npm run check
+      - name: Install pinned pixel-test dependency
+        run: python -m pip install --disable-pip-version-check Pillow==12.3.0
+      - name: Test attention sprite authoring
+        run: python -m unittest discover -s test -p '*_test.py'
+      - name: Audit public source boundary
+        run: python scripts/audit-source.py
       - name: Verify Rust format
         run: cargo fmt --all -- --check
-      - name: Test Rust core and native shell
+      - name: Test Rust workspace and Windows native integration
         run: cargo test --workspace --locked
-      - name: Lint Rust
+      - name: Lint Rust workspace
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - name: Build unsigned test installer
+      - name: Build unsigned Windows x64 NSIS installer
         run: npm run tauri -- build --bundles nsis --target x86_64-pc-windows-msvc
-      - name: Upload test installer only
+      - name: Package exact-commit installer, observer, and checksums
+        shell: python {0}
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          import hashlib, json, os, shutil, zipfile
+          from pathlib import Path
+          version = os.environ['APP_VERSION']
+          out = Path('target/release-assets')
+          out.mkdir(parents=True, exist_ok=False)
+          installers = list(Path('target/x86_64-pc-windows-msvc/release/bundle/nsis').glob('*.exe'))
+          assert len(installers) == 1, 'Expected exactly one NSIS installer'
+          installer = installers[0]
+          assert f'_{version}_' in installer.name and 'x64' in installer.name, 'Unexpected installer identity'
+          assert installer.stat().st_size > 1024 and installer.read_bytes()[:2] == b'MZ', 'Invalid Windows executable'
+          shutil.copyfile(installer, out / f'Pi-Companion-{version}-Windows-x64-setup.exe')
+          observer = [Path('observer') / name for name in ('index.ts', 'connection.ts', 'protocol.ts', 'subagents.ts', 'transport.ts', 'README.md', 'PROTOCOL.md')]
+          observer += [Path('THIRD-PARTY-NOTICES.txt'), *sorted(Path('docs/licenses').glob('*.txt'))]
+          assert len(observer) > 8 and all(p.is_file() for p in observer), 'Missing observer or license files'
+          archive = out / f'Pi-Companion-{version}-Observer.zip'
+          with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:
+              for source in observer:
+                  bundle.write(source, source.as_posix())
+          with zipfile.ZipFile(archive) as bundle:
+              assert bundle.testzip() is None
+              assert set(bundle.namelist()) == {p.as_posix() for p in observer}
+              for source in observer:
+                  assert bundle.read(source.as_posix()) == source.read_bytes()
+          assets = sorted(out.iterdir())
+          sums = ''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in assets)
+          (out / 'SHA256SUMS.txt').write_text(sums, encoding='utf-8', newline='\n')
+          notes = Path(f'docs/releases/v{version}.md')
+          if notes.is_file():
+              shutil.copyfile(notes, out / 'RELEASE-NOTES.md')
+          metadata = {'version': version, 'commit': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID']}
+          (out / 'BUILD-METADATA.json').write_text(json.dumps(metadata) + '\n', encoding='utf-8')
+      - name: Upload verified Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: pi-companion-windows-preview-${{ github.sha }}
-          path: target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          name: pi-companion-windows-${{ github.sha }}
+          path: target/release-assets/*
           if-no-files-found: error
           retention-days: 14
-      - name: Upload manual Pi observer extension
-        uses: actions/upload-artifact@v4
+
+  publish-release:
+    needs: verify-and-build
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.head_commit.message == '[release v0.2.0]' &&
+      needs.verify-and-build.outputs.version == '0.2.0' &&
+      needs.verify-and-build.outputs.release_authorized == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-v0.2.0
+      cancel-in-progress: false
+    steps:
+      # No project checkout or dependency execution in the privileged job.
+      - uses: actions/download-artifact@v4
         with:
-          name: pi-companion-observer-${{ github.sha }}
-          path: |
-            observer/index.ts
-            observer/connection.ts
-            observer/protocol.ts
-            observer/subagents.ts
-            observer/transport.ts
-            observer/README.md
-            observer/PROTOCOL.md
-            THIRD-PARTY-NOTICES.txt
-          if-no-files-found: error
-          retention-days: 14
+          name: pi-companion-windows-${{ github.sha }}
+          path: release-assets
+      - name: Draft, upload, verify, then publish v0.2.0
+        shell: python3 {0}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          import hashlib, json, os, re, subprocess, tempfile
+          from pathlib import Path
+          # GitHub expression string equality ignores case; Python is the exact gate.
+          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          assert os.environ['GITHUB_EVENT_NAME'] == 'push' and os.environ['GITHUB_REF'] == 'refs/heads/main'
+          assert event.get('head_commit', {}).get('message') == '[release v0.2.0]', 'Exact release authorization missing'
+          version, tag = '0.2.0', 'v0.2.0'
+          sha, repo = os.environ['GITHUB_SHA'], os.environ['GH_REPO']
+          root = Path('release-assets')
+          names = [f'Pi-Companion-{version}-Windows-x64-setup.exe', f'Pi-Companion-{version}-Observer.zip', 'SHA256SUMS.txt']
+          assert {p.name for p in root.iterdir()} == set(names + ['BUILD-METADATA.json', 'RELEASE-NOTES.md']), 'Unexpected build files'
+          metadata = json.loads((root / 'BUILD-METADATA.json').read_text())
+          assert metadata == {'version': version, 'commit': sha, 'run_id': os.environ['GITHUB_RUN_ID']}, 'Artifact is from another build'
+          notes = (root / 'RELEASE-NOTES.md').read_text(encoding='utf-8')
+          assert notes.startswith('# Pi Companion 0.2.0\n'), 'Unexpected release notes'
+          checksums = (root / 'SHA256SUMS.txt').read_text().splitlines()
+          assert len(checksums) == 2, 'Expected installer and observer checksums'
+          checked = set()
+          for line in checksums:
+              match = re.fullmatch(r'([0-9a-f]{64})  (.+)', line)
+              assert match and match[2] in names[:2] and match[2] not in checked, 'Invalid checksum entry'
+              assert hashlib.sha256((root / match[2]).read_bytes()).hexdigest() == match[1], 'Build checksum mismatch'
+              checked.add(match[2])
+          assert checked == set(names[:2])
+          hashes = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
+          def gh(*args):
+              return subprocess.check_output(['gh', *args], text=True).strip()
+          def api(path):
+              return json.loads(gh('api', f'repos/{repo}/{path}'))
+          def tag_refs():
+              return [ref for ref in api(f'git/matching-refs/tags/{tag}') if ref['ref'] == f'refs/tags/{tag}']
+          # Reject existing releases/tags, including drafts. Never clobber or move them.
+          # A failure after draft creation leaves it for manual inspection, not overwrite.
+          pages = json.loads(gh('api', f'repos/{repo}/releases?per_page=100', '--paginate', '--slurp'))
+          assert all(release['tag_name'] != tag for page in pages for release in page), 'Release already exists; inspect it manually'
+          assert not tag_refs(), 'Tag already exists; refusing to reuse or move it'
+          gh('release', 'create', tag, '--draft', '--target', sha, '--title', 'Pi Companion 0.2.0', '--notes-file', str(root / 'RELEASE-NOTES.md'))
+          draft = json.loads(gh('release', 'view', tag, '--json', 'databaseId,isDraft,isPrerelease,tagName,targetCommitish'))
+          assert draft['isDraft'] and not draft['isPrerelease'] and draft['tagName'] == tag and draft['targetCommitish'] == sha
+          gh('release', 'upload', tag, *(str(root / name) for name in names))
+          release = api(f"releases/{draft['databaseId']}")
+          assert release['draft'] and release['target_commitish'] == sha and release['tag_name'] == tag
+          assert len(release['assets']) == len(names) and {asset['name'] for asset in release['assets']} == set(names), 'Unexpected uploaded assets'
+          assert all(asset['state'] == 'uploaded' and asset['size'] == (root / asset['name']).stat().st_size for asset in release['assets']), 'Incomplete upload'
+          with tempfile.TemporaryDirectory() as downloaded:
+              gh('release', 'download', tag, '--dir', downloaded)
+              assert {p.name for p in Path(downloaded).iterdir()} == set(names)
+              for name in names:
+                  assert hashlib.sha256((Path(downloaded) / name).read_bytes()).hexdigest() == hashes[name], 'Uploaded asset differs from tested build'
+          refs = tag_refs()
+          assert not refs or (len(refs) == 1 and refs[0]['object']['type'] == 'commit' and refs[0]['object']['sha'] == sha), 'Tag target changed'
+          current = api(f"releases/{draft['databaseId']}")
+          assert current['draft'] and current['target_commitish'] == sha and current['body'].rstrip() == notes.rstrip(), 'Draft changed during verification'
+          assert {(a['id'], a['name'], a['size'], a['updated_at']) for a in current['assets']} == {(a['id'], a['name'], a['size'], a['updated_at']) for a in release['assets']}, 'Assets changed during verification'
+          gh('release', 'edit', tag, '--draft=false', '--prerelease=false', '--latest')
+          published = api(f"releases/{draft['databaseId']}")
+          refs = tag_refs()
+          assert not published['draft'] and not published['prerelease'] and published['published_at'], 'Release was not published'
+          assert len(refs) == 1 and refs[0]['object']['type'] == 'commit' and refs[0]['object']['sha'] == sha, 'Published tag has the wrong commit'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write(f"Published [Pi Companion 0.2.0]({published['html_url']}) from `{sha}`.\n\nAll three uploaded assets were downloaded and SHA-256 checked before publication. The installer is unsigned; native GUI acceptance remains outstanding.\n")

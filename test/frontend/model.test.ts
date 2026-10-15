@@ -15,6 +15,27 @@ describe('authoritative snapshot boundary', () => {
     expect(parseShellState(state([agent(0, { name: 4 as never })]))).toBeNull();
     expect(parseShellState({ ...state(), bridge: { status: Object.create(null) } })).toBeNull();
   });
+  it('defaults older native envelopes to office and accepts only known window modes', () => {
+    expect(parseShellState(state())?.window).toMatchObject({ mode: 'office', fullscreenHidden: false });
+    for (const mode of ['office', 'taskbar'] as const) {
+      const input = state(); input.window.mode = mode; input.window.fullscreenHidden = true;
+      expect(parseShellState(input)?.window).toMatchObject({ mode, fullscreenHidden: true });
+    }
+    for (const mode of [null, '', 'Taskbar', 'floating', 1, {}, []]) {
+      const input = state(); input.window.mode = mode as never;
+      expect(parseShellState(input)).toBeNull();
+    }
+    for (const fullscreenHidden of [null, 0, 'false', {}, []]) {
+      const input = state(); input.window.fullscreenHidden = fullscreenHidden as never;
+      expect(parseShellState(input)).toBeNull();
+    }
+  });
+  it('fails closed without replacing the last valid mode on an invalid mode update', () => {
+    const store = new StateStore(); const taskbar = state(); taskbar.window.mode = 'taskbar'; store.accept(taskbar);
+    const invalid = state([agent()], 2); invalid.window.mode = 'overlay' as never;
+    expect(store.accept(invalid)).toBe('invalid'); expect(liveAgents(store.current)).toEqual([]);
+    expect(store.current.window.mode).toBe('taskbar');
+  });
   it('drops the entire live roster for every non-listening bridge state', () => {
     for (const status of ['starting', 'error', 'stopped'] as const) expect(liveAgents({ ...state(), bridge: { status } })).toEqual([]);
   });

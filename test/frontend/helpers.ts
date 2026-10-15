@@ -17,6 +17,7 @@ export class TestPlatform implements Platform {
     this.current = { ...this.current, sequence: this.current.sequence + 1, window: { ...this.current.window } };
     if (command.name === 'set_pinned') this.current.window.pinned = command.args.pinned;
     if (command.name === 'set_click_through') this.current.window.clickThrough = command.args.enabled;
+    if (command.name === 'set_window_mode') { this.current.window.mode = command.args.mode; this.current.window.fullscreenHidden = false; }
     return structuredClone(this.current);
   }
   emit(value: unknown) { this.listener?.(value); }

@@ -145,7 +145,7 @@ describe('semantic popup roster', () => {
   it('groups every session in the same exact workspace and resets when its last agent disconnects', async () => {
     platform.current = state([agent(0, { cwd: '/work/companion' }), agent(1, { cwd: '/work/companion', sessionId: 'second', sessionName: 'Second session' }), agent(2, { cwd: '/work/other' })]); await start();
     choose('Project or workspace', 'companion');
-    expect(buttons()).toHaveLength(2); expect(buttons()[1].textContent).toContain('Second session');
+    expect(buttons()).toHaveLength(2); expect(buttons()[1].getAttribute('aria-label')).toContain('Second session');
     emit(state([agent(1, { cwd: '/work/companion', sessionId: 'second' }), agent(2, { cwd: '/work/other' })], 2));
     expect(buttons()).toHaveLength(1); expect(root.querySelector('.current-project')?.textContent).toBe('companion');
     emit(state([agent(2, { cwd: '/work/other' })], 3));
@@ -222,9 +222,9 @@ describe('animation and native controls', () => {
     expect(vi.getTimerCount()).toBe(1); expect(unobserve).not.toHaveBeenCalled(); expect(observe).not.toHaveBeenCalled(); expect(construct).toHaveBeenCalledOnce();
   });
   it('updates 1x/2x backing-store sizes without fractional fitting', async () => {
-    await start(); expect(root.querySelector('canvas')?.width).toBe(128);
-    choose('Artwork scale', '1× · small'); expect(root.querySelector('canvas')?.width).toBe(64);
+    await start(); expect(root.querySelector('canvas')?.width).toBe(64);
     choose('Artwork scale', '2× · original'); expect(root.querySelector('canvas')?.width).toBe(128);
+    choose('Artwork scale', '1× · small'); expect(root.querySelector('canvas')?.width).toBe(64);
   });
   it('uses only named commands and reflects authoritative pin state', async () => {
     await start(); click(menuItem('Pin')); await flush();
@@ -341,7 +341,7 @@ describe('compact options menu', () => {
     await start(); expect(menu()).toBeNull(); expect(document.querySelectorAll('select')).toHaveLength(0);
     openMenu();
     for (const label of ['Pin', 'Pass through', 'Hide', 'Pause motion', 'Connection guide']) expect(menu()!.contains(byText(label))).toBe(true);
-    expect(root.querySelector('.toolbar,.footer,.segmented')).toBeNull(); expect(byText('List')).toBeUndefined(); expect(byText('Office')).toBeUndefined();
+    expect(root.querySelector('.toolbar,.footer,.segmented')).toBeNull(); expect(byText('List')).toBeUndefined(); expect(menu()!.contains(byText('Office'))).toBe(true);
     expect(document.activeElement?.getAttribute('role')).toBe('menuitemradio'); expect(document.activeElement?.textContent).toContain('All projects');
     key(document.activeElement!, 'Escape'); expect(menu()).toBeNull(); expect(document.activeElement).toBe(menuButton());
   });
@@ -386,5 +386,163 @@ describe('compact options menu', () => {
     openGuide(); const overlay = document.querySelector('.guide')!.previousElementSibling as HTMLElement;
     interact(() => { overlay.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 })); overlay.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, button: 0 })); overlay.click(); });
     expect(document.querySelector('.guide')).toBeNull(); expect(document.activeElement).toBe(menuButton());
+  });
+});
+
+describe('transparent taskbar desk strip', () => {
+  const officeReturn = () => root.querySelector<HTMLButtonElement>('.strip-return')!;
+  const enterTaskbar = async () => { choose('Window mode', 'Taskbar'); await flush(); };
+  const nativeUpdate = (patch: Partial<ReturnType<typeof state>['window']>, agents = platform.current.snapshot.agents) => {
+    platform.current = { ...platform.current, sequence: platform.current.sequence + 1, snapshot: { ...platform.current.snapshot, agents }, window: { ...platform.current.window, ...patch } };
+    emit(platform.current);
+  };
+  it('switches with one named mode command, keeps the same roster, and returns through the compact Office button', async () => {
+    await start(); const tile = buttons()[0]; const workspace = root.querySelector('.workspace');
+    await enterTaskbar();
+    expect(platform.commands).toEqual([{ name: 'set_window_mode', args: { mode: 'taskbar' } }]);
+    expect(root.querySelector('main')?.dataset.mode).toBe('taskbar'); expect(document.documentElement.dataset.windowMode).toBe('taskbar');
+    expect(root.querySelector('.workspace')).toBe(workspace); expect(buttons()[0]).toBe(tile);
+    expect(root.querySelector('.titlebar,.summary,.review-banner')).toBeNull(); expect(menu()).toBeNull();
+    expect(root.querySelector('.roster')?.getAttribute('data-view')).toBe('taskbar');
+    expect(root.querySelector('.workspace')?.getAttribute('tabindex')).toBe('0');
+    expect(document.activeElement).toBe(officeReturn());
+    click(officeReturn()); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_window_mode', args: { mode: 'office' } });
+    expect(root.querySelector('main')?.dataset.mode).toBe('office'); expect(root.querySelector('.strip-controls')).toBeNull();
+    expect(buttons()[0]).toBe(tile); expect(document.activeElement).toBe(menuButton());
+  });
+  it('always renders each status as a speech bubble above its desk, with names in pixel hover content and aria', async () => {
+    platform.current = state([
+      agent(0, { state: 'working', tool: 'a_long_tool_name_that_must_not_replace_the_visible_state' }),
+      agent(1, { state: 'thinking' }), agent(2, { state: 'waiting' }), agent(3, { state: 'idle' }),
+      agent(4, { state: 'error' }), agent(5, { state: 'completed' }), agent(6, { state: 'unknown' }),
+    ]); platform.current.window.mode = 'taskbar'; await start();
+    expect(buttons().map(button => button.querySelector('.status-bubble')?.textContent)).toEqual(['Working', 'Thinking', 'Needs input', 'Ready', 'Error', 'Completed', 'Unknown']);
+    for (const button of buttons()) {
+      expect(button.firstElementChild?.className).toBe('status-bubble');
+      expect(button.querySelector('.status-bubble')?.nextElementSibling?.tagName).toBe('CANVAS');
+      expect(button.querySelector('.status-bubble > .taskbar-bubble-body')?.textContent).toBe(button.querySelector('.status-bubble')?.textContent);
+      expect(button.querySelectorAll('.status-bubble')).toHaveLength(1); expect(button.querySelector('.status-bubble')?.hasAttribute('hidden')).toBe(false);
+      expect(button.querySelector('canvas')?.width).toBe(64); expect(button.querySelector('.agent-name,.agent-copy')).toBeNull();
+      expect(button.querySelector('.strip-agent-name')?.textContent).toContain('Agent'); expect(button.querySelector('.strip-agent-name')?.getAttribute('aria-hidden')).toBe('true');
+    }
+    expect(buttons()[0].getAttribute('aria-label')).toContain('Agent 0');
+    expect(buttons()[0].getAttribute('aria-label')).toContain('Using a_long_tool_name_that_must_not_replace_the_visible_state');
+    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  });
+  it('removes redundant session labels in both modes while keeping accessible session context and details', async () => {
+    platform.current = state([agent(0, { name: 'Project lead', sessionName: 'Pi session #42' })]); await start();
+    expect(root.querySelector('.agent-session')).toBeNull(); expect(buttons()[0].textContent).not.toContain('Pi session');
+    expect(buttons()[0].getAttribute('aria-label')).toContain('Pi session #42');
+    click(buttons()[0]); expect(root.querySelector('.detail-fields')?.textContent).toContain('SessionPi session #42');
+    await enterTaskbar();
+    expect(root.querySelector('.agent-session')).toBeNull(); expect(buttons()[0].querySelector('.agent-name')).toBeNull();
+    expect(buttons()[0].querySelector('.strip-agent-name')?.textContent).toBe('Project lead');
+    expect(buttons()[0].getAttribute('aria-label')).toContain('Pi session #42');
+    expect(root.querySelector<HTMLDivElement>('.detail')?.hidden).toBe(true);
+    click(buttons()[0]); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_window_mode', args: { mode: 'office' } });
+    expect(root.querySelector<HTMLDivElement>('.detail')?.hidden).toBe(false);
+    expect(root.querySelector('.detail-fields')?.textContent).toContain('SessionPi session #42');
+    expect(document.activeElement?.id).toBe('detail-title');
+  });
+  it('keeps exact-workspace filters, artwork scale, and motion choices across mode switches', async () => {
+    platform.current = state([agent(0, { cwd: '/work/project' }), agent(1, { cwd: '/work/project', sessionId: 'second' }), agent(2, { cwd: '/other/project' })]); await start();
+    choose('Project or workspace', 'project · /work/project'); choose('Artwork scale', '2× · original'); click(menuItem('Pause motion'));
+    await enterTaskbar();
+    expect(buttons()).toHaveLength(2); expect(root.querySelector('.strip-project')?.getAttribute('title')).toBe('/work/project');
+    expect(root.querySelector('canvas')?.width).toBe(64); expect(vi.getTimerCount()).toBe(0);
+    click(officeReturn()); await flush(); openMenu();
+    expect(root.querySelector('canvas')?.width).toBe(128); expect(root.querySelector('main')?.dataset.scale).toBe('2');
+    expect(document.querySelector('[aria-label="Artwork scale"] [aria-checked="true"]')?.textContent).toContain('2×');
+    expect(document.querySelector('[aria-label="Project or workspace"] [aria-checked="true"] .option-label')?.textContent).toBe('project · /work/project');
+    expect(byText('Resume motion')).toBeDefined(); expect(root.querySelector('.current-project')?.textContent).toBe('project');
+  });
+  it('retains the selected workspace across a fail-closed visibility refresh, then reconciles a confirmed disappearance', async () => {
+    platform.current = state([agent(0, { cwd: '/work/companion' }), agent(1, { cwd: '/work/other' })]); await start();
+    choose('Project or workspace', 'companion'); await enterTaskbar();
+    let resolve!: (value: ReturnType<typeof state>) => void;
+    vi.spyOn(platform, 'getState').mockImplementation(() => new Promise(done => { resolve = done; }));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true }); interact(() => document.dispatchEvent(new Event('visibilitychange')));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false }); interact(() => document.dispatchEvent(new Event('visibilitychange')));
+    expect(buttons()).toHaveLength(0);
+    platform.current = { ...platform.current, sequence: platform.current.sequence + 1 };
+    await act(async () => resolve(platform.current)); await flush();
+    expect(buttons()).toHaveLength(1); expect(root.querySelector('.strip-project')?.textContent).toBe('companion');
+    nativeUpdate({}, [agent(1, { cwd: '/work/other' })]);
+    expect(buttons()).toHaveLength(1); expect(root.querySelector('.strip-project')?.textContent).toBe('All projects');
+  });
+  it.each([false, undefined])('requires independent recovery before entering taskbar (availability %s)', async recoveryAvailable => {
+    platform.current.window.recoveryAvailable = recoveryAvailable; await start();
+    expect(disabled(menuItem('Taskbar'))).toBe(true); click(byText('Taskbar')); await flush();
+    expect(platform.commands).toEqual([]); expect(root.querySelector('main')?.dataset.mode).toBe('office');
+  });
+  it('keeps explicit pass-through unchanged on mode changes and follows authoritative shortcut recovery', async () => {
+    platform.current.window.clickThrough = true; await start(); await enterTaskbar();
+    expect(platform.current.window.clickThrough).toBe(true); expect(root.querySelector('.strip-notice')?.textContent).toContain('Pass-through is on');
+    expect(platform.commands.every(command => command.name === 'set_window_mode')).toBe(true);
+    nativeUpdate({ mode: 'office', clickThrough: false, fullscreenHidden: false });
+    expect(root.querySelector('main')?.dataset.mode).toBe('office'); expect(root.querySelector('.command-feedback')).toBeNull();
+    expect(document.activeElement).toBe(menuButton());
+  });
+  it.each(['menu', 'guide', 'details'])('releases %s focus and removes clipped panels on a native taskbar change', async panel => {
+    await start();
+    if (panel === 'menu') openMenu(); else if (panel === 'guide') openGuide(); else click(buttons()[0]);
+    nativeUpdate({ mode: 'taskbar' }); await flush();
+    expect(menu()).toBeNull(); expect(document.querySelector('.guide,[data-slot="dialog-overlay"]')).toBeNull();
+    expect(root.querySelector<HTMLElement>('.detail')?.hidden).toBe(true); expect(document.activeElement).toBe(officeReturn());
+    expect(document.body.style.pointerEvents).not.toBe('none');
+    nativeUpdate({ mode: 'office' }); await flush();
+    expect(menu()).toBeNull(); expect(document.querySelector('.guide')).toBeNull(); expect(root.querySelector<HTMLElement>('.detail')?.hidden).toBe(true);
+    expect(document.activeElement).toBe(menuButton());
+  });
+  it('shows command failures without leaving the authoritative mode and rejects repeated pending mode clicks', async () => {
+    await start(); platform.failure = new Error('No taskbar work area is available'); await enterTaskbar();
+    expect(root.querySelector('main')?.dataset.mode).toBe('office'); expect(root.querySelector('.command-feedback')?.textContent).toContain('No taskbar work area');
+    platform.failure = undefined; await enterTaskbar();
+    let resolve!: (value: unknown) => void;
+    const command = vi.spyOn(platform, 'command').mockImplementation(() => new Promise(done => { resolve = done; }));
+    click(officeReturn()); click(officeReturn()); expect(command).toHaveBeenCalledOnce(); expect(officeReturn().disabled).toBe(true);
+    nativeUpdate({ mode: 'office', clickThrough: false });
+    const stale = { ...platform.current, sequence: platform.current.sequence - 1, window: { ...platform.current.window, mode: 'taskbar' } };
+    await act(async () => resolve(stale)); await flush();
+    expect(root.querySelector('main')?.dataset.mode).toBe('office');
+  });
+  it('keeps taskbar live-only, removes disconnected agents and restores a fresh reconnect', async () => {
+    platform.current = state([agent(0), agent(1, { state: 'offline' }), agent(2, { state: 'stale' })]); platform.current.window.mode = 'taskbar'; await start();
+    expect(buttons()).toHaveLength(1); interact(() => buttons()[0].focus()); nativeUpdate({}, []);
+    expect(buttons()).toHaveLength(0); expect(document.activeElement).toBe(officeReturn());
+    expect(root.textContent).toContain('No connected agents');
+    nativeUpdate({}, [agent(3)]); expect(buttons()).toHaveLength(1); expect(buttons()[0].textContent).toContain('Agent 3');
+    emit({ ...platform.current, sequence: platform.current.sequence + 1, window: { ...platform.current.window, mode: 'invalid' } });
+    expect(buttons()).toHaveLength(0); expect(root.textContent).toContain('invalid update');
+    nativeUpdate({}, [agent(4)]); expect(buttons()[0].textContent).toContain('Agent 4');
+  });
+  it('keeps names and statuses accessible when artwork is capped or unavailable', async () => {
+    platform.current = state(Array.from({ length: 80 }, (_, index) => agent(index))); platform.current.window.mode = 'taskbar'; await start();
+    expect(buttons()).toHaveLength(80); expect(root.querySelectorAll('canvas:not([hidden])')).toHaveLength(64);
+    expect(root.querySelector('.strip-notice')?.textContent).toContain('all 80 agents');
+    expect(buttons()[79].getAttribute('aria-label')).toContain('Agent 79, Ready, Workshop');
+    interact(() => { app!.dispose(); app = undefined; }); await start(Promise.reject(new Error('Missing artwork')));
+    expect(buttons()).toHaveLength(80); expect(root.querySelectorAll('canvas:not([hidden])')).toHaveLength(0);
+    expect(root.querySelector('.strip-notice')?.textContent).toContain('Artwork unavailable'); expect(vi.getTimerCount()).toBe(0);
+  });
+  it('retains one observer/root across modes, pauses clipped desks/fullscreen, and disposes every sprite', async () => {
+    const observed = new Set<Element>(); const construct = vi.fn(); const disconnect = vi.fn(); let callback!: IntersectionObserverCallback; let observerRoot: Element | Document | null | undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(fn: IntersectionObserverCallback, options: IntersectionObserverInit) { construct(); callback = fn; observerRoot = options.root; }
+      observe = (element: Element) => observed.add(element); unobserve = (element: Element) => observed.delete(element); disconnect = disconnect;
+    });
+    await start(); const tile = root.querySelector('.agent')!; const intersect = (isIntersecting: boolean) => interact(() => callback([{ target: tile, isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver));
+    expect(vi.getTimerCount()).toBe(0); intersect(true); expect(vi.getTimerCount()).toBe(1);
+    await enterTaskbar(); expect(construct).toHaveBeenCalledOnce(); expect(observerRoot).toBe(root.querySelector('.workspace')); expect(observed.size).toBe(1);
+    intersect(false); expect(vi.getTimerCount()).toBe(0); intersect(true); expect(vi.getTimerCount()).toBe(1);
+    nativeUpdate({ fullscreenHidden: true }); expect(vi.getTimerCount()).toBe(0);
+    nativeUpdate({ fullscreenHidden: false }); expect(vi.getTimerCount()).toBe(1);
+    reduced = true; interact(() => mediaListener?.()); expect(vi.getTimerCount()).toBe(0);
+    reduced = false; interact(() => mediaListener?.()); expect(vi.getTimerCount()).toBe(1);
+    nativeUpdate({}, []); expect(observed.size).toBe(0); expect(vi.getTimerCount()).toBe(0);
+    interact(() => { app!.dispose(); app = undefined; }); expect(disconnect).toHaveBeenCalledOnce();
+    expect(document.documentElement.dataset.windowMode).toBeUndefined(); intersect(true); expect(vi.getTimerCount()).toBe(0);
   });
 });
