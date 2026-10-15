@@ -930,9 +930,8 @@ fn main() {
                                 queue_native(&h, hide_by_user);
                             }
                         }
-                        WindowEvent::ScaleFactorChanged { .. } | WindowEvent::Resized(_) | WindowEvent::Moved(_) | WindowEvent::Focused(true) => {
-                            if !shared.fitting.load(Ordering::Acquire) { let _ = queue_layout(&h); }
-                        }
+                        WindowEvent::ScaleFactorChanged { .. } | WindowEvent::Resized(_) | WindowEvent::Moved(_) | WindowEvent::Focused(true)
+                            if !shared.fitting.load(Ordering::Acquire) => { let _ = queue_layout(&h); }
                         _ => {}
                     }
                 });
