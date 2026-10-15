@@ -452,6 +452,33 @@ mod tests {
         assert_eq!(std::fs::read_to_string(path).unwrap(), "fixture");
     }
     #[test]
+    fn placement_rejects_public_acl_without_repairing_or_replacing_it() {
+        let root = tempfile::tempdir().unwrap();
+        let config = root.path().join("private");
+        let _pin = directory(&config).unwrap();
+        let path = config.join("taskbar-placement.json");
+        world_readable_file(&path);
+        assert_eq!(
+            super::super::placement::load(&config).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            super::super::placement::save(
+                &config,
+                &super::super::placement::Preferences::default()
+            )
+            .unwrap_err()
+            .kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "fixture");
+        assert_eq!(
+            read(&path).unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(std::fs::read_dir(&config).unwrap().count(), 1);
+    }
+    #[test]
     fn export_rejects_public_acl_before_changing_any_source() {
         let root = tempfile::tempdir().unwrap();
         let config = root.path().join("private");

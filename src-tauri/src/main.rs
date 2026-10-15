@@ -6,8 +6,13 @@ use companion_core::{
 };
 use companion_shell::{
     export_observer, fit_window, load_or_create_connection, minimum_size_for_work_area,
+    placement::{self, Preferences},
     preset_size,
-    taskbar::{strip_rect, OfficeSnapshot, Visibility, VisibilityAction},
+    taskbar::{
+        plan_placement, preferred_monitor_index, strip_rect, Alignment, HorizontalDrag,
+        OfficeSnapshot, Placement, PlacementRequest, Visibility, VisibilityAction,
+        MAX_CONTENT_COUNT,
+    },
     Rect, WindowMode, WindowState, RECOVERY_SHORTCUT,
 };
 #[cfg(windows)]
@@ -57,6 +62,17 @@ struct NativeState {
     visibility: Visibility,
     // The app owns all changes to this property; Tauri has no getter.
     skip_taskbar: bool,
+    placement: Preferences,
+    content_count: u16,
+    drag: Option<StripDrag>,
+    strip_has_entered: bool,
+}
+struct StripDrag {
+    horizontal: HorizontalDrag,
+    monitor: Option<String>,
+    work: Rect,
+    scale: f64,
+    last_update: std::time::Instant,
 }
 struct Shared {
     observer: Observer,
@@ -165,30 +181,82 @@ struct DisplayLayout {
     work: Rect,
     scale: f64,
     fullscreen: Option<bool>,
+    monitor: Option<String>,
 }
 fn display_layout(window: &WebviewWindow) -> Result<DisplayLayout, String> {
-    let monitor = match window
+    let shared = window
+        .app_handle()
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    let taskbar = shared
+        .view
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .window
+        .mode
+        == WindowMode::Taskbar;
+    let preferred = if taskbar {
+        shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .placement
+            .monitor
+            .clone()
+    } else {
+        None
+    };
+    display_layout_for(window, preferred.as_deref())
+}
+fn display_layout_for(
+    window: &WebviewWindow,
+    preferred: Option<&str>,
+) -> Result<DisplayLayout, String> {
+    let current = match window
         .current_monitor()
         .map_err(|_| "Cannot inspect monitor")?
     {
-        Some(monitor) => monitor,
+        Some(monitor) => Some(monitor),
         None => window
             .primary_monitor()
-            .map_err(|_| "Cannot inspect primary monitor")?
-            .ok_or("No monitor available")?,
+            .map_err(|_| "Cannot inspect primary monitor")?,
     };
+    let monitors = window
+        .available_monitors()
+        .map_err(|_| "Cannot inspect monitors")?;
+    let fallback = current
+        .as_ref()
+        .and_then(|current| {
+            monitors.iter().position(|candidate| {
+                candidate.position() == current.position() && candidate.size() == current.size()
+            })
+        })
+        .unwrap_or(0);
+    let names = monitors
+        .iter()
+        .map(|monitor| monitor.name().map(String::as_str))
+        .collect::<Vec<_>>();
+    let index =
+        preferred_monitor_index(preferred, &names, fallback).ok_or("No monitor available")?;
+    let monitor = &monitors[index];
+    let name = monitor.name().cloned();
     #[cfg(windows)]
     {
         let hwnd = window.hwnd().map_err(|_| "Cannot inspect native window")?;
-        if let Some(display) = windows_probe::inspect(hwnd.0, monitor.scale_factor()) {
+        let bounds = Rect {
+            x: f64::from(monitor.position().x),
+            y: f64::from(monitor.position().y),
+            width: f64::from(monitor.size().width),
+            height: f64::from(monitor.size().height),
+        };
+        if let Some(display) = windows_probe::inspect(hwnd.0, monitor.scale_factor(), bounds) {
             return Ok(DisplayLayout {
                 work: display.work,
                 scale: display.scale,
                 fullscreen: display.fullscreen,
+                monitor: name,
             });
         }
-        // A failed native read is not evidence that fullscreen has ended. Keep
-        // the existing visibility decision and retry on the next layout tick.
         Err("Cannot inspect Windows work area".into())
     }
     #[cfg(not(windows))]
@@ -203,7 +271,59 @@ fn display_layout(window: &WebviewWindow) -> Result<DisplayLayout, String> {
             },
             scale: monitor.scale_factor(),
             fullscreen: Some(false),
+            monitor: name,
         })
+    }
+}
+fn strip_target(shared: &Shared, display: &DisplayLayout) -> Result<Rect, String> {
+    let native = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?;
+    Ok(strip_rect(
+        display.work,
+        display.scale,
+        native.content_count,
+        native.placement.placement,
+    ))
+}
+fn persist_placement(app: &tauri::AppHandle) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    let value = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .placement
+        .clone();
+    let directory = app
+        .path()
+        .app_config_dir()
+        .map_err(|_| "Could not locate placement preferences")?;
+    placement::save(&directory, &value).map_err(|_| "Placement changed for this session, but saving could not be verified. Check private access to the app configuration directory.".into())
+}
+fn finish_strip_drag(app: &tauri::AppHandle) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    let dragged = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .drag
+        .take()
+        .is_some();
+    if dragged {
+        persist_placement(app)?;
+    }
+    Ok(())
+}
+fn cancel_strip_drag(app: &tauri::AppHandle) {
+    if let Err(error) = finish_strip_drag(app) {
+        if let Some(shared) = app.try_state::<Shared>() {
+            shared.message(&error);
+        }
     }
 }
 fn current_rect(window: &WebviewWindow) -> Result<Rect, String> {
@@ -221,27 +341,34 @@ fn current_rect(window: &WebviewWindow) -> Result<Rect, String> {
     })
 }
 fn apply_rect(window: &WebviewWindow, target: Rect) -> Result<(), String> {
+    let x = target.x.round() as i32;
+    let y = target.y.round() as i32;
+    let width = target.width.round() as u32;
+    let height = target.height.round() as u32;
     let before = current_rect(window)?;
-    if target.width.round() as u32 != before.width as u32
-        || target.height.round() as u32 != before.height as u32
-    {
+    // Moving across monitors can synchronously rescale the window through
+    // WM_DPICHANGED. Move first, then restore the requested physical size.
+    if x != before.x as i32 || y != before.y as i32 {
         window
-            .set_size(PhysicalSize::new(
-                target.width.round() as u32,
-                target.height.round() as u32,
-            ))
+            .set_position(PhysicalPosition::new(x, y))
+            .map_err(|_| "Cannot fit window position")?;
+    }
+    let after_move = current_rect(window)?;
+    if width != after_move.width as u32 || height != after_move.height as u32 {
+        window
+            .set_size(PhysicalSize::new(width, height))
             .map_err(|_| "Cannot fit window size")?;
     }
-    if target.x.round() as i32 != before.x as i32 || target.y.round() as i32 != before.y as i32 {
+    // DPI handling or resize constraints may also adjust the origin.
+    let after_size = current_rect(window)?;
+    if x != after_size.x as i32 || y != after_size.y as i32 {
         window
-            .set_position(PhysicalPosition::new(
-                target.x.round() as i32,
-                target.y.round() as i32,
-            ))
+            .set_position(PhysicalPosition::new(x, y))
             .map_err(|_| "Cannot fit window position")?;
     }
     Ok(())
 }
+
 fn set_minimum(
     window: &WebviewWindow,
     shared: &Shared,
@@ -312,9 +439,12 @@ fn apply_visibility(
     let (next, action) = before.observed(mode, fullscreen);
     match action {
         VisibilityAction::None => {}
-        VisibilityAction::Hide => window
-            .hide()
-            .map_err(|_| "Could not hide companion for fullscreen")?,
+        VisibilityAction::Hide => {
+            cancel_strip_drag(window.app_handle());
+            window
+                .hide()
+                .map_err(|_| "Could not hide companion for fullscreen")?;
+        }
         VisibilityAction::ShowWithoutFocus => show_without_focus(window)?,
     }
     if before != next {
@@ -348,10 +478,36 @@ fn fit_to_monitor(window: &WebviewWindow) -> Result<(), String> {
         .map_err(|_| "Window state unavailable")?
         .window
         .mode;
+    // Expire a lost webview drag even if the display probe itself is failing.
+    let expired = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .drag
+        .as_ref()
+        .is_some_and(|drag| drag.last_update.elapsed() > std::time::Duration::from_secs(10));
+    if expired {
+        cancel_strip_drag(window.app_handle());
+    }
     let display = display_layout(window)?;
     if mode == WindowMode::Taskbar {
+        let cancel = shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .drag
+            .as_ref()
+            .is_some_and(|drag| {
+                drag.monitor != display.monitor
+                    || drag.work != display.work
+                    || drag.scale != display.scale
+                    || drag.last_update.elapsed() > std::time::Duration::from_secs(10)
+            });
+        if cancel {
+            cancel_strip_drag(window.app_handle());
+        }
         set_minimum(window, &shared, Some((1, 1)))?;
-        apply_rect(window, strip_rect(display.work, display.scale))?;
+        apply_rect(window, strip_target(&shared, &display)?)?;
     } else {
         let pending = shared
             .native
@@ -406,7 +562,7 @@ fn apply_office_snapshot(
     attempt(set_minimum(window, shared, saved.minimum));
     // Restore the physical Office rectangle first, then fit the monitor it now
     // belongs to (or the nearest surviving monitor after removal).
-    match display_layout(window) {
+    match display_layout_for(window, None) {
         Ok(display) => attempt(fit_office(window, shared, &display)),
         Err(error) => attempt(Err(error)),
     }
@@ -449,6 +605,7 @@ fn change_mode(app: &tauri::AppHandle, mode: WindowMode) -> Result<(), String> {
     }
     let guard = FitGuard(&shared.fitting);
     let window = main_window(app)?;
+    cancel_strip_drag(app);
     match mode {
         WindowMode::Taskbar => {
             if let Some(saved) = pending_snapshot {
@@ -461,7 +618,20 @@ fn change_mode(app: &tauri::AppHandle, mode: WindowMode) -> Result<(), String> {
                     .map_err(|_| "Window state unavailable")?
                     .office = None;
             }
-            let display = display_layout(&window)?;
+            let preferred = {
+                let native = shared
+                    .native
+                    .lock()
+                    .map_err(|_| "Window state unavailable")?;
+                // First entry restores the last strip monitor. Later entries honor
+                // an intentional Office move rather than pulling Office elsewhere.
+                if native.strip_has_entered {
+                    None
+                } else {
+                    native.placement.monitor.clone()
+                }
+            };
+            let display = display_layout_for(&window, preferred.as_deref())?;
             let saved = OfficeSnapshot {
                 rect: current_rect(&window)?,
                 pinned: state.pinned,
@@ -494,7 +664,7 @@ fn change_mode(app: &tauri::AppHandle, mode: WindowMode) -> Result<(), String> {
                 window
                     .set_always_on_top(true)
                     .map_err(|_| "Could not keep strip above desktop")?;
-                apply_rect(&window, strip_rect(display.work, display.scale))?;
+                apply_rect(&window, strip_target(&shared, &display)?)?;
                 Ok(())
             })();
             if let Err(error) = enter {
@@ -512,11 +682,21 @@ fn change_mode(app: &tauri::AppHandle, mode: WindowMode) -> Result<(), String> {
                     format!("{error}. Use Restore to retry Office recovery.")
                 });
             }
-            shared
-                .native
-                .lock()
-                .map_err(|_| "Window state unavailable")?
-                .skip_taskbar = true;
+            {
+                let mut native = shared
+                    .native
+                    .lock()
+                    .map_err(|_| "Window state unavailable")?;
+                native.skip_taskbar = true;
+                // Do not erase an unavailable saved monitor on initial fallback.
+                if native.strip_has_entered || native.placement.monitor.is_none() {
+                    native.placement.set_monitor(display.monitor.as_deref());
+                }
+                native.strip_has_entered = true;
+            }
+            if let Err(error) = persist_placement(app) {
+                shared.message(&error);
+            }
         }
         WindowMode::Office => {
             if let Some(saved) = pending_snapshot {
@@ -552,6 +732,7 @@ fn restore(app: &tauri::AppHandle) -> Result<(), String> {
         return Ok(());
     }
     let window = main_window(app)?;
+    cancel_strip_drag(app);
     // Input recovery comes first, even if a subsequent monitor query fails.
     window
         .set_ignore_cursor_events(false)
@@ -635,6 +816,9 @@ fn change_click_through(app: &tauri::AppHandle, enabled: bool) -> Result<(), Str
     {
         return Err("Click-through requires a working tray or recovery shortcut".into());
     }
+    if enabled {
+        cancel_strip_drag(app);
+    }
     main_window(app)?
         .set_ignore_cursor_events(enabled)
         .map_err(|_| "Could not change input mode")?;
@@ -660,6 +844,7 @@ fn hide_by_user(app: &tauri::AppHandle) -> Result<(), String> {
     {
         return Err("Hiding requires a working tray or recovery shortcut".into());
     }
+    cancel_strip_drag(app);
     main_window(app)?
         .hide()
         .map_err(|_| "Could not hide window")?;
@@ -677,6 +862,255 @@ fn hide_by_user(app: &tauri::AppHandle) -> Result<(), String> {
         .fullscreen_hidden = false;
     emit_state(app);
     Ok(())
+}
+fn require_strip_input(shared: &Shared) -> Result<(), String> {
+    let view = shared.view.lock().map_err(|_| "Window state unavailable")?;
+    let native = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?;
+    if shared.stopping.load(Ordering::Acquire)
+        || view.window.mode != WindowMode::Taskbar
+        || view.window.click_through
+        || native.visibility.user_hidden
+        || native.visibility.fullscreen_hidden
+    {
+        return Err(
+            "Taskbar placement is unavailable while the strip is hidden or input is disabled"
+                .into(),
+        );
+    }
+    Ok(())
+}
+fn commit_strip_placement(
+    app: &tauri::AppHandle,
+    placement: Placement,
+    display: &DisplayLayout,
+) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    require_strip_input(&shared)?;
+    let count = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .content_count;
+    if shared.fitting.swap(true, Ordering::AcqRel) {
+        return Err("Window layout is updating; try again".into());
+    }
+    let _guard = FitGuard(&shared.fitting);
+    apply_rect(
+        &main_window(app)?,
+        strip_rect(display.work, display.scale, count, placement),
+    )?;
+    shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .placement
+        .placement = placement;
+    shared
+        .view
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .window
+        .taskbar_placement = placement;
+    emit_state(app);
+    Ok(())
+}
+fn request_strip_placement(
+    app: &tauri::AppHandle,
+    request: PlacementRequest,
+) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    if shared.stopping.load(Ordering::Acquire) {
+        return Ok(());
+    }
+    let mode = shared
+        .view
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .window
+        .mode;
+    let plan =
+        plan_placement(mode, request).ok_or("Taskbar placement request is invalid in this mode")?;
+    cancel_strip_drag(app);
+    if plan.apply_geometry {
+        let display = display_layout(&main_window(app)?)?;
+        commit_strip_placement(app, plan.placement, &display)?;
+    } else {
+        // Office controls edit only the strip preference. No native geometry,
+        // Office snapshot, visibility or pin state is changed by this branch.
+        shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .placement
+            .placement = plan.placement;
+        shared
+            .view
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .window
+            .taskbar_placement = plan.placement;
+        emit_state(app);
+    }
+    persist_placement(app)
+}
+#[tauri::command]
+async fn set_taskbar_alignment(app: tauri::AppHandle, alignment: Alignment) -> Result<(), String> {
+    if Placement::aligned(alignment).is_none() {
+        return Err("Choose left, center or right alignment".into());
+    }
+    on_main_thread(app, move |app| {
+        request_strip_placement(app, PlacementRequest::Align(alignment))
+    })
+    .await
+}
+#[tauri::command]
+async fn set_taskbar_position(app: tauri::AppHandle, position: f64) -> Result<(), String> {
+    if Placement::free(position).is_none() {
+        return Err("Position must be a finite fraction from zero to one".into());
+    }
+    on_main_thread(app, move |app| {
+        request_strip_placement(app, PlacementRequest::Position(position))
+    })
+    .await
+}
+#[tauri::command]
+async fn set_taskbar_content_count(app: tauri::AppHandle, count: u16) -> Result<(), String> {
+    if count > MAX_CONTENT_COUNT {
+        return Err("Taskbar content count exceeds the illustrated roster limit".into());
+    }
+    on_main_thread(app, move |app| {
+        let shared = app
+            .try_state::<Shared>()
+            .ok_or("Window state unavailable")?;
+        if shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .content_count
+            == count
+        {
+            return Ok(());
+        }
+        // A live roster/filter resize ends the current drag before changing its
+        // width, so a later pointer sample cannot snap a stale grip back into place.
+        cancel_strip_drag(app);
+        shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?
+            .content_count = count;
+        fit_to_monitor(&main_window(app)?)
+    })
+    .await
+}
+#[tauri::command]
+async fn begin_taskbar_drag(app: tauri::AppHandle) -> Result<(), String> {
+    on_main_thread(app, |app| {
+        let shared = app
+            .try_state::<Shared>()
+            .ok_or("Window state unavailable")?;
+        require_strip_input(&shared)?;
+        let window = main_window(app)?;
+        if !window
+            .is_focused()
+            .map_err(|_| "Cannot inspect window focus")?
+        {
+            return Err("Focus the strip before dragging".into());
+        }
+        fit_to_monitor(&window)?;
+        require_strip_input(&shared)?;
+        let display = display_layout(&window)?;
+        let cursor = window
+            .cursor_position()
+            .map_err(|_| "Cannot inspect native cursor position")?;
+        let horizontal = HorizontalDrag::begin(cursor.x, current_rect(&window)?, display.scale)
+            .ok_or("Cannot inspect horizontal drag position")?;
+        let mut native = shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?;
+        if native.drag.is_some() {
+            return Ok(());
+        }
+        native.drag = Some(StripDrag {
+            horizontal,
+            monitor: display.monitor,
+            work: display.work,
+            scale: display.scale,
+            last_update: std::time::Instant::now(),
+        });
+        Ok(())
+    })
+    .await
+}
+fn update_strip_drag(app: &tauri::AppHandle) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    if require_strip_input(&shared).is_err() {
+        cancel_strip_drag(app);
+        return Ok(());
+    }
+    let window = main_window(app)?;
+    let display = display_layout(&window)?;
+    let horizontal = {
+        let native = shared
+            .native
+            .lock()
+            .map_err(|_| "Window state unavailable")?;
+        match native.drag.as_ref() {
+            None => return Ok(()),
+            Some(drag)
+                if drag.monitor == display.monitor
+                    && drag.work == display.work
+                    && drag.scale == display.scale
+                    && drag.last_update.elapsed() <= std::time::Duration::from_secs(10) =>
+            {
+                Some(drag.horizontal)
+            }
+            Some(_) => None,
+        }
+    };
+    let Some(horizontal) = horizontal else {
+        return finish_strip_drag(app);
+    };
+    let cursor = window
+        .cursor_position()
+        .map_err(|_| "Cannot inspect native cursor position")?;
+    let count = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .content_count;
+    let placement = horizontal
+        .placement(cursor.x, display.work, display.scale, count)
+        .ok_or("Cannot inspect horizontal drag position")?;
+    commit_strip_placement(app, placement, &display)?;
+    if let Some(drag) = shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .drag
+        .as_mut()
+    {
+        drag.last_update = std::time::Instant::now();
+    }
+    Ok(())
+}
+#[tauri::command]
+async fn update_taskbar_drag(app: tauri::AppHandle) -> Result<(), String> {
+    on_main_thread(app, update_strip_drag).await
+}
+#[tauri::command]
+async fn end_taskbar_drag(app: tauri::AppHandle) -> Result<(), String> {
+    on_main_thread(app, finish_strip_drag).await
 }
 #[tauri::command]
 fn get_state(state: State<'_, Shared>) -> Result<CompanionState, String> {
@@ -904,9 +1338,19 @@ fn main() {
             stopping: AtomicBool::new(false), fitting: AtomicBool::new(false), minimum_size: Mutex::new(None),
             native: Mutex::new(NativeState::default()), layout_queued: AtomicBool::new(false),
         })
-        .invoke_handler(tauri::generate_handler![get_state, set_pinned, set_window_mode, set_click_through, hide_window, restore_window, resize_window, start_dragging])
+        .invoke_handler(tauri::generate_handler![get_state, set_pinned, set_window_mode, set_click_through, hide_window, restore_window, resize_window, start_dragging, set_taskbar_alignment, set_taskbar_position, set_taskbar_content_count, begin_taskbar_drag, update_taskbar_drag, end_taskbar_drag])
         .setup(|app| {
             let handle = app.handle().clone();
+            {
+                let shared = app.state::<Shared>();
+                match app.path().app_config_dir().ok().and_then(|directory| placement::load(&directory).ok()) {
+                    Some(preferences) => {
+                        shared.view.lock().map_err(|_| "Window state unavailable")?.window.taskbar_placement = preferences.placement;
+                        shared.native.lock().map_err(|_| "Window state unavailable")?.placement = preferences;
+                    }
+                    None => shared.message("Saved taskbar placement could not be read safely; using centered placement for this session. Existing files were left unchanged."),
+                }
+            }
             let tray_ok = setup_tray(&handle).is_ok();
             let shortcut_ok = app.global_shortcut().register(RECOVERY_SHORTCUT).is_ok();
             {
@@ -930,6 +1374,7 @@ fn main() {
                                 queue_native(&h, hide_by_user);
                             }
                         }
+                        WindowEvent::Focused(false) => { queue_native(&h, finish_strip_drag); }
                         WindowEvent::ScaleFactorChanged { .. } | WindowEvent::Resized(_) | WindowEvent::Moved(_) | WindowEvent::Focused(true)
                             if !shared.fitting.load(Ordering::Acquire) => { let _ = queue_layout(&h); }
                         _ => {}
@@ -1005,6 +1450,7 @@ fn main() {
         .expect("Pi Companion could not initialize");
     application.run(|app, event| match event {
         tauri::RunEvent::ExitRequested { .. } => {
+            cancel_strip_drag(app);
             if let Some(shared) = app.try_state::<Shared>() {
                 shared.stop();
             }

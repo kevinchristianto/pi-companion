@@ -63,19 +63,24 @@ describe('compact office and transparent strip contracts', () => {
   });
   it('budgets a speech bubble, clear tail gap and fixed 1× desk within 104px including horizontal scrolling', () => {
     const strip = declarationsFor(".companion[data-mode='taskbar'] .workspace");
-    expect(strip.overflowX).toBe('auto'); expect(strip.overflowY).toBe('hidden'); expect(strip.padding).toBe('4px 6px');
+    expect(strip.overflowX).toBe('auto'); expect(strip.overflowY).toBe('hidden'); expect(strip.padding).toBe('0px 6px'); expect(strip.getPropertyValue('scrollbar-width')).toBe('none');
     const row = declarationsFor(".companion[data-mode='taskbar'] .roster");
     expect(row.display).toBe('flex'); expect(row.flexWrap).toBe('nowrap'); expect(row.alignItems).toBe('flex-end');
     const button = declarationsFor(".companion[data-mode='taskbar'] .agent-button");
-    expect(button.gap).toBe('4px'); expect(button.padding).toBe('1px 4px'); expect(button.borderTopWidth).toBe('0px');
+    expect(button.gap).toBe('4px'); expect(button.padding).toBe('0px 4px'); expect(button.borderTopWidth).toBe('0px');
     expect(declarationsFor('.strip-controls').flexBasis).toBe('88px');
-    expect(declarationsFor('.strip-controls').padding).toBe('4px 8px 6px');
-    expect(declarationsFor('.strip-notice').maxHeight).toBe('28px');
-    // Optional review marker + two-line notice + project + Office, three gaps,
-    // and padding remain inside the strip without shrinking the return button.
-    expect(10 + 28 + 16 + 30 + 9 + 10).toBeLessThanOrEqual(104);
+    expect(declarationsFor('.strip-controls').padding).toBe('2px 8px');
+    expect(declarationsFor('.strip-notice').maxHeight).toBe('20px');
+    expect(declarationsFor(".strip-controls [data-slot='button-decorations']").display).toBe('none');
+    expect(declarationsFor('.strip-controls button').getPropertyValue('translate')).toBe('none');
+    // Optional review + notice + project + grip/scroll row + Office, four gaps,
+    // and padding fit without shrinking the return button.
+    expect(10 + 20 + 14 + 18 + 24 + 8 + 4).toBeLessThanOrEqual(104);
     expect(declarationsFor(".companion[data-mode='taskbar'][data-scale='1'] .agent").width).toBe('112px');
-    expect(18 + 4 + 64 + 2 + 8 + 8).toBe(104);
+    expect(18 + 4 + 64).toBe(86);
+    const scrollbar = declarationsFor(".companion[data-mode='taskbar'] .workspace::-webkit-scrollbar");
+    expect(scrollbar.display).toBe('none'); expect(scrollbar.height).toBe('0px');
+    expect(declarationsFor(".companion[data-mode='taskbar'][data-scale='1'] .portrait").transform).toBe('translateY(var(--sprite-bottom-gutter, 0px))');
   });
   it('keeps readable common status labels in a permanently visible pixel bubble above each desk', () => {
     const status = declarationsFor(".companion[data-mode='taskbar'] .status-bubble");
@@ -101,15 +106,15 @@ describe('compact office and transparent strip contracts', () => {
   });
   it('shows a bounded pixel-styled name within the portrait on hover and keyboard focus, clear of the top bubble', () => {
     const name = declarationsFor('.strip-agent-name');
-    expect(name.position).toBe('absolute'); expect(name.inset).toBe('auto 4px 1px'); expect(name.maxHeight).toBe('64px');
-    expect(name.visibility).toBe('hidden'); expect(name.fontSize).toBe('8px'); expect(name.whiteSpace).toBe('normal'); expect(name.overflowWrap).toBe('anywhere');
+    expect(name.position).toBe('absolute'); expect(name.inset).toBe('auto 4px 2px'); expect(name.maxHeight).toBe('60px');
+    expect(name.visibility).toBe('hidden'); expect(name.fontSize).toBe('6px'); expect(name.lineHeight).toBe('9px'); expect(name.padding).toBe('1px 3px'); expect(name.whiteSpace).toBe('normal'); expect(name.overflowWrap).toBe('anywhere');
     expect(name.borderTopStyle).toBe('solid'); expect(name.overflow).toBe('auto');
     expect(declarationsFor(".companion[data-mode='taskbar'] .agent-button:hover .strip-agent-name").visibility).toBe('visible');
     expect(declarationsFor(".companion[data-mode='taskbar'] .agent-button:focus-visible .strip-agent-name").visibility).toBe('visible');
-    expect(88 - 1 - 64).toBe(1 + 18 + 4);
+    expect(86 - 2 - 60).toBeGreaterThanOrEqual(18 + 4);
     // A hidden/capped canvas must not push its bubble down into the name area.
     const textOnly = declarationsFor(".companion[data-mode='taskbar'] .agent.text-only .agent-button");
-    expect(textOnly.minHeight).toBe('88px'); expect(textOnly.justifyContent).toBe('flex-start');
+    expect(textOnly.minHeight).toBe('86px'); expect(textOnly.justifyContent).toBe('flex-start');
   });
   it('budgets six native-scale desks in a 360×300 office, including the optional sample marker', () => {
     expect(declarationsFor('.titlebar').minHeight).toBe('36px'); expect(declarationsFor('.summary').minHeight).toBe('23px');

@@ -20,7 +20,10 @@ export function reviewPlatform(): Platform {
     async getState() { return structuredClone(state); },
     async command(command) {
       if (command.name === 'hide_window') throw new Error('Hide is a desktop-only action. This review stays visible.');
-      if (command.name === 'start_dragging') return;
+      if (command.name === 'start_dragging' || command.name === 'end_taskbar_drag' || command.name === 'set_taskbar_content_count') return;
+      if (command.name === 'begin_taskbar_drag' || command.name === 'update_taskbar_drag') throw new Error('Taskbar dragging requires the native desktop window.');
+      if (command.name === 'set_taskbar_alignment') state = { ...state, sequence: state.sequence + 1, window: { ...state.window, taskbarPlacement: { alignment: command.args.alignment, position: { left: 0, center: 0.5, right: 1 }[command.args.alignment] } } };
+      if (command.name === 'set_taskbar_position') state = { ...state, sequence: state.sequence + 1, window: { ...state.window, taskbarPlacement: { alignment: 'free', position: command.args.position } } };
       if (command.name === 'set_click_through') throw new Error('Pass-through requires the native desktop tray and recovery shortcut.');
       if (command.name === 'set_pinned') state = { ...state, sequence: state.sequence + 1, window: { ...state.window, pinned: command.args.pinned } };
       if (command.name === 'set_window_mode') state = { ...state, sequence: state.sequence + 1, window: { ...state.window, mode: command.args.mode, fullscreenHidden: false } };

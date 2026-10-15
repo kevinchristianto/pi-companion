@@ -12,17 +12,16 @@ use companion_shell::{
 };
 use std::mem::size_of;
 use windows_sys::Win32::{
-    Foundation::{HWND, RECT},
+    Foundation::{HWND, POINT, RECT},
     Graphics::{
         Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS},
         Gdi::{
-            GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
-            MONITOR_DEFAULTTONULL,
+            GetMonitorInfoW, MonitorFromPoint, MonitorFromWindow, MONITORINFO,
+            MONITOR_DEFAULTTONEAREST, MONITOR_DEFAULTTONULL,
         },
     },
     System::Threading::GetCurrentProcessId,
     UI::{
-        HiDpi::GetDpiForWindow,
         Shell::{
             SHAppBarMessage, ABE_BOTTOM, ABE_LEFT, ABE_RIGHT, ABE_TOP, ABM_GETAUTOHIDEBAREX,
             APPBARDATA,
@@ -115,11 +114,17 @@ unsafe fn foreground_fullscreen(
     Some(covers_monitor(rect(frame), bounds))
 }
 
-pub fn inspect(own: HWND, fallback_scale: f64) -> Option<Display> {
+pub fn inspect(own: HWND, fallback_scale: f64, selected: Rect) -> Option<Display> {
     // All pointers refer to initialized stack records of the exact documented
     // size. Handles are borrowed only for this call; every fallible read checked.
     unsafe {
-        let monitor = MonitorFromWindow(own, MONITOR_DEFAULTTONEAREST);
+        let monitor = MonitorFromPoint(
+            POINT {
+                x: (selected.x + selected.width / 2.0).round() as i32,
+                y: (selected.y + selected.height / 2.0).round() as i32,
+            },
+            MONITOR_DEFAULTTONEAREST,
+        );
         if monitor.is_null() {
             return None;
         }
@@ -151,14 +156,11 @@ pub fn inspect(own: HWND, fallback_scale: f64) -> Option<Display> {
                 }
             }
         }
-        let dpi = GetDpiForWindow(own);
         Some(Display {
             work,
-            scale: if dpi > 0 {
-                f64::from(dpi) / 96.0
-            } else {
-                fallback_scale
-            },
+            // Tauri reports this selected monitor's DPI, even before the
+            // HWND has moved there and processed WM_DPICHANGED.
+            scale: fallback_scale,
             fullscreen: foreground_fullscreen(own, monitor, bounds),
         })
     }

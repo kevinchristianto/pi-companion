@@ -32,6 +32,15 @@ The full font and component licenses are bundled locally. `SOURCES.json` records
 
 ## Optional transparent taskbar strip
 
-Rust owns Office/Taskbar mode, saved Office placement and input recovery. Taskbar mode reuses the transparent main window above the selected monitor work area, with a 104-logical-pixel viewport and 12px margins. It never embeds into Explorer. Bounded main-thread polling observes work-area/auto-hide/fullscreen changes; user-hidden state is distinct from automatic fullscreen hiding. Recovery returns to Office with input enabled.
+Rust owns Office/Taskbar mode, saved Office placement and input recovery. Taskbar mode reuses the transparent main window above the selected monitor work area, with a 104-logical-pixel viewport, zero bottom margin and a content-sized width clamped to the selected work area. It never embeds into Explorer. Bounded main-thread polling observes work-area/auto-hide/fullscreen changes; user-hidden state is distinct from automatic fullscreen hiding. Recovery returns to Office with input enabled.
 
 The same live-only workspace-filtered roster and single canvas clock serve both modes. The strip fixes artwork at 64×64 logical pixels and uses a retro status bubble above it with a downward tail. Agent names remain available through pixel-styled hover/focus content, accessible labels and Office details. Office preserves its independent 1×/2× artwork preference.
+
+
+### Local placement revision
+
+A bounded renderer count (0–64 slots) selects the desired width: 88px controls, 12px horizontal workspace padding, 112px per slot and 8px between slots. At least one slot is reserved for an empty roster. Wider content scrolls inside the clamped window. Rust owns alignment and normalized horizontal travel; the renderer cannot request arbitrary screen geometry. Native drag samples physical cursor positions and keeps the vertical baseline fixed. Keyboard positioning uses a finite normalized 0–1 value. Late or cancelled drag updates cannot restart a finished drag.
+
+Placement preferences are validated and saved in a private per-user app configuration file. The first strip entry can restore its saved monitor; after returning to Office, moving Office intentionally selects the monitor for its next strip entry. Automatic monitor removal/reconnect retains the strip preference without moving Office. Mode, click-through and observer credentials are not part of placement preferences.
+
+Frontend scrollbars reserve no bottom space. Canvas-only integer translations remove each design's 2–3 transparent bottom rows without changing an opaque pixel or the source atlases. The 104px strip still contains the existing 18px status bubbles and 64px artwork. Only hover/focus names become 6px with 9px line height; their full accessible names and Office details remain available.

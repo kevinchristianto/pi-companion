@@ -399,7 +399,7 @@ describe('transparent taskbar desk strip', () => {
   it('switches with one named mode command, keeps the same roster, and returns through the compact Office button', async () => {
     await start(); const tile = buttons()[0]; const workspace = root.querySelector('.workspace');
     await enterTaskbar();
-    expect(platform.commands).toEqual([{ name: 'set_window_mode', args: { mode: 'taskbar' } }]);
+    expect(platform.commands).toEqual([{ name: 'set_window_mode', args: { mode: 'taskbar' } }, { name: 'set_taskbar_content_count', args: { count: 1 } }]);
     expect(root.querySelector('main')?.dataset.mode).toBe('taskbar'); expect(document.documentElement.dataset.windowMode).toBe('taskbar');
     expect(root.querySelector('.workspace')).toBe(workspace); expect(buttons()[0]).toBe(tile);
     expect(root.querySelector('.titlebar,.summary,.review-banner')).toBeNull(); expect(menu()).toBeNull();
@@ -480,7 +480,7 @@ describe('transparent taskbar desk strip', () => {
   it('keeps explicit pass-through unchanged on mode changes and follows authoritative shortcut recovery', async () => {
     platform.current.window.clickThrough = true; await start(); await enterTaskbar();
     expect(platform.current.window.clickThrough).toBe(true); expect(root.querySelector('.strip-notice')?.textContent).toContain('Pass-through is on');
-    expect(platform.commands.every(command => command.name === 'set_window_mode')).toBe(true);
+    expect(platform.commands.every(command => command.name === 'set_window_mode' || command.name === 'set_taskbar_content_count')).toBe(true);
     nativeUpdate({ mode: 'office', clickThrough: false, fullscreenHidden: false });
     expect(root.querySelector('main')?.dataset.mode).toBe('office'); expect(root.querySelector('.command-feedback')).toBeNull();
     expect(document.activeElement).toBe(menuButton());
@@ -516,7 +516,7 @@ describe('transparent taskbar desk strip', () => {
     nativeUpdate({}, [agent(3)]); expect(buttons()).toHaveLength(1); expect(buttons()[0].textContent).toContain('Agent 3');
     emit({ ...platform.current, sequence: platform.current.sequence + 1, window: { ...platform.current.window, mode: 'invalid' } });
     expect(buttons()).toHaveLength(0); expect(root.textContent).toContain('invalid update');
-    nativeUpdate({}, [agent(4)]); expect(buttons()[0].textContent).toContain('Agent 4');
+    nativeUpdate({}, [agent(4)]); await flush(); expect(buttons()[0].textContent).toContain('Agent 4');
   });
   it('keeps names and statuses accessible when artwork is capped or unavailable', async () => {
     platform.current = state(Array.from({ length: 80 }, (_, index) => agent(index))); platform.current.window.mode = 'taskbar'; await start();
@@ -545,4 +545,101 @@ describe('transparent taskbar desk strip', () => {
     interact(() => { app!.dispose(); app = undefined; }); expect(disconnect).toHaveBeenCalledOnce();
     expect(document.documentElement.dataset.windowMode).toBeUndefined(); intersect(true); expect(vi.getTimerCount()).toBe(0);
   });
+  it('exposes actual pixel radio controls for alignment and preserves free placement across Office changes', async () => {
+    await start(); choose('Taskbar alignment', 'Left'); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_alignment', args: { alignment: 'left' } });
+    expect(document.querySelector('[aria-label="Taskbar alignment"] [aria-checked="true"]')?.textContent).toBe('Left');
+    expect(menu()).not.toBeNull(); expect(platform.commands.some(command => command.name === 'start_dragging')).toBe(false);
+    choose('Taskbar alignment', 'Right'); await flush(); await enterTaskbar();
+    const grip = root.querySelector<HTMLButtonElement>('.strip-drag')!;
+    expect(grip.title).toBe(''); expect(grip.getAttribute('aria-describedby')).toBe('strip-move-help');
+    key(grip, 'ArrowLeft'); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_position', args: { position: 0.99 } });
+    expect(platform.current.window.taskbarPlacement?.alignment).toBe('free');
+    key(grip, 'Home'); await flush(); key(grip, 'ArrowLeft'); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_position', args: { position: 0 } });
+    key(grip, 'End'); await flush(); key(grip, 'ArrowRight'); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_position', args: { position: 1 } });
+    interact(() => grip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true, bubbles: true }))); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_position', args: { position: 0.9 } });
+    click(officeReturn()); await flush(); openMenu(); expect(menu()?.textContent).toContain('Free position.');
+    expect(document.querySelector('[aria-label="Taskbar alignment"] [aria-checked="true"]')).toBeNull();
+    choose('Taskbar alignment', 'Center'); await flush(); expect(platform.current.window.taskbarPlacement).toEqual({ alignment: 'center', position: 0.5 });
+    key(document.activeElement!, 'Escape'); expect(menu()).toBeNull(); expect(document.activeElement).toBe(menuButton());
+  });
+  it('reports the filtered live roster count after content changes, disappearance and reconnect, bounded at64', async () => {
+    const counts = () => platform.commands.filter(command => command.name === 'set_taskbar_content_count').map(command => command.args.count);
+    platform.current = state([agent(0, { cwd: '/work/one' }), agent(1, { cwd: '/work/one' }), agent(2, { cwd: '/work/two' })]); await start();
+    choose('Project or workspace', 'one'); await enterTaskbar(); expect(counts()).toEqual([2]);
+    nativeUpdate({}, [agent(0, { cwd: '/work/one' }), agent(2, { cwd: '/work/two' })]); await flush(); expect(counts()).toEqual([2, 1]);
+    nativeUpdate({}, [agent(2, { cwd: '/work/two' })]); await flush(); expect(root.querySelector('.strip-project')?.textContent).toBe('All projects'); expect(counts()).toEqual([2, 1]);
+    platform.current.bridge.status = 'error'; nativeUpdate({}); await flush(); expect(counts()).toEqual([2, 1, 0]);
+    platform.current.bridge.status = 'listening'; nativeUpdate({}, Array.from({ length: 80 }, (_, i) => agent(i))); await flush();
+    expect(counts()).toEqual([2, 1, 0, 64]); expect(buttons()).toHaveLength(80);
+  });
+  it('exposes overflow buttons and keyboard scrolling, and reveals a focused offscreen desk', async () => {
+    platform.current = state([agent(0), agent(1), agent(2)]); platform.current.window.mode = 'taskbar'; await start();
+    const workspace = root.querySelector<HTMLElement>('.workspace')!;
+    Object.defineProperties(workspace, { clientWidth: { configurable: true, value: 200 }, scrollWidth: { configurable: true, value: 360 } });
+    let scroll = 0; Object.defineProperty(workspace, 'scrollLeft', { configurable: true, get: () => scroll, set: value => { scroll = Math.max(0, Math.min(160, value)); } });
+    interact(() => workspace.dispatchEvent(new Event('scroll')));
+    const left = root.querySelector<HTMLButtonElement>('[aria-label="Scroll desks left"]')!, right = root.querySelector<HTMLButtonElement>('[aria-label="Scroll desks right"]')!;
+    expect(left.disabled).toBe(true); expect(right.disabled).toBe(false); click(right); expect(scroll).toBe(120); expect(left.disabled).toBe(false);
+    key(workspace, 'End'); expect(scroll).toBe(160); expect(right.disabled).toBe(true);
+    key(workspace, 'Home'); expect(scroll).toBe(0); key(workspace, 'ArrowRight'); expect(scroll).toBe(120); click(left); expect(scroll).toBe(0);
+    vi.spyOn(workspace, 'getBoundingClientRect').mockReturnValue({ left: 88, right: 288 } as DOMRect);
+    vi.spyOn(buttons()[2], 'getBoundingClientRect').mockReturnValue({ left: 328, right: 440 } as DOMRect);
+    interact(() => buttons()[2].focus()); expect(scroll).toBe(152); expect(document.activeElement).toBe(buttons()[2]);
+    key(buttons()[2], 'ArrowLeft'); expect(scroll).toBe(152);
+  });
+  it.each(['pointerup', 'pointercancel', 'lostpointercapture', 'blur', 'mode', 'pass-through', 'fullscreen', 'unmount'])('cleans a pending native drag after %s without a zombie begin', async reason => {
+    platform.current.window.mode = 'taskbar'; await start();
+    const grip = root.querySelector<HTMLButtonElement>('.strip-drag')!;
+    grip.setPointerCapture = vi.fn(); grip.hasPointerCapture = vi.fn(() => false); grip.releasePointerCapture = vi.fn();
+    const pointer = (type: string) => { const event = new MouseEvent(type, { bubbles: true, button: 0 }); Object.defineProperty(event, 'pointerId', { value: 7 }); interact(() => grip.dispatchEvent(event)); };
+    const original = platform.command.bind(platform); let resolve!: (value?: unknown) => void;
+    vi.spyOn(platform, 'command').mockImplementation(command => command.name === 'begin_taskbar_drag' ? new Promise(done => { platform.commands.push(command); resolve = done; }) : original(command));
+    pointer('pointerdown'); pointer('pointermove');
+    expect(platform.commands.at(-1)).toEqual({ name: 'begin_taskbar_drag' });
+    if (reason === 'blur') interact(() => window.dispatchEvent(new Event('blur')));
+    else if (reason === 'mode') nativeUpdate({ mode: 'office' });
+    else if (reason === 'pass-through') nativeUpdate({ clickThrough: true });
+    else if (reason === 'fullscreen') nativeUpdate({ fullscreenHidden: true });
+    else if (reason === 'unmount') interact(() => { app!.dispose(); app = undefined; });
+    else pointer(reason);
+    await act(async () => { resolve(); }); await flush();
+    expect(platform.commands.filter(command => command.name === 'end_taskbar_drag')).toHaveLength(1);
+    interact(() => vi.advanceTimersByTime(100));
+    expect(platform.commands.filter(command => command.name === 'update_taskbar_drag')).toHaveLength(reason === 'pointerup' ? 1 : 0);
+    expect(root.querySelector('.strip-drag')?.getAttribute('data-dragging')).not.toBe('true');
+  });
+  it('keeps long Unicode hover names intact, with full keyboard accessible details and untouched Office canvas offsets', async () => {
+    const name = '研究🚀équipe agent '.repeat(40); platform.current = state([agent(0, { name })]); platform.current.window.mode = 'taskbar'; await start();
+    const button = buttons()[0]; interact(() => button.focus());
+    expect(button.querySelector('.strip-agent-name')?.textContent).toBe(name); expect(button.getAttribute('aria-label')).toContain(name);
+    expect(button.querySelector('canvas')?.style.getPropertyValue('--sprite-bottom-gutter')).toMatch(/^[23]px$/);
+    click(button); await flush(); expect(root.querySelector('#detail-title')?.textContent).toBe(name);
+    expect(root.querySelector('canvas')?.style.getPropertyValue('--sprite-bottom-gutter')).toBe('');
+  });
+
+  it('keeps keyboard placement focus during pending IPC and blocks repeated key commands', async () => {
+    platform.current.window.mode = 'taskbar'; await start(); const grip = root.querySelector<HTMLButtonElement>('.strip-drag')!;
+    let resolve!: (value: unknown) => void; const original = platform.command.bind(platform);
+    vi.spyOn(platform, 'command').mockImplementation(command => command.name === 'set_taskbar_position' ? new Promise(done => { platform.commands.push(command); resolve = done; }) : original(command));
+    interact(() => grip.focus()); key(grip, 'ArrowRight'); key(grip, 'ArrowRight');
+    expect(grip.disabled).toBe(false); expect(grip.getAttribute('aria-disabled')).toBe('true'); expect(document.activeElement).toBe(grip);
+    expect(platform.commands.filter(command => command.name === 'set_taskbar_position')).toHaveLength(1);
+    await act(async () => resolve({ ...platform.current, sequence: platform.current.sequence + 1, window: { ...platform.current.window, taskbarPlacement: { alignment: 'free', position: 0.51 } } })); await flush();
+    expect(grip.getAttribute('aria-disabled')).toBeNull(); expect(document.activeElement).toBe(grip);
+  });
+  it('retries a transient content-width error on the next authoritative update without a retry loop', async () => {
+    platform.current.window.mode = 'taskbar'; platform.failure = new Error('Transient resize failure'); await start();
+    expect(root.querySelector('.strip-notice')?.textContent).toContain('Transient resize failure');
+    const counts = () => platform.commands.filter(command => command.name === 'set_taskbar_content_count');
+    expect(counts()).toHaveLength(1); interact(() => vi.advanceTimersByTime(2000)); await flush(); expect(counts()).toHaveLength(1);
+    platform.failure = undefined; nativeUpdate({}); await flush(); expect(counts()).toHaveLength(2); expect(counts()[1]).toEqual({ name: 'set_taskbar_content_count', args: { count: 1 } });
+    nativeUpdate({}); await flush(); expect(counts()).toHaveLength(2);
+    expect(root.querySelector('.strip-notice')).toBeNull();
+  });
+
 });

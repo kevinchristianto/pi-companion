@@ -17,6 +17,8 @@ export interface Agent {
 }
 export type BridgeStatus = 'starting' | 'listening' | 'error' | 'stopped';
 export type WindowMode = 'office' | 'taskbar';
+export type TaskbarAlignment = 'left' | 'center' | 'right';
+export interface TaskbarPlacement { alignment: TaskbarAlignment | 'free'; position: number; }
 export interface WindowState {
   pinned: boolean;
   clickThrough: boolean;
@@ -24,6 +26,7 @@ export interface WindowState {
   /** Older native envelopes remain office windows. */
   mode?: WindowMode;
   fullscreenHidden?: boolean;
+  taskbarPlacement?: TaskbarPlacement;
 }
 export interface ShellState {
   sequence: number;
@@ -53,6 +56,8 @@ export function parseShellState(value: unknown): ShellState | null {
   if (typeof bridge.status !== 'string' || !['starting', 'listening', 'error', 'stopped'].includes(bridge.status) || !optionalText(bridge.message) || !optionalText(bridge.connectionFile) || !optionalText(bridge.observerEntry)) return null;
   if (typeof window.pinned !== 'boolean' || typeof window.clickThrough !== 'boolean' || (window.recoveryAvailable !== undefined && typeof window.recoveryAvailable !== 'boolean')) return null;
   if ((window.mode !== undefined && window.mode !== 'office' && window.mode !== 'taskbar') || (window.fullscreenHidden !== undefined && typeof window.fullscreenHidden !== 'boolean')) return null;
+  const placement = window.taskbarPlacement;
+  if (placement !== undefined && (!object(placement) || !['left', 'center', 'right', 'free'].includes(placement.alignment as string) || typeof placement.position !== 'number' || !Number.isFinite(placement.position) || placement.position < 0 || placement.position > 1)) return null;
   const keys = new Set<string>();
   for (const agent of snapshot.agents) {
     if (!object(agent) || !['key', 'sessionId', 'agentId', 'name', 'sessionName', 'role', 'task'].every(key => text(agent[key]))) return null;
@@ -65,7 +70,7 @@ export function parseShellState(value: unknown): ShellState | null {
     sequence: value.sequence,
     snapshot: { streamId: snapshot.streamId, revision: snapshot.revision, ...(snapshot.omittedAgentCount === undefined ? {} : { omittedAgentCount: snapshot.omittedAgentCount as number }), agents: snapshot.agents.map(a => ({ key: a.key, sessionId: a.sessionId, agentId: a.agentId, name: a.name, sessionName: a.sessionName, ...(typeof a.cwd === 'string' && a.cwd.trim() ? { cwd: a.cwd } : {}), role: a.role, task: a.task, state: a.state, ...(typeof a.tool === 'string' ? { tool: a.tool } : {}), ...(typeof a.model === 'string' ? { model: a.model } : {}) })) as Agent[] },
     bridge: { status: bridge.status as BridgeStatus, ...(bridge.message === undefined ? {} : { message: bridge.message as string }), ...(bridge.connectionFile === undefined ? {} : { connectionFile: bridge.connectionFile as string }), ...(bridge.observerEntry === undefined ? {} : { observerEntry: bridge.observerEntry as string }) },
-    window: { pinned: window.pinned, clickThrough: window.clickThrough, mode: (window.mode ?? 'office') as WindowMode, fullscreenHidden: window.fullscreenHidden === true, ...(window.recoveryAvailable === undefined ? {} : { recoveryAvailable: window.recoveryAvailable }) },
+    window: { pinned: window.pinned, clickThrough: window.clickThrough, mode: (window.mode ?? 'office') as WindowMode, fullscreenHidden: window.fullscreenHidden === true, ...(placement === undefined ? {} : { taskbarPlacement: { alignment: (placement as Record<string, unknown>).alignment as TaskbarPlacement['alignment'], position: (placement as Record<string, unknown>).position as number } }), ...(window.recoveryAvailable === undefined ? {} : { recoveryAvailable: window.recoveryAvailable }) },
   };
 }
 

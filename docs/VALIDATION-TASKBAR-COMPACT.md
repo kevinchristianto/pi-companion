@@ -1,5 +1,7 @@
 # Compact Office and transparent strip: local validation
 
+Historical 0.2.0 evidence. The later unpublished placement revision is tracked separately in [VALIDATION-FLUSH-PLACEMENT.md](VALIDATION-FLUSH-PLACEMENT.md).
+
 The reviewed sizing and above-agent speech bubbles are approved for version 0.2.0 publication. The results below are local pre-release evidence; the release workflow separately verifies the exact commit on Windows before packaging and publication.
 
 - 122 frontend, 51 observer, 8 sprite-authoring and 83 Rust core/shell tests passed (264 total).

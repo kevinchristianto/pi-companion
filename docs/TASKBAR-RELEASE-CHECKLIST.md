@@ -50,3 +50,14 @@ The above-taskbar placement and final above-agent retro bubbles were reviewed an
 - Publish only after the authorized release marker and exact-commit build gate are satisfied. Ordinary pushes must remain artifact-only; a successful workflow alone is not release authorization.
 - No signing purchase, certificate generation or signing credential setup is part
   of this task.
+
+
+## Version 0.2.1 flush-placement native acceptance
+
+- Verify the visible feet, not only the transparent window rectangle, touch the taskbar boundary at 100/125/150/200% DPI and during auto-hide transitions.
+- Check Left/Center/Right from the Office menu before entering strip mode. Changing this preference must never move or resize Office.
+- Drag the grip horizontally; confirm no vertical movement. Test pointer release, cancellation, lost capture, blur, rapid repeated starts, fullscreen entry, recovery and a renderer disconnect during a drag.
+- Check keyboard free positioning, saved placement after restart, deliberate Office-monitor relocation and removal/reconnection of a saved display.
+- Add/remove agents and change the workspace filter while centered, edge-aligned and freely placed. Clamp the content-sized window without losing overflow agents or recovery controls.
+- Hover/focus a long name: the smaller label must stay inside the 104px strip and retain full accessible context. Status text and Office labels must retain their previous sizes.
+- The user reviewed the final offline illustration and authorized this revision for publication. Fresh exact-commit Windows compilation/lint/packaging remains mandatory; 0.2.0 CI is not evidence for these later native changes.

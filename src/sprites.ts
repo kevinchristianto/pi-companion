@@ -21,6 +21,8 @@ export const CELL = 64;
 export const COLUMNS = 8;
 export const ROWS = 4;
 export const ILLUSTRATED_LIMIT = 64;
+/** Audited composite alpha baseline, all 4 rows × 8 frames. Raw PNGs stay intact. */
+export const SPRITE_BOTTOM_GUTTER: Record<DesignId, 2 | 3> = { 'moss-curls': 3, 'amber-braid': 3, 'plum-bun': 2, 'sky-part': 2, 'coral-coils': 2, 'sage-bob': 2 };
 export const ASSET_URLS = {
   'characters/moss-curls.png': moss, 'characters/moss-curls-hands.png': mossHands,
   'characters/amber-braid.png': amber, 'characters/amber-braid-hands.png': amberHands,

@@ -84,3 +84,16 @@ describe('authoritative snapshot boundary', () => {
     store.disconnect('Transport unavailable'); expect(liveAgents(store.current)).toEqual([]);
   });
 });
+
+describe('taskbar placement envelope boundary', () => {
+  it('accepts and copies only bounded normalized placements', () => {
+    for (const alignment of ['left', 'center', 'right', 'free'] as const) for (const position of [0, 0.5, 1]) {
+      const input = state(); input.window.taskbarPlacement = { alignment, position };
+      const parsed = parseShellState(input)!; expect(parsed.window.taskbarPlacement).toEqual({ alignment, position });
+      input.window.taskbarPlacement.position = 0.25; expect(parsed.window.taskbarPlacement?.position).toBe(position);
+    }
+  });
+  it.each([null, {}, [], { alignment: 'top', position: 0.5 }, { alignment: 'left', position: -1 }, { alignment: 'free', position: 1.01 }, { alignment: 'free', position: NaN }, { alignment: 'free', position: Infinity }, { alignment: 'free', position: '0.5' }])('rejects malformed placement %j', placement => {
+    const input = state(); input.window.taskbarPlacement = placement as never; expect(parseShellState(input)).toBeNull();
+  });
+});

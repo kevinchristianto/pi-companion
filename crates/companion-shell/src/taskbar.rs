@@ -2,37 +2,164 @@
 //! No Explorer embedding, display mutation, native handles, or observer access.
 use crate::{fit_window, Rect, WindowMode};
 
-/// Kept in sync with the frontend's strip viewport height: 64px art and a
-/// persistent bottom status in place of the visible name, with bounded padding.
-pub const TASKBAR_HEIGHT: f64 = 104.0;
-pub const TASKBAR_MARGIN: f64 = 12.0;
+use serde::{Deserialize, Serialize};
 
-pub fn strip_rect(work: Rect, scale: f64) -> Rect {
-    let work = fit_window(work, work);
-    let scale = if scale.is_finite() && scale > 0.0 {
+/// Fixed logical dimensions shared with the frontend; no bottom or side gutter.
+pub const TASKBAR_HEIGHT: f64 = 104.0;
+pub const MAX_CONTENT_COUNT: u16 = 64;
+const CONTROLS_WIDTH: f64 = 88.0;
+const WORKSPACE_PADDING: f64 = 12.0;
+const TILE_WIDTH: f64 = 112.0;
+const TILE_GAP: f64 = 8.0;
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Alignment {
+    Left,
+    #[default]
+    Center,
+    Right,
+    Free,
+}
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct Placement {
+    pub alignment: Alignment,
+    /// Fraction of available horizontal travel, independent of monitor DPI/size.
+    pub position: f64,
+}
+impl Default for Placement {
+    fn default() -> Self {
+        Self {
+            alignment: Alignment::Center,
+            position: 0.5,
+        }
+    }
+}
+impl Placement {
+    pub fn aligned(alignment: Alignment) -> Option<Self> {
+        let position = match alignment {
+            Alignment::Left => 0.0,
+            Alignment::Center => 0.5,
+            Alignment::Right => 1.0,
+            Alignment::Free => return None,
+        };
+        Some(Self {
+            alignment,
+            position,
+        })
+    }
+    pub fn free(position: f64) -> Option<Self> {
+        (position.is_finite() && (0.0..=1.0).contains(&position)).then_some(Self {
+            alignment: Alignment::Free,
+            position,
+        })
+    }
+    pub fn validate(self) -> bool {
+        if self.alignment == Alignment::Free {
+            Self::free(self.position).is_some()
+        } else {
+            Self::aligned(self.alignment) == Some(self)
+        }
+    }
+}
+#[derive(Clone, Copy, Debug)]
+pub enum PlacementRequest {
+    Align(Alignment),
+    Position(f64),
+}
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PlacementPlan {
+    pub placement: Placement,
+    pub apply_geometry: bool,
+}
+/// Alignment controls are also present in Office. They change only the stored
+/// strip preference there, leaving Office geometry and its restore snapshot alone.
+pub fn plan_placement(mode: WindowMode, request: PlacementRequest) -> Option<PlacementPlan> {
+    let placement = match request {
+        PlacementRequest::Align(alignment) => Placement::aligned(alignment)?,
+        PlacementRequest::Position(position) if mode == WindowMode::Taskbar => {
+            Placement::free(position)?
+        }
+        PlacementRequest::Position(_) => return None,
+    };
+    Some(PlacementPlan {
+        placement,
+        apply_geometry: mode == WindowMode::Taskbar,
+    })
+}
+fn valid_scale(scale: f64) -> f64 {
+    if scale.is_finite() && scale > 0.0 {
         scale
     } else {
         1.0
+    }
+}
+pub fn strip_rect(work: Rect, scale: f64, count: u16, placement: Placement) -> Rect {
+    let work = fit_window(work, work);
+    let scale = valid_scale(scale);
+    let slots = f64::from(count.clamp(1, MAX_CONTENT_COUNT));
+    let width =
+        ((CONTROLS_WIDTH + WORKSPACE_PADDING + TILE_WIDTH * slots + TILE_GAP * (slots - 1.0))
+            * scale)
+            .round()
+            .clamp(1.0, work.width);
+    let height = (TASKBAR_HEIGHT * scale).round().clamp(1.0, work.height);
+    let position = if placement.validate() {
+        placement.position
+    } else {
+        0.5
     };
-    let side = (TASKBAR_MARGIN * scale)
-        .round()
-        .min((work.width - 1.0) / 2.0);
-    let bottom = (TASKBAR_MARGIN * scale)
-        .round()
-        .min((work.height - 1.0) / 2.0);
-    let width = (work.width - side * 2.0).max(1.0);
-    let height = (TASKBAR_HEIGHT * scale)
-        .round()
-        .clamp(1.0, work.height - bottom);
     fit_window(
         Rect {
-            x: work.x + (work.width - width) / 2.0,
-            y: work.y + work.height - bottom - height,
+            x: work.x + ((work.width - width) * position).round(),
+            y: work.y + work.height - height,
             width,
             height,
         },
         work,
     )
+}
+
+/// A drag samples absolute native physical cursor positions; no JS deltas or
+/// accumulated window offsets. Retaining a logical grab offset handles DPI changes.
+#[derive(Clone, Copy, Debug)]
+pub struct HorizontalDrag {
+    grab_offset: f64,
+}
+impl HorizontalDrag {
+    pub fn begin(cursor_x: f64, rect: Rect, scale: f64) -> Option<Self> {
+        if !cursor_x.is_finite() || !rect.x.is_finite() {
+            return None;
+        }
+        let grab_offset = (cursor_x - rect.x) / valid_scale(scale);
+        grab_offset.is_finite().then_some(Self { grab_offset })
+    }
+    pub fn placement(self, cursor_x: f64, work: Rect, scale: f64, count: u16) -> Option<Placement> {
+        if !cursor_x.is_finite() {
+            return None;
+        }
+        let rect = strip_rect(work, scale, count, Placement::default());
+        let travel = (work.width - rect.width).max(0.0);
+        let position = if travel > 0.0 {
+            ((cursor_x - self.grab_offset * valid_scale(scale) - work.x) / travel).clamp(0.0, 1.0)
+        } else {
+            0.5
+        };
+        Placement::free(position)
+    }
+}
+
+/// Preserve a preferred monitor through unplug/reconnect; an absent name falls
+/// back to the current monitor (or primary) without overwriting that preference.
+pub fn preferred_monitor_index(
+    preferred: Option<&str>,
+    names: &[Option<&str>],
+    fallback: usize,
+) -> Option<usize> {
+    preferred
+        .and_then(|name| names.iter().position(|candidate| *candidate == Some(name)))
+        .or_else(|| (!names.is_empty()).then_some(fallback.min(names.len().saturating_sub(1))))
 }
 
 /// An ordinary maximized window covers only the work area and is not fullscreen.
@@ -173,14 +300,11 @@ mod tests {
     #[test]
     fn strip_is_centered_above_work_area_bottom_at_each_dpi() {
         for scale in [1.0, 1.25, 1.5, 2.0] {
-            let rect = strip_rect(WORK, scale);
+            let rect = strip_rect(WORK, scale, 3, Placement::default());
             assert_eq!(rect.height, TASKBAR_HEIGHT * scale);
-            assert_eq!(rect.width, WORK.width - TASKBAR_MARGIN * scale * 2.0);
-            assert_eq!(rect.x + rect.width / 2.0, WORK.x + WORK.width / 2.0);
-            assert_eq!(
-                rect.y + rect.height,
-                WORK.y + WORK.height - TASKBAR_MARGIN * scale
-            );
+            assert_eq!(rect.width, 452.0 * scale);
+            assert!((rect.x + rect.width / 2.0 - WORK.x - WORK.width / 2.0).abs() <= 0.5);
+            assert_eq!(rect.y + rect.height, WORK.y + WORK.height);
         }
     }
     #[test]
@@ -192,7 +316,7 @@ mod tests {
                     height,
                     ..WORK
                 };
-                let rect = strip_rect(work, scale);
+                let rect = strip_rect(work, scale, 3, Placement::default());
                 assert!(rect.width >= 1.0 && rect.height >= 1.0);
                 assert!(rect.x >= work.x && rect.x + rect.width <= work.x + width);
                 assert!(rect.y >= work.y && rect.y + rect.height <= work.y + height);
@@ -201,14 +325,193 @@ mod tests {
     }
     #[test]
     fn work_area_and_dpi_changes_recompute_not_accumulate() {
-        let a = strip_rect(WORK, 1.0);
+        let a = strip_rect(WORK, 1.0, 3, Placement::default());
         let shorter = Rect {
             height: 1000.0,
             ..WORK
         };
-        assert_eq!(strip_rect(shorter, 1.0).y, a.y - 40.0);
-        assert_eq!(strip_rect(WORK, 1.0), a);
-        assert_eq!(strip_rect(WORK, 2.0).height, 208.0);
+        assert_eq!(
+            strip_rect(shorter, 1.0, 3, Placement::default()).y,
+            a.y - 40.0
+        );
+        assert_eq!(strip_rect(WORK, 1.0, 3, Placement::default()), a);
+        assert_eq!(strip_rect(WORK, 2.0, 3, Placement::default()).height, 208.0);
+    }
+    #[test]
+    fn content_count_controls_only_bounded_width_with_no_bottom_gap() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for count in [0, 1, 2, 3, 6, 64, u16::MAX] {
+                let slots = f64::from(count.clamp(1, MAX_CONTENT_COUNT));
+                let expected = ((100.0 + 112.0 * slots + 8.0 * (slots - 1.0)) * scale)
+                    .round()
+                    .min(WORK.width);
+                for alignment in [Alignment::Left, Alignment::Center, Alignment::Right] {
+                    let placement = Placement::aligned(alignment).unwrap();
+                    let rect = strip_rect(WORK, scale, count, placement);
+                    assert_eq!(rect.width, expected);
+                    assert_eq!(rect.y + rect.height, WORK.y + WORK.height);
+                    assert_eq!(
+                        rect.x,
+                        WORK.x + ((WORK.width - expected) * placement.position).round()
+                    );
+                }
+            }
+        }
+        assert_eq!(strip_rect(WORK, 1.0, 0, Placement::default()).width, 212.0);
+        assert_eq!(
+            strip_rect(WORK, 1.0, 64, Placement::default()).width,
+            WORK.width
+        );
+    }
+    #[test]
+    fn free_placement_survives_resize_dpi_and_reconnect_without_accumulation() {
+        let placement = Placement::free(0.27).unwrap();
+        let original = strip_rect(WORK, 1.25, 2, placement);
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for width in [1.0, 100.0, 800.0, 3840.0] {
+                let work = Rect { width, ..WORK };
+                let rect = strip_rect(work, scale, 2, placement);
+                assert!(rect.x >= work.x && rect.x + rect.width <= work.x + width);
+                assert_eq!(rect.y + rect.height, work.y + work.height);
+            }
+        }
+        assert_eq!(strip_rect(WORK, 1.25, 2, placement), original);
+    }
+    #[test]
+    fn horizontal_drag_samples_absolute_cursor_and_clamps_edges() {
+        let initial = strip_rect(WORK, 1.25, 2, Placement::default());
+        let cursor = initial.x + 30.0;
+        let drag = HorizontalDrag::begin(cursor, initial, 1.25).unwrap();
+        let at_start = drag.placement(cursor, WORK, 1.25, 2).unwrap();
+        let original = strip_rect(WORK, 1.25, 2, at_start);
+        assert_eq!(original, initial);
+        let moved = drag.placement(cursor + 150.0, WORK, 1.25, 2).unwrap();
+        assert_eq!(strip_rect(WORK, 1.25, 2, moved).x, initial.x + 150.0);
+        for _ in 0..100 {
+            assert_eq!(
+                drag.placement(cursor + 150.0, WORK, 1.25, 2).unwrap(),
+                moved
+            );
+        }
+        assert_eq!(
+            drag.placement(-10000.0, WORK, 1.25, 2).unwrap().position,
+            0.0
+        );
+        assert_eq!(
+            drag.placement(10000.0, WORK, 1.25, 2).unwrap().position,
+            1.0
+        );
+        assert_eq!(
+            drag.placement(cursor, WORK, 1.25, 64).unwrap().position,
+            0.5
+        );
+        assert!(drag.placement(f64::NAN, WORK, 1.25, 2).is_none());
+        assert!(HorizontalDrag::begin(f64::INFINITY, initial, 1.0).is_none());
+        assert_eq!(strip_rect(WORK, 1.25, 2, moved).y, initial.y);
+    }
+    #[test]
+    fn monitor_fallback_preserves_preference_until_reconnect_and_office_move() {
+        let saved = Some("second");
+        let both = [Some("first"), Some("second")];
+        assert_eq!(preferred_monitor_index(saved, &both, 0), Some(1));
+        assert_eq!(preferred_monitor_index(saved, &[Some("first")], 0), Some(0));
+        assert_eq!(preferred_monitor_index(saved, &[], 0), None);
+        assert_eq!(preferred_monitor_index(saved, &both, 0), Some(1));
+        // A later Office -> strip entry intentionally omits the saved preference.
+        assert_eq!(preferred_monitor_index(None, &both, 0), Some(0));
+        assert_eq!(preferred_monitor_index(None, &both, 1), Some(1));
+        assert_eq!(
+            preferred_monitor_index(Some("removed"), &both, usize::MAX),
+            Some(1)
+        );
+    }
+    #[test]
+    fn invalid_placement_cannot_escape_work_area_or_enter_persistence() {
+        assert!(Placement::aligned(Alignment::Free).is_none());
+        for position in [-1.0, 1.01, f64::NAN, f64::INFINITY] {
+            assert!(Placement::free(position).is_none());
+            let invalid = Placement {
+                alignment: Alignment::Free,
+                position,
+            };
+            assert_eq!(
+                strip_rect(WORK, 1.0, 1, invalid),
+                strip_rect(WORK, 1.0, 1, Placement::default())
+            );
+        }
+        assert!(!Placement {
+            alignment: Alignment::Left,
+            position: 0.5
+        }
+        .validate());
+    }
+    #[test]
+    fn autohide_animation_retains_flush_baseline_for_every_alignment() {
+        let monitor = Rect {
+            x: -1920.0,
+            y: -100.0,
+            width: 1920.0,
+            height: 1080.0,
+        };
+        for visible in [0.0, 2.0, 12.0, 48.0] {
+            let bar = Rect {
+                y: monitor.y + monitor.height - visible,
+                height: 48.0,
+                ..monitor
+            };
+            let work = reserve_autohide_bar(monitor, monitor, bar, Edge::Bottom);
+            for placement in [
+                Placement::default(),
+                Placement::aligned(Alignment::Right).unwrap(),
+                Placement::free(0.27).unwrap(),
+            ] {
+                let rect = strip_rect(work, 1.5, 3, placement);
+                assert_eq!(rect.y + rect.height, monitor.y + monitor.height - visible);
+            }
+        }
+    }
+    #[test]
+    fn office_alignment_updates_preference_without_native_geometry_or_free_drag() {
+        for alignment in [Alignment::Left, Alignment::Center, Alignment::Right] {
+            let plan =
+                plan_placement(WindowMode::Office, PlacementRequest::Align(alignment)).unwrap();
+            assert!(!plan.apply_geometry);
+            assert_eq!(plan.placement, Placement::aligned(alignment).unwrap());
+            let strip =
+                plan_placement(WindowMode::Taskbar, PlacementRequest::Align(alignment)).unwrap();
+            assert!(strip.apply_geometry);
+            assert_eq!(strip.placement, plan.placement);
+        }
+        assert!(plan_placement(WindowMode::Office, PlacementRequest::Position(0.3)).is_none());
+        assert!(
+            plan_placement(WindowMode::Office, PlacementRequest::Align(Alignment::Free)).is_none()
+        );
+        assert!(
+            plan_placement(WindowMode::Taskbar, PlacementRequest::Position(f64::NAN)).is_none()
+        );
+        assert!(
+            plan_placement(WindowMode::Taskbar, PlacementRequest::Position(0.3))
+                .unwrap()
+                .apply_geometry
+        );
+    }
+    #[test]
+    fn placement_commands_are_declared_in_both_native_build_and_permissions() {
+        let build = include_str!("../../../src-tauri/build.rs");
+        let permission = include_str!("../../../src-tauri/permissions/companion.toml");
+        let main = include_str!("../../../src-tauri/src/main.rs");
+        for command in [
+            "set_taskbar_alignment",
+            "set_taskbar_position",
+            "set_taskbar_content_count",
+            "begin_taskbar_drag",
+            "update_taskbar_drag",
+            "end_taskbar_drag",
+        ] {
+            assert!(build.contains(&format!("\"{command}\"")));
+            assert!(permission.contains(&format!("\"{command}\"")));
+            assert!(main.contains(&format!("async fn {command}(")));
+        }
     }
     #[test]
     fn saved_office_rect_is_fitted_after_monitor_removal() {
@@ -378,5 +681,41 @@ mod tests {
         assert!(!state.click_through && !state.fullscreen_hidden);
         assert!(state.pinned);
         assert!(serde_json::from_str::<WindowMode>("\"other\"").is_err());
+    }
+    #[test]
+    fn office_restore_selects_its_rectangle_monitor_not_strip_preference() {
+        // The view still reports Taskbar during Office restoration. The native
+        // restore boundary must explicitly ignore the strip's saved monitor.
+        let source = include_str!("../../../src-tauri/src/main.rs");
+        let restore = source
+            .split("fn apply_office_snapshot(")
+            .nth(1)
+            .unwrap()
+            .split("fn change_mode(")
+            .next()
+            .unwrap();
+        assert!(restore.contains("match display_layout_for(window, None)"));
+        assert!(!restore.contains("match display_layout(window)"));
+    }
+    #[test]
+    fn native_physical_rect_moves_before_remeasuring_and_resizing() {
+        let source = include_str!("../../../src-tauri/src/main.rs");
+        let apply = source
+            .split("fn apply_rect(")
+            .nth(1)
+            .unwrap()
+            .split("fn set_minimum(")
+            .next()
+            .unwrap();
+        let moving = apply.find(".set_position(").unwrap();
+        let remeasure = apply
+            .find("let after_move = current_rect(window)?")
+            .unwrap();
+        let resizing = apply.find(".set_size(").unwrap();
+        let final_origin = apply
+            .find("let after_size = current_rect(window)?")
+            .unwrap();
+        assert!(moving < remeasure && remeasure < resizing && resizing < final_origin);
+        assert!(apply[final_origin..].contains(".set_position("));
     }
 }

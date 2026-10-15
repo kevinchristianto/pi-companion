@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
-import type { Agent, WindowMode } from './model';
+import type { Agent, TaskbarAlignment, WindowMode } from './model';
 import { liveAgents, StateStore, STATE_LABELS, statusLabel } from './model';
 import type { Platform, WindowCommand } from './platform';
 import { RenderScheduler } from './scheduler';
-import { animationForState, drawSprite, frameAt, ILLUSTRATED_LIMIT, loadSpriteAssets } from './sprites';
+import { TaskbarDrag } from './taskbar-drag';
+import { animationForState, designForIdentity, drawSprite, frameAt, ILLUSTRATED_LIMIT, loadSpriteAssets, SPRITE_BOTTOM_GUTTER } from './sprites';
 import type { SpriteAssets } from './sprites';
 import { groupWorkspaces, reconcileWorkspaceSelection } from './workspaces';
 import { Button } from './components/ui/8bit/button';
@@ -112,6 +113,64 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
   const media = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)'), []); const [reduced, setReduced] = useState(media.matches);
   const menuRef = useRef<HTMLButtonElement>(null); const stripReturn = useRef<HTMLButtonElement>(null); const menuContent = useRef<HTMLDivElement>(null); const focusedWorkspace = useRef(''); const detailTitle = useRef<HTMLHeadingElement>(null); const detail = useRef<HTMLElement>(null); const office = useRef<HTMLElement>(null); const entry = useRef<HTMLTextAreaElement>(null);
   const alive = useRef(true); const focusedAgent = useRef('');
+  const [dragging, setDragging] = useState(false); const dragPointer = useRef<{ id: number; target: HTMLButtonElement } | null>(null);
+  const drag = useRef<TaskbarDrag | null>(null);
+  if (!drag.current) drag.current = new TaskbarDrag(command => platform.command(command), value => { if (alive.current) controller.receive(value); }, error => { if (alive.current) setFeedback(messageOf(error)); }, active => { if (alive.current) setDragging(active); });
+  const placement = state.window.taskbarPlacement || { alignment: 'center', position: 0.5 };
+  const requestedCount = useRef<number | null>(null); const sentCount = useRef<number | undefined>(undefined); const countBusy = useRef(false); const countError = useRef('');
+  useEffect(() => {
+    requestedCount.current = taskbar ? Math.min(visible.length, ILLUSTRATED_LIMIT) : null;
+    if (!taskbar) { sentCount.current = undefined; return; }
+    if (countBusy.current) return;
+    countBusy.current = true;
+    void (async () => {
+      try {
+        while (alive.current && requestedCount.current !== null && requestedCount.current !== sentCount.current) {
+          const count = requestedCount.current;
+          const result = await platform.command({ name: 'set_taskbar_content_count', args: { count } });
+          sentCount.current = count;
+          if (alive.current && countError.current) { const previousError = countError.current; countError.current = ''; setFeedback(current => current === previousError ? '' : current); }
+          if (alive.current && result !== undefined && result !== null) controller.receive(result);
+        }
+      } catch (error) { if (alive.current) { countError.current = messageOf(error); setFeedback(countError.current); } }
+      finally { countBusy.current = false; }
+    })();
+  }, [taskbar, visible.length, state.sequence, platform, controller]);
+  const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
+  function updateScrollEdges() {
+    const node = office.current; if (!node) return;
+    const left = node.scrollLeft > 0, right = node.scrollLeft + node.clientWidth < node.scrollWidth - 1;
+    setScrollEdges(previous => previous.left === left && previous.right === right ? previous : { left, right });
+  }
+  function scrollDesks(direction: -1 | 1 | 'start' | 'end') {
+    const node = office.current; if (!node) return;
+    node.scrollLeft = direction === 'start' ? 0 : direction === 'end' ? node.scrollWidth : node.scrollLeft + direction * 120;
+    updateScrollEdges();
+  }
+  function revealDesk(target: HTMLButtonElement) {
+    if (!taskbar || !office.current) return;
+    const viewport = office.current.getBoundingClientRect(), tile = target.getBoundingClientRect();
+    if (tile.left < viewport.left) office.current.scrollLeft += tile.left - viewport.left;
+    else if (tile.right > viewport.right) office.current.scrollLeft += tile.right - viewport.right;
+    updateScrollEdges();
+  }
+  function stopDrag(flushFinal = false) {
+    const pointer = dragPointer.current; dragPointer.current = null; drag.current?.stop(flushFinal);
+    if (pointer?.target.hasPointerCapture?.(pointer.id)) pointer.target.releasePointerCapture(pointer.id);
+  }
+  useEffect(() => {
+    if (!taskbar || pending || menuOpen || guideOpen || state.window.clickThrough || state.window.fullscreenHidden || state.window.recoveryAvailable !== true) stopDrag();
+  }, [taskbar, pending, menuOpen, guideOpen, state.window.clickThrough, state.window.fullscreenHidden, state.window.recoveryAvailable]);
+  useEffect(() => {
+    const blur = () => stopDrag(); const hidden = () => { if (document.hidden) stopDrag(); };
+    window.addEventListener('blur', blur); document.addEventListener('visibilitychange', hidden);
+    return () => { stopDrag(); window.removeEventListener('blur', blur); document.removeEventListener('visibilitychange', hidden); };
+  }, []);
+  useLayoutEffect(() => {
+    if (!taskbar || !office.current) return;
+    updateScrollEdges(); const observer = new ResizeObserver(updateScrollEdges); observer.observe(office.current);
+    return () => observer.disconnect();
+  }, [taskbar, visible.length]);
   const registerSprite = useSpriteClock(visible, assets, spriteScale, motionPaused || reduced, state.window.fullscreenHidden === true, office);
   useLayoutEffect(() => {
     const previous = document.documentElement.dataset.windowMode;
@@ -190,6 +249,21 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
       {stripNotice && <div className="strip-notice" role="status">{stripNotice}</div>}
       <span className="strip-project" title={group?.cwd || group?.name || 'Every connected workspace'}>{group?.name || 'All projects'}</span>
       <span className="strip-count sr-only">{visible.length} {visible.length === 1 ? 'agent' : 'agents'}</span>
+      <div className="strip-move-row">
+        <Button className="strip-drag" aria-label="Move taskbar horizontally. Use Left and Right arrow keys; Shift moves farther; Home and End align to edges" aria-describedby="strip-move-help" data-dragging={dragging || undefined} disabled={!recovery || state.window.clickThrough} aria-disabled={pending || undefined} onPointerDown={event => {
+          if (pendingRef.current || event.button !== 0 || event.isPrimary === false || drag.current?.active) return;
+          event.preventDefault(); event.currentTarget.focus({ preventScroll: true }); setFeedback('');
+          if (drag.current?.start()) { dragPointer.current = { id: event.pointerId, target: event.currentTarget }; try { event.currentTarget.setPointerCapture(event.pointerId); } catch { stopDrag(); } }
+        }} onPointerMove={event => { if (event.pointerId === dragPointer.current?.id) drag.current?.move(); }} onPointerUp={event => { if (event.pointerId === dragPointer.current?.id) stopDrag(true); }} onPointerCancel={() => stopDrag()} onLostPointerCapture={() => { if (dragPointer.current) stopDrag(); }} onKeyDown={event => {
+          if (event.key === 'Escape') { stopDrag(); return; }
+          if (pendingRef.current || drag.current?.active) return;
+          if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); void run({ name: 'set_taskbar_alignment', args: { alignment: event.key === 'Home' ? 'left' : 'right' } }); }
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); void run({ name: 'set_taskbar_position', args: { position: Math.min(1, Math.max(0, placement.position + (event.key === 'ArrowLeft' ? -1 : 1) * (event.shiftKey ? 0.1 : 0.01))) } }); }
+        }}><span className="pixel-grip" aria-hidden="true" /></Button>
+        <Button className="strip-scroll" disabled={!scrollEdges.left} aria-label="Scroll desks left" onClick={() => scrollDesks(-1)}>‹</Button>
+        <Button className="strip-scroll" disabled={!scrollEdges.right} aria-label="Scroll desks right" onClick={() => scrollDesks(1)}>›</Button>
+      </div>
+      <span id="strip-move-help" className="sr-only">Drag the grip horizontally. The desks stay above the taskbar. Current position: {placement.alignment}.</span>
       <Button ref={stripReturn} className="strip-return" disabled={pending} aria-label="Return to Office for options and details" onClick={() => void changeMode('office')}>Office</Button>
     </aside>}
     {!taskbar && <header className="titlebar" onPointerDown={event => { if (event.button === 0 && !(event.target as HTMLElement).closest('button,[role="menu"],a,input,textarea')) void platform.command({ name: 'start_dragging' }).catch(() => {}); }}>
@@ -204,6 +278,8 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
             {groups.map(workspace => <DropdownMenuRadioItem key={workspace.key} value={workspace.key} onFocus={() => { focusedWorkspace.current = workspace.key; }} onBlur={event => { if (event.relatedTarget) focusedWorkspace.current = ''; }} onSelect={event => event.preventDefault()}><span className="option-label">{workspace.label}</span><span className="option-detail">{workspace.cwd || 'Workspace not shared'}<br />{workspace.agents.length} agents · {workspace.sessionIds.length} sessions</span></DropdownMenuRadioItem>)}
           </DropdownMenuRadioGroup>
           <DropdownMenuLabel className="field-label">Window mode</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Window mode" value={mode} onValueChange={value => { void changeMode(value as WindowMode); }}><DropdownMenuRadioItem value="office" disabled={pending} onSelect={event => event.preventDefault()}>Office</DropdownMenuRadioItem><DropdownMenuRadioItem value="taskbar" disabled={pending || !recovery} onSelect={event => event.preventDefault()}>Taskbar</DropdownMenuRadioItem></DropdownMenuRadioGroup>
+          <DropdownMenuLabel className="field-label">Taskbar alignment</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Taskbar alignment" value={placement.alignment} onValueChange={value => { void run({ name: 'set_taskbar_alignment', args: { alignment: value as TaskbarAlignment } }); }}>{(['left', 'center', 'right'] as const).map(alignment => <DropdownMenuRadioItem key={alignment} value={alignment} disabled={pending || !recovery} onSelect={event => event.preventDefault()}>{alignment[0].toUpperCase() + alignment.slice(1)}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup>
+          <div className="menu-note">{placement.alignment === 'free' ? 'Free position. ' : ''}Drag the taskbar grip to place it anywhere along the bottom.</div>
           <DropdownMenuLabel className="field-label">Artwork scale</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Artwork scale" value={String(scale)} onValueChange={value => setScale(value === '1' ? 1 : 2)}><DropdownMenuRadioItem value="1" onSelect={event => event.preventDefault()}>1× · small</DropdownMenuRadioItem><DropdownMenuRadioItem value="2" onSelect={event => event.preventDefault()}>2× · original</DropdownMenuRadioItem></DropdownMenuRadioGroup>
           <DropdownMenuLabel className="field-label">Window size</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Window size" value={size} onValueChange={value => { void run({ name: 'resize_window', args: { preset: value as 'compact' | 'wide' | 'tall' } }).then(ok => { if (ok && alive.current) setSize(value); }); }}>{['compact', 'wide', 'tall'].map(value => <DropdownMenuRadioItem key={value} value={value} disabled={pending} onSelect={event => event.preventDefault()}>{value[0].toUpperCase() + value.slice(1)}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
@@ -220,13 +296,17 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
     {!taskbar && platform.review && <div className="review-banner">DESIGN REVIEW · Sample agents, no live Pi connection</div>}
     {!taskbar && <div className="summary"><span className="connection" data-status={state.bridge.status}>{bridgeLabel}</span><Hint text={group?.cwd || (group ? 'Workspace not shared' : 'Every connected workspace')}><span className="current-project" tabIndex={0}>{group?.name || 'All projects'}</span></Hint><span className="agent-count">{visible.length}{validFilter ? ` of ${agents.length}` : ''} {visible.length === 1 ? 'agent' : 'agents'}</span></div>}
     {!taskbar && warning && <p className="warning">{warning}</p>}
-    <section className="workspace" aria-label={taskbar ? 'Agent taskbar. Scroll horizontally for more desks' : 'Agent office'} ref={office} tabIndex={taskbar ? 0 : undefined}>
+    <section className="workspace" aria-label={taskbar ? 'Agent taskbar. Scroll horizontally for more desks' : 'Agent office'} ref={office} tabIndex={taskbar ? 0 : undefined} onScroll={taskbar ? updateScrollEdges : undefined} onKeyDown={event => {
+      if (!taskbar || event.target !== event.currentTarget) return;
+      const direction = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : event.key === 'Home' ? 'start' : event.key === 'End' ? 'end' : null;
+      if (direction !== null) { event.preventDefault(); scrollDesks(direction); }
+    }}>
       {!taskbar && artError && <p className="art-warning">Bundled artwork could not be loaded. Agent names and live status remain available.</p>}
       {!visible.length && <div className="empty-state"><div className="empty-mark" aria-hidden="true">π</div><h2>{state.bridge.status === 'listening' ? taskbar ? 'No connected agents' : 'A little room for your next idea' : state.bridge.status === 'starting' ? 'Opening the office…' : 'Waiting for a live connection'}</h2><p>{state.bridge.status === 'listening' ? 'Your connected Pi sessions will settle in here. An idle session stays until it disconnects.' : state.bridge.status === 'starting' ? 'The desktop companion is starting its local observer.' : 'No agents are shown while the connection is unavailable.'}</p>{!taskbar && <Button className="primary-button" onClick={showGuide}>Connection guide</Button>}</div>}
       {(artworkCapped || omitted > 0) && <p className={taskbar ? 'capacity sr-only' : 'capacity'}>{artworkCapped ? `Artwork is limited to ${ILLUSTRATED_LIMIT} agents. The remaining ${visible.length - ILLUSTRATED_LIMIT} remain in accessible text entries. ` : ''}{omitted ? `The local bridge omitted ${omitted} additional ${omitted === 1 ? 'agent' : 'agents'} because its safety limit was reached. This roster is incomplete.` : ''}</p>}
       <ul className="roster" aria-label="Active agents" data-view={mode} hidden={!visible.length}>{visible.map((agent, index) => <li className={`agent${index >= ILLUSTRATED_LIMIT || artError ? ' text-only' : ''}`} data-key={agent.key} key={agent.key} ref={registerSprite(agent)}>
-        <button type="button" className="agent-button" data-agent-key={agent.key} aria-label={`${agent.name}, ${statusLabel(agent)}, ${agent.sessionName || 'Unnamed session'}. ${taskbar ? 'Open Office and view details' : 'View details'}`} aria-pressed={!taskbar && agent.key === selected} onClick={() => void selectAgent(agent)} onFocus={() => { focusedAgent.current = agent.key; }} onBlur={event => { if (event.relatedTarget) focusedAgent.current = ''; }}>
-          <span className="status-bubble" data-state={agent.state}>{taskbar ? <span className="taskbar-bubble-body">{STATE_LABELS[agent.state]}</span> : statusLabel(agent)}</span><canvas className="portrait" width={spriteScale * 64} height={spriteScale * 64} aria-hidden="true" hidden={index >= ILLUSTRATED_LIMIT || artError} />
+        <button type="button" className="agent-button" data-agent-key={agent.key} aria-label={`${agent.name}, ${statusLabel(agent)}, ${agent.sessionName || 'Unnamed session'}. ${taskbar ? 'Open Office and view details' : 'View details'}`} aria-pressed={!taskbar && agent.key === selected} onClick={() => void selectAgent(agent)} onFocus={event => { focusedAgent.current = agent.key; revealDesk(event.currentTarget); }} onBlur={event => { if (event.relatedTarget) focusedAgent.current = ''; }}>
+          <span className="status-bubble" data-state={agent.state}>{taskbar ? <span className="taskbar-bubble-body">{STATE_LABELS[agent.state]}</span> : statusLabel(agent)}</span><canvas className="portrait" style={taskbar ? { '--sprite-bottom-gutter': `${SPRITE_BOTTOM_GUTTER[designForIdentity(agent.key)]}px` } as CSSProperties : undefined} width={spriteScale * 64} height={spriteScale * 64} aria-hidden="true" hidden={index >= ILLUSTRATED_LIMIT || artError} />
           {!taskbar && <span className="agent-copy"><span className="agent-name">{agent.name}</span></span>}
           {taskbar && <span className="strip-agent-name" aria-hidden="true">{agent.name}</span>}
         </button>

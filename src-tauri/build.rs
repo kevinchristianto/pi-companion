@@ -9,6 +9,12 @@ fn main() {
             "restore_window",
             "resize_window",
             "start_dragging",
+            "set_taskbar_alignment",
+            "set_taskbar_position",
+            "set_taskbar_content_count",
+            "begin_taskbar_drag",
+            "update_taskbar_drag",
+            "end_taskbar_drag",
         ]),
     ))
     .expect("Tauri configuration must validate");

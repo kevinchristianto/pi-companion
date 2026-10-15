@@ -10,7 +10,7 @@ Versioned Windows x64 NSIS installers are published through [GitHub Releases](ht
 
 The installer includes the Rust bridge, six character designs, all four animation states, shared furniture and observer files. If WebView2 is missing, its bootstrapper downloads the required runtime, so first installation can need internet. No signing certificate is configured; Windows can show an unknown-publisher warning. Verify the source commit and artifact origin before deciding whether to install.
 
-The release workflow requires successful automated Windows verification and NSIS packaging before publishing. Real Windows GUI acceptance remains outstanding, especially tray recovery, transparency, mixed-DPI rendering, taskbar auto-hide/fullscreen handling, sleep/resume and accessibility. A successful build is not evidence of those native visual checks. See the [0.2.0 notes](docs/releases/v0.2.0.md).
+The release workflow requires successful automated Windows verification and NSIS packaging before publishing. Real Windows GUI acceptance remains outstanding, especially tray recovery, transparency, mixed-DPI rendering, taskbar auto-hide/fullscreen handling, sleep/resume and accessibility. A successful build is not evidence of those native visual checks. See the [0.2.1 notes](docs/releases/v0.2.1.md).
 
 ## Connect Pi
 
@@ -37,15 +37,18 @@ The bridge binds only to `127.0.0.1:4318`, independently of the old Pi Office po
 
 The local redesign uses actual MIT-licensed [8bitcn](https://www.8bitcn.com/) components, pinned and documented in `src/components/ui/8bit/SOURCES.json`. React owns controls and roster membership; one imperative Canvas2D clock paints the unchanged sprites without a React update per animation frame.
 
-- **Menu** contains the project/workspace picker, artwork scale, window size, Office/Taskbar mode, pin, pass-through, motion, hide and connection guide. The interface stays office-based; there is no separate list view.
+- **Menu** contains the project/workspace picker, artwork scale, window size, Office/Taskbar mode, taskbar alignment, pin, pass-through, motion, hide and connection guide. The interface stays office-based; there is no separate list view.
 - Workspaces group by the exact cwd shared by Pi, never by a session ID or a folder basename. All live sessions in the same path stay together. Duplicate folder names show paths; missing cwd is labeled unknown and kept separate per session.
 - Office defaults to 360×300 logical pixels with 1× artwork; its minimum is 280×240. An independent 2× artwork preference, window presets and monitor work-area clamping remain available.
 - The undecorated native window has a custom pixel frame/titlebar, square menus/dialogs/tooltips/scrollbars, pixel icons and a bundled OFL Press Start 2P font at compact sizes. There are no remote font requests.
-- Optional Taskbar mode is a transparent, borderless strip 104 logical pixels high above the selected monitor’s taskbar. It uses fixed 1× sprites, an always-visible retro status bubble above each desk, with a downward pixel tail. There is no permanent name or status row below the sprite. Names remain available on hover or keyboard focus, in accessible labels and in Office details. Additional agents scroll horizontally. The Office button returns to the full controls; agent details also open in Office. The strip does not embed into Explorer.
+- Optional Taskbar mode is a transparent, borderless strip 104 logical pixels high above the selected monitor’s taskbar. It uses fixed 1× sprites, an always-visible retro status bubble above each desk, with a downward pixel tail. There is no permanent name or status row below the sprite. Names remain available on hover or keyboard focus, in accessible labels and in Office details. The strip fits the visible roster and keeps its visible feet flush with the taskbar edge. Additional agents scroll horizontally using the arrow buttons, trackpad, or keyboard, without a reserved scrollbar gap below the desks. The Office button returns to the full controls; agent details also open in Office. The strip does not embed into Explorer.
+- Taskbar placement: choose Left, Center or Right in the Office menu, or drag the pixel grip horizontally for a free position. Arrow keys on the grip move 1% of the available travel (Shift: 10%); Home/End align to the edges. The vertical baseline remains fixed. Hover/focus names use a compact 6px font; status bubbles and Office names keep their previous sizes. Placement is saved privately; input pass-through and the window mode are not persisted.
 - Mode changes preserve the workspace filter and live-only roster. Returning to Office restores its saved size, position and pin preference. Explicit tray/shortcut recovery restores input. Same-monitor fullscreen apps hide the strip without stealing focus; a user-hidden window stays hidden. Native Windows acceptance for these behaviors is pending.
 - Long rosters and option menus scroll within the compact window. Keyboard navigation, Escape/outside dismissal, focus recovery, reduced motion and native recovery guards remain supported.
 
-Version 0.2.0 adds the compact Office and optional transparent taskbar strip, the reviewed above-agent retro speech bubbles, and shorter attention arm poses. It retains the 8bitcn controls, local Press Start 2P font, corrected scrolling-menu borders and taller agent-details panel. Native GUI acceptance remains a disclosed follow-up; see the [release checklist](docs/TASKBAR-RELEASE-CHECKLIST.md).
+Version 0.2.1 adds flush/content-sized strip placement, saved alignment/free dragging and smaller hover names. See [revision validation](docs/VALIDATION-FLUSH-PLACEMENT.md).
+
+Version 0.2.0 introduced the compact Office and optional transparent taskbar strip, the reviewed above-agent retro speech bubbles, and shorter attention arm poses. It retains the 8bitcn controls, local Press Start 2P font, corrected scrolling-menu borders and taller agent-details panel. Native GUI acceptance remains a disclosed follow-up; see the [release checklist](docs/TASKBAR-RELEASE-CHECKLIST.md).
 
 ## Development
 

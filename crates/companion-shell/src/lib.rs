@@ -7,6 +7,7 @@ use std::{
 };
 
 mod observer_export;
+pub mod placement;
 pub mod taskbar;
 #[cfg(unix)]
 mod unix_private;
@@ -36,6 +37,7 @@ pub struct WindowState {
     pub recovery_available: bool,
     pub mode: WindowMode,
     pub fullscreen_hidden: bool,
+    pub taskbar_placement: taskbar::Placement,
 }
 impl WindowState {
     pub fn can_hide(&self) -> bool {

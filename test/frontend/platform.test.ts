@@ -29,3 +29,21 @@ describe('narrow native bridge', () => {
     expect(mocks.invoke).not.toHaveBeenCalled(); expect(mocks.listen).not.toHaveBeenCalled(); expect(platform.review).toBe(false);
   });
 });
+
+describe('taskbar placement command boundary', () => {
+  it('passes the exact native placement, count and cursor-sampled drag contract', async () => {
+    const platform = nativePlatform();
+    await platform.command({ name: 'set_taskbar_alignment', args: { alignment: 'right' } });
+    await platform.command({ name: 'set_taskbar_position', args: { position: 0.25 } });
+    await platform.command({ name: 'set_taskbar_content_count', args: { count: 64 } });
+    for (const name of ['begin_taskbar_drag', 'update_taskbar_drag', 'end_taskbar_drag'] as const) await platform.command({ name });
+    expect(mocks.invoke.mock.calls).toEqual([['set_taskbar_alignment', { alignment: 'right' }], ['set_taskbar_position', { position: 0.25 }], ['set_taskbar_content_count', { count: 64 }], ['begin_taskbar_drag'], ['update_taskbar_drag'], ['end_taskbar_drag']]);
+  });
+  it('rejects nonfinite, fractional and out-of-range arguments before IPC', async () => {
+    const platform = nativePlatform();
+    for (const count of [-1, 65, 0.5, NaN, Infinity]) await expect(platform.command({ name: 'set_taskbar_content_count', args: { count } })).rejects.toThrow('Invalid taskbar content count');
+    for (const position of [-0.01, 1.01, NaN, Infinity]) await expect(platform.command({ name: 'set_taskbar_position', args: { position } })).rejects.toThrow('Invalid taskbar position');
+    await expect(platform.command({ name: 'set_taskbar_alignment', args: { alignment: 'free' as never } })).rejects.toThrow('Invalid taskbar alignment');
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+});
