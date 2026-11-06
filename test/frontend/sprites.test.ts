@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { ASSET_URLS, animationForState, DESIGN_IDS, designForIdentity, drawSprite, frameAt, validDimensions } from '../../src/sprites';
+import { ASSET_URLS, animationForState, assignDesigns, DESIGN_IDS, designForIdentity, drawSprite, frameAt, validDimensions } from '../../src/sprites';
 import type { SpriteAssets } from '../../src/sprites';
 import provenance from '../../src/assets/pixel-office/ASSET-SOURCES.json';
 
@@ -46,8 +46,8 @@ describe('exact bundled sprite contract', () => {
     const drawImage = vi.fn(); const context = { drawImage, clearRect: vi.fn(), imageSmoothingEnabled: true };
     vi.spyOn(canvas, 'getContext').mockReturnValue(context as unknown as CanvasRenderingContext2D);
     const images = Object.fromEntries(Object.keys(ASSET_URLS).map(key => [key, { key }])) as unknown as SpriteAssets;
-    drawSprite(canvas, images, 'test', 'working', 250, scale, false);
     const design = designForIdentity('test');
+    drawSprite(canvas, images, design, 'working', 250, scale, false);
     expect(drawImage.mock.calls.map(call => (call[0] as { key: string }).key)).toEqual(['shared/chair.png', `characters/${design}.png`, 'shared/desk.png', 'shared/laptop.png', `characters/${design}-hands.png`]);
     expect(drawImage.mock.calls[1].slice(1)).toEqual([128, 64, 64, 64, 0, 0, 64 * scale, 64 * scale]);
     expect(canvas.width).toBe(64 * scale); expect(canvas.height).toBe(64 * scale); expect(context.imageSmoothingEnabled).toBe(false);
@@ -68,11 +68,54 @@ describe('attention correction state routing', () => {
     const assets = Object.fromEntries(Object.keys(ASSET_URLS).map(key => [key, { key }])) as unknown as SpriteAssets;
     for (const state of ['waiting', 'error'] as const) for (const reduced of [false, true]) {
       for (let i = 0; i < 8; i++) {
-        drawImage.mockClear(); drawSprite(canvas, assets, identity, state, i * 250, 2, reduced);
+        drawImage.mockClear(); drawSprite(canvas, assets, design, state, i * 250, 2, reduced);
         expect((drawImage.mock.calls[1][0] as { key: string }).key).toBe(`characters/${design}.png`);
         expect(drawImage.mock.calls[1].slice(1, 5)).toEqual([reduced ? 0 : i * 64, 192, 64, 64]);
         expect(drawImage.mock.calls[4].slice(1, 5)).toEqual([reduced ? 0 : i * 64, 192, 64, 64]);
       }
     }
+  });
+});
+
+describe('roster-aware design allocation', () => {
+  const colliding = Array.from({ length: 1000 }, (_, i) => `collision/${i}`).filter(key => designForIdentity(key) === DESIGN_IDS[0]);
+  const balanced = (designs: ReturnType<typeof assignDesigns>) => {
+    const counts = DESIGN_IDS.map(design => [...designs.values()].filter(value => value === design).length);
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+  };
+  it('uses six distinct designs even when every identity hashes to the same preference', () => {
+    for (let count = 1; count <= 6; count++) {
+      const designs = assignDesigns(colliding.slice(0, count));
+      expect(designs.size).toBe(count); expect(new Set(designs.values()).size).toBe(count);
+    }
+  });
+  it('is deterministic across reorders and preserves existing residents when new agents join', () => {
+    const initial = assignDesigns(colliding.slice(0, 3));
+    const next = assignDesigns(colliding.slice(0, 6), initial);
+    expect(assignDesigns(colliding.slice(0, 6).reverse(), initial)).toEqual(next);
+    for (const [key, design] of initial) expect(next.get(key)).toBe(design);
+    expect(assignDesigns(colliding.slice(0, 6), next)).toEqual(next);
+    expect(assignDesigns(colliding.slice(0, 6))).toEqual(assignDesigns(colliding.slice(0, 6).reverse()));
+  });
+  it('balances unavoidable repeats and repairs collisions when a roster shrinks or is filtered', () => {
+    const original = assignDesigns(colliding.slice(0, 13)); balanced(original);
+    const repeated = DESIGN_IDS.find(design => [...original.values()].filter(value => value === design).length > 1)!;
+    const pair = [...original.keys()].filter(key => original.get(key) === repeated).slice(0, 2);
+    const filtered = assignDesigns(pair, original);
+    expect(new Set(filtered.values()).size).toBe(2);
+    expect(original.get(pair[0])).toBe(original.get(pair[1]));
+    for (let count = 64; count >= 0; count--) {
+      const next = assignDesigns(colliding.slice(0, count), original); balanced(next);
+      expect(next.size).toBe(count);
+      expect(assignDesigns(colliding.slice(0, count), next)).toEqual(next);
+    }
+  });
+  it('ignores hidden identities for occupancy and never uses identities as asset keys', () => {
+    const cache = new Map(colliding.slice(0, 6).map(key => [key, DESIGN_IDS[0]]));
+    const before = new Map(cache);
+    const key = 'https://remote.example/untrusted.png';
+    const assigned = assignDesigns([key, key], cache);
+    expect(assigned.size).toBe(1); expect(assigned.get(key)).toBeOneOf([...DESIGN_IDS]); expect(cache).toEqual(before);
+    expect(assignDesigns([], cache).size).toBe(0);
   });
 });

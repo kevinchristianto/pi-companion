@@ -35,11 +35,47 @@ export const ASSET_URLS = {
 export type AssetKey = keyof typeof ASSET_URLS;
 export type SpriteAssets = Record<AssetKey, HTMLImageElement>;
 
-/** Pure, stable across reorders and refreshes. The identity is never used as an artwork URL. */
+/** Stable preferred design; roster allocation resolves collisions. Never an artwork URL. */
 export function designForIdentity(identity: string): DesignId {
   let hash = 2166136261;
   for (const char of identity) { hash ^= char.codePointAt(0)!; hash = Math.imul(hash, 16777619); }
   return DESIGN_IDS[(hash >>> 0) % DESIGN_IDS.length];
+}
+/**
+ * Use every design before repeating one, and spread unavoidable repeats evenly.
+ * Keep existing assignments where possible. Sorting makes snapshot order irrelevant;
+ * the previous map may include hidden agents, but only visible identities reserve art.
+ */
+export function assignDesigns(identities: readonly string[], previous: ReadonlyMap<string, DesignId> = new Map()): Map<string, DesignId> {
+  const keys = [...new Set(identities)].sort();
+  const assigned = new Map<string, DesignId>();
+  const counts = new Map<DesignId, number>(DESIGN_IDS.map(design => [design, 0]));
+  const previousCounts = new Map(counts); const preferredCounts = new Map(counts);
+  for (const key of keys) {
+    const old = previous.get(key); if (old) previousCounts.set(old, previousCounts.get(old)! + 1);
+    const preferred = designForIdentity(key); preferredCounts.set(preferred, preferredCounts.get(preferred)! + 1);
+  }
+  // Balanced capacities keep every assignment in an already balanced roster,
+  // even when its repeated designs occur far apart in the snapshot.
+  const extra = [...DESIGN_IDS].sort((a, b) => previousCounts.get(b)! - previousCounts.get(a)! || preferredCounts.get(b)! - preferredCounts.get(a)!)
+    .slice(0, keys.length % DESIGN_IDS.length);
+  const capacity = new Map(DESIGN_IDS.map(design => [design, Math.floor(keys.length / DESIGN_IDS.length) + Number(extra.includes(design))]));
+  const assign = (key: string, design: DesignId) => { assigned.set(key, design); counts.set(design, counts.get(design)! + 1); };
+  // Reserve existing residents before placing new arrivals.
+  for (const key of keys) {
+    const design = previous.get(key);
+    if (design && counts.get(design)! < capacity.get(design)!) assign(key, design);
+  }
+  const remaining = keys.filter(key => !assigned.has(key));
+  for (const key of [...remaining.filter(key => previous.has(key)), ...remaining.filter(key => !previous.has(key))]) {
+    const preferred = previous.get(key) ?? designForIdentity(key);
+    const start = DESIGN_IDS.indexOf(preferred);
+    const leastUsed = Math.min(...DESIGN_IDS.filter(design => counts.get(design)! < capacity.get(design)!).map(design => counts.get(design)!));
+    const design = Array.from({ length: DESIGN_IDS.length }, (_, offset) => DESIGN_IDS[(start + offset) % DESIGN_IDS.length])
+      .find(design => counts.get(design) === leastUsed && counts.get(design)! < capacity.get(design)!)!;
+    assign(key, design);
+  }
+  return assigned;
 }
 export function animationForState(state: AgentState): { row: number; fps: 0 | 4 | 8 } {
   switch (state) {
@@ -70,7 +106,7 @@ export function loadSpriteAssets(): Promise<SpriteAssets> {
 }
 
 /** Every layer is registered to the same source cell; destinations use whole CSS pixels. */
-export function drawSprite(canvas: HTMLCanvasElement, assets: SpriteAssets, identity: string, state: AgentState, elapsed: number, scale: 1 | 2, reducedMotion: boolean): void {
+export function drawSprite(canvas: HTMLCanvasElement, assets: SpriteAssets, design: DesignId, state: AgentState, elapsed: number, scale: 1 | 2, reducedMotion: boolean): void {
   const size = CELL * scale;
   if (canvas.width !== size) canvas.width = size;
   if (canvas.height !== size) canvas.height = size;
@@ -78,7 +114,6 @@ export function drawSprite(canvas: HTMLCanvasElement, assets: SpriteAssets, iden
   if (!ctx) return;
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, size, size);
-  const design = designForIdentity(identity);
   const { row, column } = frameAt(state, elapsed, reducedMotion);
   const prop = (name: 'chair' | 'desk' | 'laptop') => ctx.drawImage(assets[`shared/${name}.png`], 0, 0, CELL, CELL, 0, 0, size, size);
   const layer = (suffix: '' | '-hands') => ctx.drawImage(assets[`characters/${design}${suffix}.png`], column * CELL, row * CELL, CELL, CELL, 0, 0, size, size);

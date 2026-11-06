@@ -1,19 +1,21 @@
 # Frontend
 
-This is a clean vanilla TypeScript / semantic HTML / CSS / Canvas2D implementation. It contains no React, Three.js, Electron, historical roster, status-file reader, remote artwork loader, or frontend HTTP/filesystem/shell capability.
+This is a React / TypeScript / semantic HTML / CSS / Canvas2D implementation. It contains no Three.js, Electron, historical live roster, status-file reader, remote artwork loader, or frontend HTTP/filesystem/shell capability.
 
 ## Entry points
 
 - `main.ts`: native platform by default; imports synthetic review data only for explicit development serving.
 - `platform.ts`: the complete Tauri surface. `get_state`, the `companion-state` event, and named window commands only.
 - `model.ts`: bounded, typed, defensive validation and monotonic shell-envelope ordering. Invalid or non-listening bridge data hides the live roster; stale/offline records are excluded. The Rust bridge owns connection/lifecycle authority and expiry. No browser timer infers liveness.
-- `app.ts`: keyed accessible roster, session filter, office/list views, details/focus behavior, connection instructions, window controls and recovery warnings.
-- `sprites.ts`: exact build-time fifteen-file PNG allowlist, complete required-layer loading, natural-dimension checks, stable identity assignment and five-layer compositor.
+- `app.tsx`: keyed accessible roster, workspace/idle filters, Office/Taskbar modes, details/focus behavior, connection instructions, window controls and recovery warnings. Explicit Demo mode selects a separate fictional roster while live snapshots continue to update independently.
+- `sprites.ts`: exact build-time fifteen-file PNG allowlist, complete required-layer loading, natural-dimension checks, collision-free six-design allocation (balanced repeats above six) and five-layer compositor. Only the illustrated visible roster reserves designs; the assigned design also determines the Taskbar baseline offset.
+- `preferences.ts`: default-on idle/ready visibility saved in local storage, with a session-only fallback when storage is unavailable.
+- `demo.ts`: pure display-only fictional agent generation with injectable randomness, no platform or live-data dependency. The UI updates it every four seconds only while Demo mode is enabled, visible and not paused/reduced-motion.
 - `scheduler.ts`: one 125 ms timer for all visible canvas artwork. Idle/thinking/attention advance at 4 fps; typing at 8 fps. Hidden and offscreen art stops; reduced motion uses the state's first frame. No animated status polling.
 - `review.ts`: clearly labeled, synthetic six-character fixture. It is never a missing-bridge fallback.
 - `assets/pixel-office/ASSET-SOURCES.json`: public-safe source and runtime hashes plus derivative provenance.
 
-Only the first 64 agents in office view get illustrated canvases. Every received agent remains in semantic HTML, including additional text rows and the complete list view. A reported backend overflow is disclosed separately as an incomplete roster, not confused with the artwork cap.
+Only the first 64 visible agents get illustrated canvases. All agents matching the current workspace and idle filters remain in semantic HTML, including additional text rows. Hidden idle agents remain in connection totals and workspace choices. A reported backend overflow is disclosed separately as an incomplete live roster, not confused with the artwork cap or simulation.
 
 ## Commands
 
@@ -26,7 +28,7 @@ Node 24 or later:
 - `npm run test:frontend`: frontend model, DOM, scheduler, platform and artwork checks.
 - `npm run check`: both type checks, frontend and observer tests, then the production build and emitted-art/fixture guard.
 
-The build guard verifies exactly fifteen unchanged PNGs and absence of synthetic review identities. A build never enables the review exception, even with VITE_COMPANION_REVIEW=1 and NODE_ENV=development.
+The build guard verifies exactly fifteen unchanged PNGs and absence of development-review identities. A build never enables the development-review exception, even with VITE_COMPANION_REVIEW=1 and NODE_ENV=development. The user-selectable, clearly labeled Demo mode is a separate production feature and is never an automatic missing-bridge fallback.
 
 ## Rendering and acceptance
 

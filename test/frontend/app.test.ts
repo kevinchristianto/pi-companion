@@ -2,8 +2,10 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../src/app';
 import type { AppHandle } from '../../src/app';
-import { ASSET_URLS } from '../../src/sprites';
+import { ASSET_URLS, DESIGN_IDS, designForIdentity, SPRITE_BOTTOM_GUTTER } from '../../src/sprites';
 import type { SpriteAssets } from '../../src/sprites';
+import { SHOW_IDLE_AGENTS_KEY } from '../../src/preferences';
+import { DEMO_INTERVAL_MS } from '../../src/demo';
 import { agent, state, TestPlatform } from './helpers';
 
 const assets = Object.fromEntries(Object.keys(ASSET_URLS).map(key => [key, {}])) as SpriteAssets;
@@ -36,6 +38,7 @@ const openGuide = () => { openMenu(); click(byText('Connection guide') || byText
 const disabled = (node: HTMLElement) => node.hasAttribute('disabled') || node.getAttribute('aria-disabled') === 'true';
 
 beforeEach(() => {
+  localStorage.clear();
   vi.useFakeTimers(); document.body.replaceChildren(); root = document.createElement('div'); document.body.append(root);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   Object.defineProperty(document, 'hidden', { configurable: true, value: false });
@@ -342,7 +345,7 @@ describe('compact options menu', () => {
     openMenu();
     for (const label of ['Pin', 'Pass through', 'Hide', 'Pause motion', 'Connection guide']) expect(menu()!.contains(byText(label))).toBe(true);
     expect(root.querySelector('.toolbar,.footer,.segmented')).toBeNull(); expect(byText('List')).toBeUndefined(); expect(menu()!.contains(byText('Office'))).toBe(true);
-    expect(document.activeElement?.getAttribute('role')).toBe('menuitemradio'); expect(document.activeElement?.textContent).toContain('All projects');
+    expect(document.activeElement?.getAttribute('role')).toBe('menuitemcheckbox'); expect(document.activeElement?.textContent).toBe('Demo mode');
     key(document.activeElement!, 'Escape'); expect(menu()).toBeNull(); expect(document.activeElement).toBe(menuButton());
   });
   it('supports keyboard navigation, Escape, and outside dismissal without focus traps', async () => {
@@ -642,4 +645,132 @@ describe('transparent taskbar desk strip', () => {
     expect(root.querySelector('.strip-notice')).toBeNull();
   });
 
+});
+
+describe('distinct characters and idle visibility', () => {
+  const idleToggle = () => { openMenu(); return [...menu()!.querySelectorAll<HTMLElement>('[role="menuitemcheckbox"]')].find(node => node.textContent === 'Show idle / ready agents')!; };
+  const designMap = () => new Map(buttons().map(button => [button.dataset.agentKey, button.querySelector('canvas')!.dataset.design]));
+  it('resolves hash collisions and keeps characters across updates, reorders and modes', async () => {
+    const keys = Array.from({ length: 200 }, (_, i) => `same/${i}`).filter(key => designForIdentity(key) === DESIGN_IDS[0]).slice(0, 6);
+    platform.current = state(keys.map((key, i) => agent(i, { key }))); await start();
+    const before = designMap(); expect(new Set(before.values()).size).toBe(6);
+    platform.current = state([...platform.current.snapshot.agents].reverse().map(value => ({ ...value, state: 'thinking' })), 2); emit(platform.current);
+    expect(designMap()).toEqual(before);
+    choose('Window mode', 'Taskbar'); await flush(); expect(designMap()).toEqual(before);
+    for (const canvas of root.querySelectorAll('canvas')) expect(canvas.style.getPropertyValue('--sprite-bottom-gutter')).toBe(`${SPRITE_BOTTOM_GUTTER[canvas.dataset.design as keyof typeof SPRITE_BOTTOM_GUTTER]}px`);
+  });
+  it('reallocates repeated designs after filtering a larger roster', async () => {
+    platform.current = state(Array.from({ length: 12 }, (_, i) => agent(i))); await start();
+    const designs = designMap(); const repeated = [...designs.values()][0];
+    const pair = [...designs.keys()].filter(key => designs.get(key) === repeated).slice(0, 2);
+    platform.current = state(platform.current.snapshot.agents.map(agent => ({ ...agent, cwd: pair.includes(agent.key) ? '/work/pair' : '/work/others' })), 2); emit(platform.current);
+    choose('Project or workspace', 'pair'); expect(buttons()).toHaveLength(2); expect(new Set(designMap().values()).size).toBe(2);
+  });
+  it('allocates only illustrated residents so text-only overflow cannot reserve unused art', async () => {
+    platform.current = state(Array.from({ length: 80 }, (_, i) => agent(i))); await start();
+    for (let pass = 0; pass < 2; pass++) {
+      const canvases = [...root.querySelectorAll<HTMLCanvasElement>('canvas:not([hidden])')];
+      const counts = DESIGN_IDS.map(design => canvases.filter(canvas => canvas.dataset.design === design).length);
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+      expect(root.querySelectorAll('canvas[hidden][data-design]')).toHaveLength(0);
+      emit(state([...platform.current.snapshot.agents].reverse(), 2));
+    }
+  });
+  it('defaults to showing ready agents and hides only idle, not attention or completed states', async () => {
+    platform.current = state(['idle', 'working', 'thinking', 'waiting', 'error', 'completed', 'unknown'].map((value, i) => agent(i, { state: value as ReturnType<typeof agent>['state'] })));
+    await start(); expect(idleToggle().getAttribute('aria-checked')).toBe('true'); click(idleToggle());
+    expect(buttons()).toHaveLength(6); expect(buttons().some(button => button.dataset.agentKey === 'session-a/0')).toBe(false);
+    expect(root.querySelector('.agent-count')?.textContent).toBe('6 of 7 agents');
+    expect(root.querySelector('.sr-only[role="status"]')?.textContent).toContain('7 agents connected');
+    expect(root.querySelector('.sr-only[role="status"]')?.textContent).toContain('1 idle / ready agent hidden');
+    expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('false');
+    click(idleToggle()); expect(buttons()).toHaveLength(7); expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true');
+    expect(platform.commands).toEqual([]);
+  });
+  it('keeps idle-only workspace selected and provides a truthful empty state and restore button', async () => {
+    platform.current = state([agent(0, { cwd: '/work/quiet' }), agent(1, { cwd: '/work/busy', state: 'working' })]); await start();
+    choose('Project or workspace', 'quiet'); click(idleToggle()); key(document.activeElement!, 'Escape');
+    expect(buttons()).toHaveLength(0); expect(root.querySelector('.current-project')?.textContent).toBe('quiet');
+    expect(root.querySelector('.empty-state')?.textContent).toContain('1 connected agent is ready');
+    expect(root.querySelector('.connection')?.textContent).toBe('Live');
+    click(root.querySelector<HTMLButtonElement>('.empty-state button')!); expect(buttons()).toHaveLength(1);
+    expect(root.querySelector('.current-project')?.textContent).toBe('quiet');
+  });
+  it('updates automatically on ready transitions and restores focus when details disappear', async () => {
+    localStorage.setItem(SHOW_IDLE_AGENTS_KEY, 'false');
+    platform.current = state([agent(0, { state: 'working' }), agent(1, { state: 'waiting' })]); await start(); click(buttons()[0]);
+    emit(state([agent(0), agent(1, { state: 'waiting' })], 2));
+    expect(buttons()).toHaveLength(1); expect(root.querySelector<HTMLElement>('.detail')!.hidden).toBe(true); expect(document.activeElement).toBe(buttons()[0]);
+    emit(state([agent(0, { state: 'thinking' }), agent(1, { state: 'waiting' })], 3)); expect(buttons()).toHaveLength(2);
+  });
+  it('persists the choice across app remounts and modes and sizes the strip using visible agents', async () => {
+    platform.current = state([agent(0), agent(1, { state: 'working' })]); await start(); click(idleToggle());
+    choose('Window mode', 'Taskbar'); await flush(); expect(buttons()).toHaveLength(1);
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 1 } });
+    platform.current = { ...platform.current, sequence: platform.current.sequence + 1, snapshot: { ...platform.current.snapshot, revision: platform.current.snapshot.revision + 1, agents: [agent(0), agent(1)] } }; emit(platform.current); await flush();
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 0 } });
+    expect(root.querySelector('.empty-state')?.textContent).toContain('Idle / ready agents are hidden');
+    click(root.querySelector<HTMLButtonElement>('.strip-return')!); await flush(); expect(buttons()).toHaveLength(0);
+    interact(() => { app!.dispose(); app = undefined; }); await start(); expect(buttons()).toHaveLength(0);
+    expect(idleToggle().getAttribute('aria-checked')).toBe('false'); click(idleToggle()); expect(buttons()).toHaveLength(2);
+  });
+  it('still works when local preference storage cannot be read or written', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Unavailable'); });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Unavailable'); });
+    await start(); expect(buttons()).toHaveLength(1); click(idleToggle()); expect(buttons()).toHaveLength(0);
+    click(idleToggle()); expect(buttons()).toHaveLength(1);
+  });
+});
+
+describe('isolated display-only demo mode', () => {
+  const toggleDemo = () => click(menuItem('Demo mode'));
+  it('is opt-in, clearly labeled, randomized, and restores the latest live workspace without commands', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    platform.current = state([agent(0, { cwd: '/work/project' }), agent(1, { cwd: '/work/other' })]); await start();
+    choose('Project or workspace', 'project'); const realDesign = buttons()[0].querySelector('canvas')!.dataset.design;
+    expect(root.querySelector('[data-demo]')).toBeNull(); const reads = platform.reads; toggleDemo();
+    expect(buttons()).toHaveLength(6); expect(new Set(buttons().map(button => button.querySelector('canvas')!.dataset.design)).size).toBe(6);
+    expect(root.querySelector('.review-banner')?.textContent).toContain('DEMO · Simulated agents only');
+    expect(root.querySelector('.connection')?.textContent).toBe('Demo');
+    expect(root.querySelector('.sr-only[role="status"]')?.textContent).toContain('simulated agents. Display only');
+    expect(root.querySelector('.sr-only[role="status"]')?.textContent).not.toContain('connected');
+    interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS)); expect(buttons()).toHaveLength(2);
+    emit(state([agent(0, { cwd: '/work/project', name: 'Updated live agent', state: 'working' }), agent(1, { cwd: '/work/other' })], 2));
+    expect(buttons().every(button => button.dataset.agentKey?.startsWith('demo/'))).toBe(true);
+    toggleDemo(); expect(buttons()).toHaveLength(1); expect(buttons()[0].textContent).toContain('Updated live agent');
+    expect(root.querySelector('.current-project')?.textContent).toBe('project'); expect(buttons()[0].querySelector('canvas')!.dataset.design).toBe(realDesign);
+    expect(platform.commands).toEqual([]); expect(platform.reads).toBe(reads);
+    expect(root.querySelector('[data-demo]')).toBeNull(); interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS * 2)); expect(buttons()).toHaveLength(1);
+  });
+  it('works without a connection and never falls back to demo after invalid live data', async () => {
+    platform.current.bridge.status = 'error'; platform.current.bridge.message = 'Disconnected'; await start();
+    expect(buttons()).toHaveLength(0); toggleDemo(); expect(buttons()).toHaveLength(6);
+    emit({ invalid: true }); expect(buttons()).toHaveLength(6); toggleDemo();
+    expect(buttons()).toHaveLength(0); expect(root.querySelector('.connection')?.textContent).toBe('Connection unavailable');
+    expect(root.querySelector('[data-demo]')).toBeNull();
+  });
+  it('keeps demo identification and simulated details across Office and Taskbar modes', async () => {
+    await start(); toggleDemo(); choose('Window mode', 'Taskbar'); await flush();
+    expect(root.querySelector('.strip-review')?.textContent).toBe('DEMO'); expect(buttons()).toHaveLength(6);
+    click(buttons()[0]); await flush(); expect(root.querySelector('main')?.dataset.mode).toBe('office');
+    expect(root.querySelector<HTMLElement>('.detail')?.hidden).toBe(false); expect(root.querySelector('.detail-fields')?.textContent).toContain('Simulated');
+    toggleDemo(); expect(root.querySelector<HTMLElement>('.detail')?.hidden).toBe(true); expect(buttons()[0].textContent).toContain('Agent 0');
+    expect(platform.commands.every(command => command.name === 'set_window_mode' || command.name === 'set_taskbar_content_count')).toBe(true);
+  });
+  it('pauses random changes for motion settings and hidden windows, and disposes its timer', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0); await start(); toggleDemo();
+    click(menuItem('Pause motion')); interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS * 2)); expect(buttons()).toHaveLength(6);
+    click(menuItem('Resume motion'));
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true }); interact(() => document.dispatchEvent(new Event('visibilitychange')));
+    interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS * 2)); expect(buttons()).toHaveLength(6);
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false }); interact(() => document.dispatchEvent(new Event('visibilitychange'))); await flush();
+    reduced = true; interact(() => mediaListener?.()); interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS)); expect(buttons()).toHaveLength(6);
+    reduced = false; interact(() => mediaListener?.()); interact(() => vi.advanceTimersByTime(DEMO_INTERVAL_MS)); expect(buttons()).toHaveLength(2);
+    interact(() => { app!.dispose(); app = undefined; }); expect(vi.getTimerCount()).toBe(0);
+  });
+  it('does not persist demo activation after the app closes', async () => {
+    await start(); toggleDemo(); expect(buttons()).toHaveLength(6);
+    interact(() => { app!.dispose(); app = undefined; }); await start();
+    expect(root.querySelector('[data-demo]')).toBeNull(); expect(buttons()).toHaveLength(1);
+  });
 });
