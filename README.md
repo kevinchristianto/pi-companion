@@ -10,7 +10,7 @@ Versioned Windows x64 NSIS installers are published through [GitHub Releases](ht
 
 The installer includes the Rust bridge, six character designs, all four animation states, shared furniture and observer files. If WebView2 is missing, its bootstrapper downloads the required runtime, so first installation can need internet. No signing certificate is configured; Windows can show an unknown-publisher warning. Verify the source commit and artifact origin before deciding whether to install.
 
-The release workflow requires successful automated Windows verification and NSIS packaging before publishing. Real Windows GUI acceptance remains outstanding, especially tray recovery, transparency, mixed-DPI rendering, taskbar auto-hide/fullscreen handling, sleep/resume and accessibility. A successful build is not evidence of those native visual checks. See the [0.2.2 notes](docs/releases/v0.2.2.md).
+The release workflow requires successful automated Windows verification and NSIS packaging before publishing. Real Windows GUI acceptance remains outstanding, especially tray recovery, transparency, mixed-DPI rendering, taskbar auto-hide/fullscreen handling, sleep/resume and accessibility. A successful build is not evidence of those native visual checks. See the [0.2.3 notes](docs/releases/v0.2.3.md).
 
 ## Connect Pi
 
@@ -48,7 +48,7 @@ The local redesign uses actual MIT-licensed [8bitcn](https://www.8bitcn.com/) co
 - Mode changes preserve the workspace and idle filters and the selected live/demo source. Returning to Office restores its saved size, position and pin preference. Explicit tray/shortcut recovery restores input. Same-monitor fullscreen apps hide the strip without stealing focus; a user-hidden window stays hidden. Native Windows acceptance for these behaviors is pending.
 - Long rosters and option menus scroll within the compact window. Keyboard navigation, Escape/outside dismissal, focus recovery, reduced motion and native recovery guards remain supported.
 
-Version 0.2.2 adds distinct-character allocation, saved idle/ready visibility and an isolated randomized Demo mode. See [revision validation](docs/VALIDATION-ROSTER-DEMO.md). The subsequent unreleased [strip and tray fix](docs/VALIDATION-STRIP-IDLE-TRAY.md) keeps the all-idle strip compact and adds the synchronized tray option.
+Version 0.2.2 adds distinct-character allocation, saved idle/ready visibility and an isolated randomized Demo mode. See [revision validation](docs/VALIDATION-ROSTER-DEMO.md). Version 0.2.3 [keeps the all-idle strip compact and adds the synchronized tray option](docs/VALIDATION-STRIP-IDLE-TRAY.md).
 
 Version 0.2.1 adds flush/content-sized strip placement, saved alignment/free dragging and smaller hover names. See [revision validation](docs/VALIDATION-FLUSH-PLACEMENT.md).
 
