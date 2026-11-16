@@ -38,8 +38,20 @@ pub struct WindowState {
     pub mode: WindowMode,
     pub fullscreen_hidden: bool,
     pub taskbar_placement: taskbar::Placement,
+    /// None allows one-time migration from the older renderer-only preference.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_idle_agents: Option<bool>,
 }
 impl WindowState {
+    /// Initialization cannot overwrite a choice already made by the tray or UI.
+    /// Display filtering must not restore, focus, or change the window mode.
+    pub fn set_idle_visibility(&mut self, show: bool, only_if_unset: bool) -> bool {
+        if only_if_unset && self.show_idle_agents.is_some() {
+            return false;
+        }
+        self.show_idle_agents = Some(show);
+        true
+    }
     pub fn can_hide(&self) -> bool {
         self.recovery_available
     }
@@ -199,6 +211,42 @@ mod tests {
     use super::*;
     #[cfg(unix)]
     use std::fs;
+    #[test]
+    fn idle_visibility_initialization_cannot_replace_an_existing_choice() {
+        let mut window = WindowState::default();
+        let before = serde_json::to_value(&window).unwrap();
+        assert!(before.get("showIdleAgents").is_none());
+        assert!(window.set_idle_visibility(false, true));
+        assert_eq!(window.show_idle_agents, Some(false));
+        assert!(!window.set_idle_visibility(true, true));
+        assert_eq!(window.show_idle_agents, Some(false));
+        assert!(window.set_idle_visibility(true, false));
+        assert!(!window.set_idle_visibility(false, true));
+        assert_eq!(window.show_idle_agents, Some(true));
+        assert_eq!(
+            serde_json::to_value(&window).unwrap()["showIdleAgents"],
+            true
+        );
+    }
+    #[test]
+    fn idle_visibility_does_not_change_mode_input_or_visibility_policy() {
+        let mut window = WindowState {
+            pinned: true,
+            click_through: true,
+            recovery_available: false,
+            mode: WindowMode::Taskbar,
+            fullscreen_hidden: true,
+            taskbar_placement: taskbar::Placement::free(0.25).unwrap(),
+            ..WindowState::default()
+        };
+        let before = serde_json::to_value(&window).unwrap();
+        assert!(window.set_idle_visibility(false, false));
+        let mut after = serde_json::to_value(&window).unwrap();
+        after.as_object_mut().unwrap().remove("showIdleAgents");
+        assert_eq!(after, before);
+        window.restored();
+        assert_eq!(window.show_idle_agents, Some(false));
+    }
     #[test]
     fn presets_are_bounded_and_unknown_denied() {
         assert_eq!(preset_size("compact"), Some((360.0, 300.0)));

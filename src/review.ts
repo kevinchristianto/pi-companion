@@ -19,6 +19,7 @@ export function reviewPlatform(): Platform {
     async subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     async getState() { return structuredClone(state); },
     async command(command) {
+      if (command.name === 'set_show_idle_agents' || (command.name === 'initialize_show_idle_agents' && state.window.showIdleAgents === undefined)) state = { ...state, sequence: state.sequence + 1, window: { ...state.window, showIdleAgents: command.args.show } };
       if (command.name === 'hide_window') throw new Error('Hide is a desktop-only action. This review stays visible.');
       if (command.name === 'start_dragging' || command.name === 'end_taskbar_drag' || command.name === 'set_taskbar_content_count') return;
       if (command.name === 'begin_taskbar_drag' || command.name === 'update_taskbar_drag') throw new Error('Taskbar dragging requires the native desktop window.');

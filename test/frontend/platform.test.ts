@@ -47,3 +47,23 @@ describe('taskbar placement command boundary', () => {
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
 });
+
+describe('idle visibility command boundary', () => {
+  it('passes only explicit boolean values to native preference commands', async () => {
+    const platform = nativePlatform();
+    for (const name of ['set_show_idle_agents', 'initialize_show_idle_agents'] as const) {
+      for (const show of [false, true]) await platform.command({ name, args: { show } });
+    }
+    expect(mocks.invoke.mock.calls).toEqual([
+      ['set_show_idle_agents', { show: false }], ['set_show_idle_agents', { show: true }],
+      ['initialize_show_idle_agents', { show: false }], ['initialize_show_idle_agents', { show: true }],
+    ]);
+  });
+  it('rejects malformed preference values before IPC', async () => {
+    const platform = nativePlatform();
+    for (const name of ['set_show_idle_agents', 'initialize_show_idle_agents'] as const) {
+      for (const show of [undefined, null, 0, 'false', {}]) await expect(platform.command({ name, args: { show: show as never } })).rejects.toThrow('Invalid idle agent visibility');
+    }
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+});

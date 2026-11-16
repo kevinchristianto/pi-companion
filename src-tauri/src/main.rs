@@ -24,7 +24,7 @@ use std::sync::{
     Mutex,
 };
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{CheckMenuItem, Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager, PhysicalPosition, PhysicalSize, State, WebviewWindow, WindowEvent,
 };
@@ -74,6 +74,7 @@ struct StripDrag {
     scale: f64,
     last_update: std::time::Instant,
 }
+struct IdleVisibilityMenu(CheckMenuItem<tauri::Wry>);
 struct Shared {
     observer: Observer,
     view: Mutex<ViewState>,
@@ -302,6 +303,55 @@ fn persist_placement(app: &tauri::AppHandle) -> Result<(), String> {
         .app_config_dir()
         .map_err(|_| "Could not locate placement preferences")?;
     placement::save(&directory, &value).map_err(|_| "Placement changed for this session, but saving could not be verified. Check private access to the app configuration directory.".into())
+}
+fn change_idle_visibility(
+    app: &tauri::AppHandle,
+    show: bool,
+    only_if_unset: bool,
+) -> Result<(), String> {
+    let shared = app
+        .try_state::<Shared>()
+        .ok_or("Window state unavailable")?;
+    let current = shared
+        .view
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .window
+        .show_idle_agents;
+    if only_if_unset && current.is_some() {
+        return Ok(());
+    }
+    // Both callbacks and commands run on the main event loop. Update the tray
+    // before committing the setting, then publish the same authoritative value.
+    if let Some(menu) = app.try_state::<IdleVisibilityMenu>() {
+        menu.0
+            .set_checked(show)
+            .map_err(|_| "Could not update the idle-agent tray option")?;
+    }
+    shared
+        .native
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .placement
+        .show_idle_agents = Some(show);
+    shared
+        .view
+        .lock()
+        .map_err(|_| "Window state unavailable")?
+        .window
+        .set_idle_visibility(show, only_if_unset);
+    // Even if persistence fails, both interfaces retain this session's choice.
+    // The caller reports the failure rather than implying it was saved.
+    emit_state(app);
+    persist_placement(app).map_err(|_| "Idle-agent visibility changed for this session, but saving could not be verified. Check private access to the app configuration directory.".into())
+}
+#[tauri::command]
+async fn set_show_idle_agents(app: tauri::AppHandle, show: bool) -> Result<(), String> {
+    on_main_thread(app, move |app| change_idle_visibility(app, show, false)).await
+}
+#[tauri::command]
+async fn initialize_show_idle_agents(app: tauri::AppHandle, show: bool) -> Result<(), String> {
+    on_main_thread(app, move |app| change_idle_visibility(app, show, true)).await
 }
 fn finish_strip_drag(app: &tauri::AppHandle) -> Result<(), String> {
     let shared = app
@@ -1193,6 +1243,20 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
     )?;
     let office = MenuItem::with_id(app, "office", "Office mode", true, None::<&str>)?;
     let taskbar = MenuItem::with_id(app, "taskbar", "Taskbar strip mode", true, None::<&str>)?;
+    let checked = app
+        .state::<Shared>()
+        .view
+        .lock()
+        .map(|view| view.window.show_idle_agents.unwrap_or(true))
+        .unwrap_or(true);
+    let show_idle = CheckMenuItem::with_id(
+        app,
+        "show-idle-agents",
+        "Show idle / ready agents",
+        true,
+        checked,
+        None::<&str>,
+    )?;
     let pass_through = MenuItem::with_id(
         app,
         "click-through",
@@ -1201,7 +1265,10 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         None::<&str>,
     )?;
     let quit = MenuItem::with_id(app, "quit", "Quit companion", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &office, &taskbar, &pass_through, &quit])?;
+    let menu = Menu::with_items(
+        app,
+        &[&show, &office, &taskbar, &show_idle, &pass_through, &quit],
+    )?;
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png"))?;
     TrayIconBuilder::with_id("companion")
         .icon(icon)
@@ -1210,6 +1277,19 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "restore" | "office" => queue_native(app, restore),
+            "show-idle-agents" => queue_native(app, |app| {
+                let shared = app
+                    .try_state::<Shared>()
+                    .ok_or("Window state unavailable")?;
+                let show = !shared
+                    .view
+                    .lock()
+                    .map_err(|_| "Window state unavailable")?
+                    .window
+                    .show_idle_agents
+                    .unwrap_or(true);
+                change_idle_visibility(app, show, false)
+            }),
             "taskbar" => queue_native(app, |app| {
                 change_mode(app, WindowMode::Taskbar)?;
                 let shared = app
@@ -1274,6 +1354,7 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
             }
         })
         .build(app)?;
+    app.manage(IdleVisibilityMenu(show_idle));
     Ok(())
 }
 /// Coalesce event-driven and timer-driven layout requests into one pending job.
@@ -1338,7 +1419,7 @@ fn main() {
             stopping: AtomicBool::new(false), fitting: AtomicBool::new(false), minimum_size: Mutex::new(None),
             native: Mutex::new(NativeState::default()), layout_queued: AtomicBool::new(false),
         })
-        .invoke_handler(tauri::generate_handler![get_state, set_pinned, set_window_mode, set_click_through, hide_window, restore_window, resize_window, start_dragging, set_taskbar_alignment, set_taskbar_position, set_taskbar_content_count, begin_taskbar_drag, update_taskbar_drag, end_taskbar_drag])
+        .invoke_handler(tauri::generate_handler![get_state, set_pinned, set_window_mode, set_click_through, hide_window, restore_window, resize_window, start_dragging, set_taskbar_alignment, set_taskbar_position, set_taskbar_content_count, set_show_idle_agents, initialize_show_idle_agents, begin_taskbar_drag, update_taskbar_drag, end_taskbar_drag])
         .setup(|app| {
             let handle = app.handle().clone();
             {
@@ -1346,6 +1427,7 @@ fn main() {
                 match app.path().app_config_dir().ok().and_then(|directory| placement::load(&directory).ok()) {
                     Some(preferences) => {
                         shared.view.lock().map_err(|_| "Window state unavailable")?.window.taskbar_placement = preferences.placement;
+                        shared.view.lock().map_err(|_| "Window state unavailable")?.window.show_idle_agents = preferences.show_idle_agents;
                         shared.native.lock().map_err(|_| "Window state unavailable")?.placement = preferences;
                     }
                     None => shared.message("Saved taskbar placement could not be read safely; using centered placement for this session. Existing files were left unchanged."),

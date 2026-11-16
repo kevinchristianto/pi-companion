@@ -108,7 +108,8 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
   const activeFilter = demo ? demoFilter : filter; const changeFilter = demo ? setDemoFilter : setFilter;
   const validFilter = reconcileWorkspaceSelection(groups, activeFilter);
   const group = groups.find(group => group.key === validFilter); const workspaceAgents = group?.agents || agents;
-  const [showIdleAgents, setShowIdleAgents] = useState(loadShowIdleAgents);
+  const [legacyShowIdleAgents, setLegacyShowIdleAgents] = useState(loadShowIdleAgents);
+  const showIdleAgents = state.window.showIdleAgents ?? legacyShowIdleAgents;
   const visible = useMemo(() => showIdleAgents ? workspaceAgents : workspaceAgents.filter(agent => agent.state !== 'idle'), [workspaceAgents, showIdleAgents]);
   const hiddenIdleCount = workspaceAgents.length - visible.length;
   const previousDesigns = useRef({ live: new Map<string, DesignId>(), demo: new Map<string, DesignId>() });
@@ -122,7 +123,12 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
     for (const agent of agents) { const design = designs.get(agent.key) ?? previousDesigns.current[source].get(agent.key); if (design) next.set(agent.key, design); }
     previousDesigns.current[source] = next;
   }, [agents, designs, demo, state.bridge.status]);
-  function changeShowIdleAgents(show: boolean) { setShowIdleAgents(show); saveShowIdleAgents(show); }
+  function changeShowIdleAgents(show: boolean) {
+    // The standalone browser demo has no native shell. A real shell owns this
+    // preference so Office and its tray menu always consume the same value.
+    if (state.sequence === 0) { setLegacyShowIdleAgents(show); saveShowIdleAgents(show); }
+    else void run({ name: 'set_show_idle_agents', args: { show } });
+  }
   // A refresh/disconnect hides the live roster but cannot prove a workspace vanished.
   useEffect(() => { if ((demo || state.bridge.status === 'listening') && activeFilter !== validFilter) changeFilter(validFilter); }, [activeFilter, validFilter, changeFilter, demo, state.bridge.status]);
   const [scale, setScale] = useState<1 | 2>(1); const [size, setSize] = useState('compact');
@@ -135,6 +141,19 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
   const media = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)'), []); const [reduced, setReduced] = useState(media.matches);
   const menuRef = useRef<HTMLButtonElement>(null); const stripReturn = useRef<HTMLButtonElement>(null); const menuContent = useRef<HTMLDivElement>(null); const focusedWorkspace = useRef(''); const detailTitle = useRef<HTMLHeadingElement>(null); const detail = useRef<HTMLElement>(null); const office = useRef<HTMLElement>(null); const entry = useRef<HTMLTextAreaElement>(null);
   const alive = useRef(true); const focusedAgent = useRef('');
+  const idlePreferenceInitialized = useRef(false);
+  useEffect(() => {
+    if (state.window.showIdleAgents !== undefined) { saveShowIdleAgents(state.window.showIdleAgents); return; }
+    if (!state.sequence || idlePreferenceInitialized.current) return;
+    idlePreferenceInitialized.current = true;
+    void (async () => {
+      try {
+        const result = await platform.command({ name: 'initialize_show_idle_agents', args: { show: legacyShowIdleAgents } });
+        if (!alive.current) return;
+        controller.receive(result ?? await platform.getState());
+      } catch (error) { if (alive.current) setFeedback(messageOf(error)); }
+    })();
+  }, [state.window.showIdleAgents, state.sequence, legacyShowIdleAgents, platform, controller]);
   function changeDemo(enabled: boolean) {
     if (enabled) { setDemoAgents(createDemoAgents()); setDemoFilter(''); }
     else setDemoAgents([]);
@@ -314,7 +333,7 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
             <DropdownMenuRadioItem value="__all__" onSelect={event => event.preventDefault()}>All projects <span className="option-detail">{groups.length} workspaces · {agents.length} agents</span></DropdownMenuRadioItem>
             {groups.map(workspace => <DropdownMenuRadioItem key={workspace.key} value={workspace.key} onFocus={() => { focusedWorkspace.current = workspace.key; }} onBlur={event => { if (event.relatedTarget) focusedWorkspace.current = ''; }} onSelect={event => event.preventDefault()}><span className="option-label">{workspace.label}</span><span className="option-detail">{workspace.cwd || 'Workspace not shared'}<br />{workspace.agents.length} agents · {workspace.sessionIds.length} sessions</span></DropdownMenuRadioItem>)}
           </DropdownMenuRadioGroup>
-          <DropdownMenuCheckboxItem checked={showIdleAgents} onCheckedChange={checked => changeShowIdleAgents(checked === true)} onSelect={event => event.preventDefault()}>Show idle / ready agents</DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem checked={showIdleAgents} disabled={pending} onCheckedChange={checked => changeShowIdleAgents(checked === true)} onSelect={event => event.preventDefault()}>Show idle / ready agents</DropdownMenuCheckboxItem>
           <DropdownMenuLabel className="field-label">Window mode</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Window mode" value={mode} onValueChange={value => { void changeMode(value as WindowMode); }}><DropdownMenuRadioItem value="office" disabled={pending} onSelect={event => event.preventDefault()}>Office</DropdownMenuRadioItem><DropdownMenuRadioItem value="taskbar" disabled={pending || !recovery} onSelect={event => event.preventDefault()}>Taskbar</DropdownMenuRadioItem></DropdownMenuRadioGroup>
           <DropdownMenuLabel className="field-label">Taskbar alignment</DropdownMenuLabel><DropdownMenuRadioGroup className="menu-choice-row" aria-label="Taskbar alignment" value={placement.alignment} onValueChange={value => { void run({ name: 'set_taskbar_alignment', args: { alignment: value as TaskbarAlignment } }); }}>{(['left', 'center', 'right'] as const).map(alignment => <DropdownMenuRadioItem key={alignment} value={alignment} disabled={pending || !recovery} onSelect={event => event.preventDefault()}>{alignment[0].toUpperCase() + alignment.slice(1)}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup>
           <div className="menu-note">{placement.alignment === 'free' ? 'Free position. ' : ''}Drag the taskbar grip to place it anywhere along the bottom.</div>
@@ -340,7 +359,13 @@ function Companion({ platform, controller, assetsPromise }: { platform: Platform
       if (direction !== null) { event.preventDefault(); scrollDesks(direction); }
     }}>
       {!taskbar && artError && <p className="art-warning">Bundled artwork could not be loaded. Agent names and live status remain available.</p>}
-      {!visible.length && <div className="empty-state"><div className="empty-mark" aria-hidden="true">π</div><h2>{hiddenIdleCount ? 'Idle / ready agents are hidden' : state.bridge.status === 'listening' ? taskbar ? 'No connected agents' : 'A little room for your next idea' : state.bridge.status === 'starting' ? 'Opening the office…' : 'Waiting for a live connection'}</h2><p>{hiddenIdleCount ? `${hiddenIdleCount} ${demo ? 'simulated' : 'connected'} ${hiddenIdleCount === 1 ? 'agent is' : 'agents are'} ready. ${taskbar ? 'Open Office to show idle agents.' : 'They will reappear when their status changes.'}` : state.bridge.status === 'listening' ? 'Your connected Pi sessions will settle in here. An idle session stays connected until it disconnects.' : state.bridge.status === 'starting' ? 'The desktop companion is starting its local observer.' : 'No agents are shown while the connection is unavailable.'}</p>{!taskbar && <Button className="primary-button" onClick={hiddenIdleCount ? () => changeShowIdleAgents(true) : showGuide}>{hiddenIdleCount ? 'Show idle / ready agents' : 'Connection guide'}</Button>}</div>}
+      {!visible.length && (taskbar
+        ? <div className="empty-state strip-empty-state" role="note" aria-label={hiddenIdleCount ? `${hiddenIdleCount} ${demo ? 'simulated' : 'connected'} idle / ready ${hiddenIdleCount === 1 ? 'agent is' : 'agents are'} hidden. Show them from the tray menu or Office.` : undefined}>
+          <h2>{hiddenIdleCount ? 'Idle hidden' : state.bridge.status === 'listening' ? 'No agents' : state.bridge.status === 'starting' ? 'Starting…' : 'Offline'}</h2>
+          <p>{hiddenIdleCount ? `${hiddenIdleCount} ready` : state.bridge.status === 'starting' ? 'Please wait' : 'Open Office'}</p>
+          {hiddenIdleCount > 0 && <p>Use tray menu</p>}
+        </div>
+        : <div className="empty-state"><div className="empty-mark" aria-hidden="true">π</div><h2>{hiddenIdleCount ? 'Idle / ready agents are hidden' : state.bridge.status === 'listening' ? 'A little room for your next idea' : state.bridge.status === 'starting' ? 'Opening the office…' : 'Waiting for a live connection'}</h2><p>{hiddenIdleCount ? `${hiddenIdleCount} ${demo ? 'simulated' : 'connected'} ${hiddenIdleCount === 1 ? 'agent is' : 'agents are'} ready. They will reappear when their status changes.` : state.bridge.status === 'listening' ? 'Your connected Pi sessions will settle in here. An idle session stays connected until it disconnects.' : state.bridge.status === 'starting' ? 'The desktop companion is starting its local observer.' : 'No agents are shown while the connection is unavailable.'}</p><Button className="primary-button" disabled={pending && hiddenIdleCount > 0} onClick={hiddenIdleCount ? () => changeShowIdleAgents(true) : showGuide}>{hiddenIdleCount ? 'Show idle / ready agents' : 'Connection guide'}</Button></div>)}
       {(artworkCapped || omitted > 0) && <p className={taskbar ? 'capacity sr-only' : 'capacity'}>{artworkCapped ? `Artwork is limited to ${ILLUSTRATED_LIMIT} agents. The remaining ${visible.length - ILLUSTRATED_LIMIT} remain in accessible text entries. ` : ''}{omitted ? `The local bridge omitted ${omitted} additional ${omitted === 1 ? 'agent' : 'agents'} because its safety limit was reached. This roster is incomplete.` : ''}</p>}
       <ul className="roster" aria-label="Active agents" data-view={mode} hidden={!visible.length}>{visible.map((agent, index) => <li className={`agent${index >= ILLUSTRATED_LIMIT || artError ? ' text-only' : ''}`} data-key={agent.key} key={agent.key} ref={registerSprite(agent)}>
         <button type="button" className="agent-button" data-agent-key={agent.key} aria-label={`${agent.name}, ${statusLabel(agent)}, ${agent.sessionName || 'Unnamed session'}. ${taskbar ? 'Open Office and view details' : 'View details'}`} aria-pressed={!taskbar && agent.key === selected} onClick={() => void selectAgent(agent)} onFocus={event => { focusedAgent.current = agent.key; revealDesk(event.currentTarget); }} onBlur={event => { if (event.relatedTarget) focusedAgent.current = ''; }}>

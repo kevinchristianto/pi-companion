@@ -12,6 +12,8 @@ fn main() {
             "set_taskbar_alignment",
             "set_taskbar_position",
             "set_taskbar_content_count",
+            "set_show_idle_agents",
+            "initialize_show_idle_agents",
             "begin_taskbar_drag",
             "update_taskbar_drag",
             "end_taskbar_drag",

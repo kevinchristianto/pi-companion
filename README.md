@@ -26,7 +26,7 @@ The bridge binds only to `127.0.0.1:4318`, independently of the old Pi Office po
 
 ## Behavior
 
-- Connected idle agents are shown by default. **Menu → Show idle / ready agents** hides or restores them in both Office and Taskbar modes, with the choice saved locally. This filters only the `idle` state (shown as Ready); working, thinking, needs-input, error, completed and unknown agents remain visible. Hidden idle agents still count as connected and reappear when their status changes. Sources missing a heartbeat for more than 35 seconds, explicit disconnects and stopped agents disappear.
+- Connected idle agents are shown by default. **Menu → Show idle / ready agents**, or the same checked option in the tray icon’s context menu, hides or restores them in both Office and Taskbar modes. Both controls stay in sync and the choice is saved locally; an existing Office-only preference is migrated on first launch. The tray toggle also works while the window is hidden, without restoring or focusing it. This filters only the `idle` state (shown as Ready); working, thinking, needs-input, error, completed and unknown agents remain visible. Hidden idle agents still count as connected and reappear when their status changes. Sources missing a heartbeat for more than 35 seconds, explicit disconnects and stopped agents disappear.
 - Root labels use session titles; subagent names are preserved and duplicates disambiguated.
 - Six 64×64 designs share fixed chair, desk and laptop layers. Each has idle, typing, thinking and attention motion. Animation is code-authored from retained PixelLab artwork.
 - Illustrated agents use distinct designs until all six are in use. Larger illustrated rosters repeat designs evenly. Existing assignments are retained where possible across status updates, reorders and mode changes; workspace/idle filtering can reassign a duplicate to an unused design. Hidden and text-only agents do not reserve visible artwork.
@@ -48,7 +48,7 @@ The local redesign uses actual MIT-licensed [8bitcn](https://www.8bitcn.com/) co
 - Mode changes preserve the workspace and idle filters and the selected live/demo source. Returning to Office restores its saved size, position and pin preference. Explicit tray/shortcut recovery restores input. Same-monitor fullscreen apps hide the strip without stealing focus; a user-hidden window stays hidden. Native Windows acceptance for these behaviors is pending.
 - Long rosters and option menus scroll within the compact window. Keyboard navigation, Escape/outside dismissal, focus recovery, reduced motion and native recovery guards remain supported.
 
-Version 0.2.2 adds distinct-character allocation, saved idle/ready visibility and an isolated randomized Demo mode. See [revision validation](docs/VALIDATION-ROSTER-DEMO.md).
+Version 0.2.2 adds distinct-character allocation, saved idle/ready visibility and an isolated randomized Demo mode. See [revision validation](docs/VALIDATION-ROSTER-DEMO.md). The subsequent unreleased [strip and tray fix](docs/VALIDATION-STRIP-IDLE-TRAY.md) keeps the all-idle strip compact and adds the synchronized tray option.
 
 Version 0.2.1 adds flush/content-sized strip placement, saved alignment/free dragging and smaller hover names. See [revision validation](docs/VALIDATION-FLUSH-PLACEMENT.md).
 

@@ -129,3 +129,23 @@ describe('compact office and transparent strip contracts', () => {
     expect(360 - 10 - 8 - 5 * 2).toBeGreaterThanOrEqual(94 * 3);
   });
 });
+
+describe('one-desk empty strip layout contract', () => {
+  it('keeps a short three-line message inside the native 112 by 104px slot without inner scrolling', () => {
+    const panel = declarationsFor(".companion[data-mode='taskbar'] .strip-empty-state");
+    expect(panel.width).toBe('112px'); expect(panel.maxWidth).toBe('100%'); expect(panel.minWidth).toBe('0');
+    expect(panel.height).toBe('100%'); expect(panel.minHeight).toBe('0'); expect(panel.padding).toBe('4px'); expect(panel.gap).toBe('2px');
+    for (const suffix of ['h2', 'p']) {
+      const line = declarationsFor(`.companion[data-mode='taskbar'] .strip-empty-state ${suffix}`);
+      expect(line.whiteSpace).toBe('nowrap'); expect(line.margin).toBe('0px'); expect(line.padding).toBe('3px 4px');
+      expect(line.overflow).not.toBe('auto'); expect(line.overflowY).not.toBe('auto');
+    }
+    // Longest heading: 11 glyphs at 8px + 8px padding. Body lines at 6px.
+    // 18px heading + two 16px body lines + 4px gaps + 8px panel padding.
+    expect('Idle hidden'.length * 8 + 8).toBeLessThanOrEqual(112 - 8);
+    expect('Use tray menu'.length * 6 + 8).toBeLessThanOrEqual(112 - 8);
+    expect('1536 ready'.length * 6 + 8).toBeLessThanOrEqual(112 - 8);
+    expect(18 + 16 * 2 + 4 + 8).toBeLessThanOrEqual(104);
+    expect(css).not.toMatch(/\.companion\[data-mode='taskbar'\] \.empty-state p \{[^}]*overflow:\s*auto/);
+  });
+});

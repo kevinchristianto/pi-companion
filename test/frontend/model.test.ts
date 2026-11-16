@@ -97,3 +97,21 @@ describe('taskbar placement envelope boundary', () => {
     const input = state(); input.window.taskbarPlacement = placement as never; expect(parseShellState(input)).toBeNull();
   });
 });
+
+describe('native idle visibility preference boundary', () => {
+  it('preserves explicit booleans and leaves a legacy envelope unset for migration', () => {
+    for (const show of [false, true]) {
+      const input = state(); input.window.showIdleAgents = show;
+      const parsed = parseShellState(input)!;
+      expect(parsed.window.showIdleAgents).toBe(show);
+      input.window.showIdleAgents = !show;
+      expect(parsed.window.showIdleAgents).toBe(show);
+    }
+    const legacy = state(); delete legacy.window.showIdleAgents;
+    expect(parseShellState(legacy)?.window).not.toHaveProperty('showIdleAgents');
+  });
+  it.each([null, 0, 1, 'false', 'true', {}, []])('rejects malformed idle visibility %j', value => {
+    const input = state(); input.window.showIdleAgents = value as never;
+    expect(parseShellState(input)).toBeNull();
+  });
+});

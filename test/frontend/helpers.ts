@@ -1,7 +1,7 @@
 import type { Agent, ShellState } from '../../src/model';
 import type { Platform, WindowCommand } from '../../src/platform';
 export const agent = (number = 0, override: Partial<Agent> = {}): Agent => ({ key: `session-a/${number}`, sessionId: 'session-a', agentId: String(number), name: `Agent ${number}`, sessionName: 'Workshop', role: number ? 'subagent' : 'orchestrator', task: 'A useful task.', state: 'idle', ...override });
-export const state = (agents: Agent[] = [agent()], sequence = 1): ShellState => ({ sequence, snapshot: { streamId: 'stream-a', revision: sequence, agents }, bridge: { status: 'listening', connectionFile: '/local/config/connection.json' }, window: { pinned: false, clickThrough: false, recoveryAvailable: true } });
+export const state = (agents: Agent[] = [agent()], sequence = 1): ShellState => ({ sequence, snapshot: { streamId: 'stream-a', revision: sequence, agents }, bridge: { status: 'listening', connectionFile: '/local/config/connection.json' }, window: { pinned: false, clickThrough: false, recoveryAvailable: true, showIdleAgents: true } });
 export class TestPlatform implements Platform {
   review = false;
   current = state();
@@ -17,6 +17,7 @@ export class TestPlatform implements Platform {
     this.current = { ...this.current, sequence: this.current.sequence + 1, window: { ...this.current.window } };
     if (command.name === 'set_pinned') this.current.window.pinned = command.args.pinned;
     if (command.name === 'set_click_through') this.current.window.clickThrough = command.args.enabled;
+    if (command.name === 'set_show_idle_agents' || (command.name === 'initialize_show_idle_agents' && this.current.window.showIdleAgents === undefined)) this.current.window.showIdleAgents = command.args.show;
     if (command.name === 'set_taskbar_alignment') this.current.window.taskbarPlacement = { alignment: command.args.alignment, position: { left: 0, center: 0.5, right: 1 }[command.args.alignment] };
     if (command.name === 'set_taskbar_position') this.current.window.taskbarPlacement = { alignment: 'free', position: command.args.position };
     if (command.name === 'set_window_mode') { this.current.window.mode = command.args.mode; this.current.window.fullscreenHidden = false; }

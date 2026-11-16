@@ -16,6 +16,9 @@ pub struct Preferences {
     pub version: u8,
     pub placement: Placement,
     pub monitor: Option<String>,
+    /// Missing in older placement files until renderer preference migration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub show_idle_agents: Option<bool>,
 }
 impl Default for Preferences {
     fn default() -> Self {
@@ -23,6 +26,7 @@ impl Default for Preferences {
             version: 1,
             placement: Placement::default(),
             monitor: None,
+            show_idle_agents: None,
         }
     }
 }
@@ -217,6 +221,38 @@ mod tests {
                 fs::metadata(config.join(NAME)).unwrap().mode() & 0o777,
                 0o600
             );
+        }
+    }
+    #[test]
+    fn legacy_preferences_migrate_idle_visibility_without_losing_placement() {
+        let (_root, config) = fixture();
+        let mut preferences = Preferences {
+            placement: Placement::free(0.26).unwrap(),
+            monitor: Some("DISPLAY2".into()),
+            ..Preferences::default()
+        };
+        save(&config, &preferences).unwrap();
+        let legacy = fs::read_to_string(config.join(NAME)).unwrap();
+        assert!(!legacy.contains("show_idle_agents"));
+        assert_eq!(load(&config).unwrap().show_idle_agents, None);
+        for show in [false, true] {
+            preferences.show_idle_agents = Some(show);
+            save(&config, &preferences).unwrap();
+            assert_eq!(load(&config).unwrap(), preferences);
+        }
+    }
+    #[test]
+    fn malformed_idle_visibility_is_not_overwritten() {
+        let (_root, config) = fixture();
+        save(&config, &Preferences::default()).unwrap();
+        for invalid in ["\"false\"", "0", "[]", "{}"] {
+            let data = format!(
+                r#"{{"version":1,"placement":{{"alignment":"center","position":0.5}},"monitor":null,"show_idle_agents":{invalid}}}"#
+            );
+            fs::write(config.join(NAME), &data).unwrap();
+            assert!(load(&config).is_err());
+            assert!(save(&config, &Preferences::default()).is_err());
+            assert_eq!(fs::read_to_string(config.join(NAME)).unwrap(), data);
         }
     }
     #[test]

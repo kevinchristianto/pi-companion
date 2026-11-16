@@ -515,7 +515,7 @@ describe('transparent taskbar desk strip', () => {
     platform.current = state([agent(0), agent(1, { state: 'offline' }), agent(2, { state: 'stale' })]); platform.current.window.mode = 'taskbar'; await start();
     expect(buttons()).toHaveLength(1); interact(() => buttons()[0].focus()); nativeUpdate({}, []);
     expect(buttons()).toHaveLength(0); expect(document.activeElement).toBe(officeReturn());
-    expect(root.textContent).toContain('No connected agents');
+    expect(root.textContent).toContain('No agents');
     nativeUpdate({}, [agent(3)]); expect(buttons()).toHaveLength(1); expect(buttons()[0].textContent).toContain('Agent 3');
     emit({ ...platform.current, sequence: platform.current.sequence + 1, window: { ...platform.current.window, mode: 'invalid' } });
     expect(buttons()).toHaveLength(0); expect(root.textContent).toContain('invalid update');
@@ -678,47 +678,47 @@ describe('distinct characters and idle visibility', () => {
   });
   it('defaults to showing ready agents and hides only idle, not attention or completed states', async () => {
     platform.current = state(['idle', 'working', 'thinking', 'waiting', 'error', 'completed', 'unknown'].map((value, i) => agent(i, { state: value as ReturnType<typeof agent>['state'] })));
-    await start(); expect(idleToggle().getAttribute('aria-checked')).toBe('true'); click(idleToggle());
+    await start(); expect(idleToggle().getAttribute('aria-checked')).toBe('true'); click(idleToggle()); await flush();
     expect(buttons()).toHaveLength(6); expect(buttons().some(button => button.dataset.agentKey === 'session-a/0')).toBe(false);
     expect(root.querySelector('.agent-count')?.textContent).toBe('6 of 7 agents');
     expect(root.querySelector('.sr-only[role="status"]')?.textContent).toContain('7 agents connected');
     expect(root.querySelector('.sr-only[role="status"]')?.textContent).toContain('1 idle / ready agent hidden');
     expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('false');
-    click(idleToggle()); expect(buttons()).toHaveLength(7); expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true');
-    expect(platform.commands).toEqual([]);
+    click(idleToggle()); await flush(); expect(buttons()).toHaveLength(7); expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true');
+    expect(platform.commands).toEqual([{ name: 'set_show_idle_agents', args: { show: false } }, { name: 'set_show_idle_agents', args: { show: true } }]);
   });
   it('keeps idle-only workspace selected and provides a truthful empty state and restore button', async () => {
     platform.current = state([agent(0, { cwd: '/work/quiet' }), agent(1, { cwd: '/work/busy', state: 'working' })]); await start();
-    choose('Project or workspace', 'quiet'); click(idleToggle()); key(document.activeElement!, 'Escape');
+    choose('Project or workspace', 'quiet'); click(idleToggle()); await flush(); key(document.activeElement!, 'Escape');
     expect(buttons()).toHaveLength(0); expect(root.querySelector('.current-project')?.textContent).toBe('quiet');
     expect(root.querySelector('.empty-state')?.textContent).toContain('1 connected agent is ready');
     expect(root.querySelector('.connection')?.textContent).toBe('Live');
-    click(root.querySelector<HTMLButtonElement>('.empty-state button')!); expect(buttons()).toHaveLength(1);
+    click(root.querySelector<HTMLButtonElement>('.empty-state button')!); await flush(); expect(buttons()).toHaveLength(1);
     expect(root.querySelector('.current-project')?.textContent).toBe('quiet');
   });
   it('updates automatically on ready transitions and restores focus when details disappear', async () => {
     localStorage.setItem(SHOW_IDLE_AGENTS_KEY, 'false');
-    platform.current = state([agent(0, { state: 'working' }), agent(1, { state: 'waiting' })]); await start(); click(buttons()[0]);
-    emit(state([agent(0), agent(1, { state: 'waiting' })], 2));
+    platform.current = state([agent(0, { state: 'working' }), agent(1, { state: 'waiting' })]); platform.current.window.showIdleAgents = false; await start(); click(buttons()[0]);
+    emit({ ...state([agent(0), agent(1, { state: 'waiting' })], 2), window: platform.current.window });
     expect(buttons()).toHaveLength(1); expect(root.querySelector<HTMLElement>('.detail')!.hidden).toBe(true); expect(document.activeElement).toBe(buttons()[0]);
-    emit(state([agent(0, { state: 'thinking' }), agent(1, { state: 'waiting' })], 3)); expect(buttons()).toHaveLength(2);
+    emit({ ...state([agent(0, { state: 'thinking' }), agent(1, { state: 'waiting' })], 3), window: platform.current.window }); expect(buttons()).toHaveLength(2);
   });
   it('persists the choice across app remounts and modes and sizes the strip using visible agents', async () => {
-    platform.current = state([agent(0), agent(1, { state: 'working' })]); await start(); click(idleToggle());
+    platform.current = state([agent(0), agent(1, { state: 'working' })]); await start(); click(idleToggle()); await flush();
     choose('Window mode', 'Taskbar'); await flush(); expect(buttons()).toHaveLength(1);
     expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 1 } });
     platform.current = { ...platform.current, sequence: platform.current.sequence + 1, snapshot: { ...platform.current.snapshot, revision: platform.current.snapshot.revision + 1, agents: [agent(0), agent(1)] } }; emit(platform.current); await flush();
     expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 0 } });
-    expect(root.querySelector('.empty-state')?.textContent).toContain('Idle / ready agents are hidden');
+    expect(root.querySelector('.strip-empty-state h2')?.textContent).toBe('Idle hidden');
     click(root.querySelector<HTMLButtonElement>('.strip-return')!); await flush(); expect(buttons()).toHaveLength(0);
     interact(() => { app!.dispose(); app = undefined; }); await start(); expect(buttons()).toHaveLength(0);
-    expect(idleToggle().getAttribute('aria-checked')).toBe('false'); click(idleToggle()); expect(buttons()).toHaveLength(2);
+    expect(idleToggle().getAttribute('aria-checked')).toBe('false'); click(idleToggle()); await flush(); expect(buttons()).toHaveLength(2);
   });
   it('still works when local preference storage cannot be read or written', async () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Unavailable'); });
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Unavailable'); });
-    await start(); expect(buttons()).toHaveLength(1); click(idleToggle()); expect(buttons()).toHaveLength(0);
-    click(idleToggle()); expect(buttons()).toHaveLength(1);
+    await start(); expect(buttons()).toHaveLength(1); click(idleToggle()); await flush(); expect(buttons()).toHaveLength(0);
+    click(idleToggle()); await flush(); expect(buttons()).toHaveLength(1);
   });
 });
 
@@ -772,5 +772,125 @@ describe('isolated display-only demo mode', () => {
     await start(); toggleDemo(); expect(buttons()).toHaveLength(6);
     interact(() => { app!.dispose(); app = undefined; }); await start();
     expect(root.querySelector('[data-demo]')).toBeNull(); expect(buttons()).toHaveLength(1);
+  });
+});
+
+describe('shared native idle visibility and compact empty strip', () => {
+  const idleToggle = () => { openMenu(); return [...menu()!.querySelectorAll<HTMLElement>('[role="menuitemcheckbox"]')].find(node => node.textContent === 'Show idle / ready agents')!; };
+  const nativeChoice = (show: boolean) => {
+    platform.current = { ...platform.current, sequence: platform.current.sequence + 1, window: { ...platform.current.window, showIdleAgents: show } };
+    emit(platform.current);
+  };
+  it.each([1, 6, 1536])('fits %i hidden agents into three short lines with complete accessible context', async count => {
+    platform.current = state(Array.from({ length: count }, (_, i) => agent(i)));
+    Object.assign(platform.current.window, { mode: 'taskbar', showIdleAgents: false });
+    await start();
+    const empty = root.querySelector('.strip-empty-state')!;
+    expect([...empty.children].map(node => node.textContent)).toEqual(['Idle hidden', `${count} ready`, 'Use tray menu']);
+    expect(empty.getAttribute('aria-label')).toContain(`${count} connected idle / ready ${count === 1 ? 'agent is' : 'agents are'} hidden`);
+    expect(empty.getAttribute('aria-label')).toContain('tray menu or Office');
+    expect(empty.querySelector('button,.empty-mark')).toBeNull();
+    expect(root.querySelector('.strip-return')).not.toBeNull();
+    expect(buttons()).toHaveLength(0);
+    expect(platform.commands).toContainEqual({ name: 'set_taskbar_content_count', args: { count: 0 } });
+  });
+  it('follows tray-style events immediately without changing mode or recovery state, and synchronizes Office', async () => {
+    platform.current = state(Array.from({ length: 6 }, (_, i) => agent(i)));
+    Object.assign(platform.current.window, { mode: 'taskbar', pinned: true, clickThrough: true, fullscreenHidden: true });
+    await start(); const original = { ...platform.current.window };
+    nativeChoice(false); await flush();
+    expect(buttons()).toHaveLength(0); expect(root.querySelector('.strip-empty-state h2')?.textContent).toBe('Idle hidden');
+    expect(platform.current.window).toEqual({ ...original, showIdleAgents: false });
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 0 } });
+    nativeChoice(true); await flush(); expect(buttons()).toHaveLength(6);
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_taskbar_content_count', args: { count: 6 } });
+    expect(platform.commands.every(command => command.name === 'set_taskbar_content_count')).toBe(true);
+    click(root.querySelector<HTMLButtonElement>('.strip-return')!); await flush();
+    expect(idleToggle().getAttribute('aria-checked')).toBe('true');
+    nativeChoice(false); expect(idleToggle().getAttribute('aria-checked')).toBe('false');
+    expect(root.querySelector('.empty-state p')?.textContent).toContain('6 connected agents are ready');
+  });
+  it('treats the native saved choice as authoritative over a stale renderer preference', async () => {
+    localStorage.setItem(SHOW_IDLE_AGENTS_KEY, 'false');
+    await start(); expect(buttons()).toHaveLength(1);
+    expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true');
+    expect(platform.commands).toEqual([]);
+  });
+  it('migrates the previous renderer choice once, only when native has no saved choice', async () => {
+    localStorage.setItem(SHOW_IDLE_AGENTS_KEY, 'false'); delete platform.current.window.showIdleAgents;
+    await start(); await flush(); expect(buttons()).toHaveLength(0);
+    expect(platform.commands).toEqual([{ name: 'initialize_show_idle_agents', args: { show: false } }]);
+    expect(platform.current.window.showIdleAgents).toBe(false);
+    emit({ ...platform.current, sequence: platform.current.sequence + 1 }); await flush();
+    expect(platform.commands).toHaveLength(1);
+  });
+  it('keeps a newer tray choice when a migration result arrives late', async () => {
+    localStorage.setItem(SHOW_IDLE_AGENTS_KEY, 'false'); delete platform.current.window.showIdleAgents;
+    let resolve!: (value: unknown) => void;
+    vi.spyOn(platform, 'command').mockImplementation(command => { platform.commands.push(command); return new Promise(done => { resolve = done; }); });
+    await start(); expect(platform.commands).toEqual([{ name: 'initialize_show_idle_agents', args: { show: false } }]);
+    const old = { ...platform.current, sequence: 2, window: { ...platform.current.window, showIdleAgents: false } };
+    platform.current.sequence = 2; nativeChoice(true); expect(buttons()).toHaveLength(1);
+    await act(async () => resolve(old)); await flush();
+    expect(buttons()).toHaveLength(1); expect(idleToggle().getAttribute('aria-checked')).toBe('true');
+    expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true'); expect(platform.commands).toHaveLength(1);
+  });
+  it('reports a failed migration without looping and can recover through the regular toggle', async () => {
+    delete platform.current.window.showIdleAgents; platform.failure = new Error('Could not initialize preference');
+    await start(); await flush(); expect(root.querySelector('.command-feedback')?.textContent).toContain('Could not initialize preference');
+    platform.current.sequence = 2; emit(platform.current); await flush();
+    expect(platform.commands).toHaveLength(1);
+    platform.failure = undefined; click(idleToggle()); await flush(); expect(buttons()).toHaveLength(0);
+    expect(platform.commands.at(-1)).toEqual({ name: 'set_show_idle_agents', args: { show: false } });
+  });
+  it('does not hide agents or save a preference when the native command fails', async () => {
+    await start(); platform.failure = new Error('Could not update the idle-agent tray option');
+    click(idleToggle()); await flush();
+    expect(buttons()).toHaveLength(1); expect(idleToggle().getAttribute('aria-checked')).toBe('true');
+    expect(root.querySelector('.command-feedback')?.textContent).toContain('Could not update');
+    expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('true');
+  });
+  it('retains an emitted session choice if saving then fails', async () => {
+    await start();
+    vi.spyOn(platform, 'command').mockImplementation(async command => {
+      platform.commands.push(command); nativeChoice(false);
+      throw new Error('Idle-agent visibility changed for this session, but saving could not be verified.');
+    });
+    click(idleToggle()); await flush();
+    expect(buttons()).toHaveLength(0); expect(idleToggle().getAttribute('aria-checked')).toBe('false');
+    expect(root.querySelector('.command-feedback')?.textContent).toContain('for this session');
+  });
+  it('keeps a standalone browser demo filter local when no native shell can connect', async () => {
+    vi.spyOn(platform, 'subscribe').mockRejectedValue(new Error('No native shell'));
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    await start(); click(menuItem('Demo mode')); expect(buttons()).toHaveLength(6);
+    click(idleToggle()); await flush(); expect(buttons()).toHaveLength(0);
+    expect(localStorage.getItem(SHOW_IDLE_AGENTS_KEY)).toBe('false');
+    click(idleToggle()); await flush(); expect(buttons()).toHaveLength(6);
+    expect(platform.commands).toEqual([]);
+  });
+  it('blocks duplicate pending toggles and keeps a newer tray choice over the old command response', async () => {
+    await start();
+    let resolve!: (value: unknown) => void;
+    vi.spyOn(platform, 'command').mockImplementation(command => { platform.commands.push(command); return new Promise(done => { resolve = done; }); });
+    click(idleToggle()); expect(disabled(idleToggle())).toBe(true); click(idleToggle());
+    expect(platform.commands).toHaveLength(1); expect(buttons()).toHaveLength(1);
+    const old = { ...platform.current, sequence: 2, window: { ...platform.current.window, showIdleAgents: false } };
+    platform.current.sequence = 2; nativeChoice(true);
+    await act(async () => resolve(old)); await flush();
+    expect(buttons()).toHaveLength(1); expect(idleToggle().getAttribute('aria-checked')).toBe('true');
+    expect(disabled(idleToggle())).toBe(false);
+  });
+  it('filters display-only demo agents from tray events without changing real Pi state or source', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    await start(); click(menuItem('Demo mode'));
+    const real = structuredClone(platform.current.snapshot);
+    const initiallyIdle = buttons().filter(button => button.getAttribute('aria-label')?.includes(', Ready,'));
+    expect(initiallyIdle.length).toBeGreaterThan(0);
+    nativeChoice(false); expect(buttons()).toHaveLength(6 - initiallyIdle.length);
+    expect(buttons().every(button => button.dataset.agentKey?.startsWith('demo/'))).toBe(true);
+    expect(platform.current.snapshot).toEqual(real); expect(platform.commands).toEqual([]);
+    click(menuItem('Demo mode')); expect(buttons()).toHaveLength(0);
+    expect(root.querySelector('.empty-state p')?.textContent).toContain('1 connected agent is ready');
   });
 });

@@ -9,6 +9,7 @@ export type WindowCommand =
   | { name: 'set_taskbar_alignment'; args: { alignment: TaskbarAlignment } }
   | { name: 'set_taskbar_position'; args: { position: number } }
   | { name: 'set_taskbar_content_count'; args: { count: number } }
+  | { name: 'set_show_idle_agents' | 'initialize_show_idle_agents'; args: { show: boolean } }
   | { name: 'begin_taskbar_drag' | 'update_taskbar_drag' | 'end_taskbar_drag' }
   | { name: 'hide_window' }
   | { name: 'start_dragging' }
@@ -36,6 +37,9 @@ export function nativePlatform(): Platform {
         case 'set_pinned': return invoke('set_pinned', { pinned: command.args.pinned });
         case 'set_click_through': return invoke('set_click_through', { enabled: command.args.enabled });
         case 'set_window_mode': return invoke('set_window_mode', { mode: command.args.mode });
+        case 'set_show_idle_agents': case 'initialize_show_idle_agents':
+          if (typeof command.args.show !== 'boolean') throw new Error('Invalid idle agent visibility');
+          return invoke(command.name, { show: command.args.show });
         case 'set_taskbar_alignment':
           if (!['left', 'center', 'right'].includes(command.args.alignment)) throw new Error('Invalid taskbar alignment');
           return invoke('set_taskbar_alignment', { alignment: command.args.alignment });

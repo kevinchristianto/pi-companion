@@ -263,10 +263,10 @@ html[data-window-mode='taskbar'], html[data-window-mode='taskbar'] body, html[da
 .companion[data-mode='taskbar'] .agent.text-only .status-bubble { max-width: 100%; }
 .companion[data-mode='taskbar'][data-scale='1'] .agent { flex-basis: 112px; width: 112px; }
 .companion[data-mode='taskbar'][data-scale='1'] .portrait { margin: 0; transform: translateY(var(--sprite-bottom-gutter, 0px)); }
-.companion[data-mode='taskbar'] .empty-state { min-height: 100%; align-items: flex-start; justify-content: flex-end; padding: 4px; text-align: left; }
-.companion[data-mode='taskbar'] .empty-mark { display: none; }
-.companion[data-mode='taskbar'] .empty-state h2, .companion[data-mode='taskbar'] .empty-state p { max-width: 360px; padding: 4px 6px; background: #29261ef2; }
-.companion[data-mode='taskbar'] .empty-state p { margin-bottom: 0; max-height: 42px; overflow: auto; }
+.companion[data-mode='taskbar'] .strip-empty-state { width: 112px; max-width: 100%; min-width: 0; height: 100%; min-height: 0; align-items: flex-start; justify-content: flex-end; gap: 2px; padding: 4px; text-align: left; }
+.companion[data-mode='taskbar'] .strip-empty-state h2, .companion[data-mode='taskbar'] .strip-empty-state p { flex: 0 0 auto; max-width: 100%; margin: 0; padding: 3px 4px; background: #29261ef2; white-space: nowrap; }
+.companion[data-mode='taskbar'] .strip-empty-state h2 { font-size: 8px; line-height: 12px; }
+.companion[data-mode='taskbar'] .strip-empty-state p { font-size: 6px; line-height: 10px; }
 .companion[data-mode='taskbar'] .workspace::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .companion[data-mode='taskbar'] .workspace::-webkit-scrollbar-track { background: transparent; border: 0; }
 .companion[data-mode='taskbar'] .workspace::-webkit-scrollbar-thumb { border-color: transparent; background-clip: padding-box; }
